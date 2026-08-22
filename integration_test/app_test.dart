@@ -1,0 +1,39 @@
+// Test de integración end-to-end — se ejecuta en un emulador o teléfono:
+//   flutter test integration_test
+//
+// A diferencia de los tests de widget (test/), aquí SÍ hay canal nativo,
+// así que ejercita el flujo real: arranque → primera captura → pestañas.
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:integration_test/integration_test.dart';
+import 'package:nexora_guard/main.dart';
+import 'package:nexora_guard/ui/screens.dart';
+
+void main() {
+  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+
+  testWidgets('arranca, captura y muestra las pestañas del modo básico', (
+    tester,
+  ) async {
+    await tester.pumpWidget(const NexoraApp());
+    await tester.pumpAndSettle(const Duration(seconds: 5));
+
+    // Si aparece el onboarding (primera vez), completarlo. El idioma ahora se
+    // autodetecta, así que se avanza por el botón (FilledButton), no por texto.
+    // Desde v0.8.0 son 4 pasos: el último elige la interfaz y NO se toca, para
+    // verificar justo eso — que no elegir deja la básica.
+    var guard = 0;
+    while (find.byType(OnboardingScreen).evaluate().isNotEmpty && guard < 6) {
+      await tester.tap(find.byType(FilledButton));
+      await tester.pumpAndSettle(const Duration(seconds: 3));
+      guard++;
+    }
+
+    expect(find.byType(TabBar), findsOneWidget);
+    // Sin tocar la elección, queda el modo básico: Resumen, Señaladas y
+    // Configuración.
+    expect(find.byType(Tab), findsNWidgets(3));
+    // La captura real produjo un veredicto en el semáforo.
+    expect(find.byType(VerdictBanner), findsOneWidget);
+  });
+}

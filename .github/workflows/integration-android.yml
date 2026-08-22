@@ -1,0 +1,163 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# Test de integración en emulador — NEXORA GUARD
+#
+# Ejecuta `flutter test integration_test` en un emulador Android real. A
+# diferencia de los tests de `test/`, aquí SÍ hay canal nativo: es lo único
+# que ejercita de punta a punta el camino Kotlin ↔ MethodChannel ↔ Dart, que
+# es exactamente donde nació el crash de arranque de v0.2.0.
+#
+# Por qué vive fuera de ci.yml: arrancar un emulador tarda ~10-15 min y
+# depende de KVM en el runner. Meterlo en cada PR haría el CI lento y
+# expuesto a fallos de infraestructura ajenos al código. Aquí corre cada
+# noche y a demanda, que es cuando aporta sin bloquear.
+#
+# Sin actions de terceros: el emulador se instala y arranca con las
+# herramientas oficiales del SDK que ya trae el runner.
+# ─────────────────────────────────────────────────────────────────────────────
+name: Integración (emulador Android)
+
+on:
+  schedule:
+    # Cada día a las 04:17 UTC (minuto arbitrario: evita el pico en punto).
+    - cron: "17 4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: integration-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FLUTTER_VERSION: "3.44.6"
+  ANDROID_API: "34"
+
+jobs:
+  emulator:
+    name: flutter test integration_test
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+
+      - name: JDK 17
+        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Instalar Flutter (tag exacto)
+        run: |
+          git clone --depth 1 --branch "$FLUTTER_VERSION" https://github.com/flutter/flutter.git "$RUNNER_TEMP/flutter"
+          echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
+
+      - name: Dependencias
+        run: flutter pub get
+
+      # El runner sigue trayendo el SDK de Android, pero ya no publica
+      # `cmdline-tools` ni `platform-tools` en el PATH: sin este paso,
+      # `sdkmanager` y `adb` fallan con "command not found" (exit 127).
+      # Se resuelve la raíz del SDK y el bin de cmdline-tools por búsqueda,
+      # no por ruta fija, para no volver a romperse con la próxima imagen.
+      - name: Herramientas del SDK de Android en el PATH
+        run: |
+          SDK="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-$HOME/Android/Sdk}}"
+          if [ ! -d "$SDK" ]; then
+            echo "::error::No se encontró el SDK de Android en '$SDK'."
+            exit 1
+          fi
+          CLI_BIN="$SDK/cmdline-tools/latest/bin"
+          if [ ! -x "$CLI_BIN/sdkmanager" ]; then
+            CLI_BIN="$(find "$SDK/cmdline-tools" -maxdepth 2 -name sdkmanager -type f \
+              -printf '%h\n' 2>/dev/null | sort | tail -1)"
+          fi
+          if [ -z "$CLI_BIN" ]; then
+            echo "::error::No se encontró sdkmanager bajo '$SDK/cmdline-tools'."
+            exit 1
+          fi
+          {
+            echo "ANDROID_HOME=$SDK"
+            echo "ANDROID_SDK_ROOT=$SDK"
+          } >> "$GITHUB_ENV"
+          {
+            echo "$CLI_BIN"
+            echo "$SDK/platform-tools"
+            echo "$SDK/emulator"
+          } >> "$GITHUB_PATH"
+          echo "SDK=$SDK · cmdline-tools=$CLI_BIN"
+
+      # Sin KVM el emulador arranca por software y tarda tanto que agota el
+      # timeout: habilitarlo no es una optimización, es un requisito.
+      - name: Habilitar KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Instalar imagen de sistema y crear AVD
+        run: |
+          SYSIMG="system-images;android-${ANDROID_API};google_apis;x86_64"
+          yes | sdkmanager --licenses > /dev/null
+          sdkmanager --install "$SYSIMG" \
+            "platforms;android-${ANDROID_API}" \
+            "platform-tools" "emulator"
+
+          # avdmanager y el emulador solo coinciden en dónde vive el AVD si
+          # se les fija la misma raíz: se fija explícitamente.
+          AVD_HOME="$HOME/.android/avd"
+          mkdir -p "$AVD_HOME"
+          echo "ANDROID_AVD_HOME=$AVD_HOME" >> "$GITHUB_ENV"
+          export ANDROID_AVD_HOME="$AVD_HOME"
+
+          # Sin `-d`, avdmanager pregunta por un perfil de hardware a medida
+          # y en CI muere en ese prompt **saliendo con código 0**: el paso se
+          # pintaba verde sin AVD. Con perfil no hay prompt; si el id no
+          # existe en esta versión de cmdline-tools, se reintenta sin él.
+          create_avd() {
+            echo no | avdmanager create avd -n nexora-ci -k "$SYSIMG" --force "$@"
+          }
+          create_avd -d pixel_6 || create_avd || true
+
+          # No fiarse del código de salida: comprobar que el AVD existe.
+          if [ ! -f "$AVD_HOME/nexora-ci.ini" ]; then
+            echo "::error::El AVD no se creó en $AVD_HOME."
+            avdmanager list avd || true
+            exit 1
+          fi
+          avdmanager list avd
+
+      - name: Arrancar emulador
+        run: |
+          "$ANDROID_HOME/emulator/emulator" -avd nexora-ci \
+            -no-window -no-audio -no-boot-anim -no-snapshot \
+            -gpu swiftshader_indirect -accel on &
+          EMULATOR_PID=$!
+
+          # `adb wait-for-device` no tiene límite: cuando el emulador ni
+          # arranca se comía los 60 min enteros del job para no decir nada.
+          # Acotado, un fallo de infraestructura cuesta minutos y deja rastro.
+          if ! timeout 300 adb wait-for-device; then
+            echo "::error::El emulador no registró dispositivo en 5 min."
+            kill "$EMULATOR_PID" 2>/dev/null || true
+            exit 1
+          fi
+
+          # Esperar el arranque completo: sin esto el test corre contra un
+          # sistema a medio levantar y falla por motivos que no son el código.
+          if ! timeout 600 adb shell 'while [ "$(getprop sys.boot_completed)" != "1" ]; do sleep 3; done'; then
+            echo "::error::El emulador no terminó de arrancar en 10 min."
+            exit 1
+          fi
+          adb shell input keyevent 82 || true
+          adb devices
+
+      - name: Test de integración
+        run: flutter test integration_test
+
+      - name: Diagnóstico si falla
+        if: failure()
+        run: |
+          adb logcat -d -t 500 || true

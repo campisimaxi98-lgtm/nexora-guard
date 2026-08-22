@@ -1,0 +1,138 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# CI — NEXORA GUARD
+#
+# Valida en cada push/PR a main:
+#   1. quality       → formato Dart + analyze + tests unitarios (ubuntu)
+#   2. build-android → tests JVM de la capa nativa + APK release real +
+#                      verificación de que el release no declara INTERNET
+#   3. build-ios     → build iOS sin firma en macos (valida el canal Swift)
+#
+# El test de integración en emulador vive aparte (integration-android.yml):
+# es lento y depende de KVM, así que no bloquea cada PR — corre cada noche
+# y a demanda.
+#
+# Robustez:
+#   - Actions oficiales pinneadas a commit SHA (no a tags móviles).
+#   - Flutter instalado clonando el TAG exacto del SDK (sin actions de terceros).
+#   - permissions mínimos, concurrency con cancelación, timeouts explícitos.
+# ─────────────────────────────────────────────────────────────────────────────
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FLUTTER_VERSION: "3.44.6"
+
+jobs:
+  quality:
+    name: Formato, análisis y tests (Dart)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+
+      - name: Instalar Flutter (tag exacto)
+        run: |
+          git clone --depth 1 --branch "$FLUTTER_VERSION" https://github.com/flutter/flutter.git "$RUNNER_TEMP/flutter"
+          echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
+
+      - name: Versión de Flutter
+        run: flutter --version
+
+      - name: Dependencias
+        run: flutter pub get
+
+      - name: Formato Dart (lib/ y test/)
+        run: dart format --output=none --set-exit-if-changed lib test
+
+      - name: Análisis estático
+        run: flutter analyze
+
+      - name: Tests unitarios
+        run: flutter test
+
+  build-android:
+    name: Build APK release (Android)
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+
+      - name: JDK 17
+        uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Instalar Flutter (tag exacto)
+        run: |
+          git clone --depth 1 --branch "$FLUTTER_VERSION" https://github.com/flutter/flutter.git "$RUNNER_TEMP/flutter"
+          echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
+
+      - name: Dependencias
+        run: flutter pub get
+
+      - name: Build APK release
+        run: flutter build apk --release
+
+      # La capa nativa dejó de ser terreno sin tests en v0.8.0: la lógica de
+      # decisión vive en CollectorLogic.kt (sin dependencias de Android) y se
+      # prueba en la JVM, sin emulador.
+      #
+      # Va DESPUÉS del build a propósito, por dos motivos: `android/gradlew`
+      # y `android/local.properties` están AMBOS en .gitignore, y es el
+      # propio `flutter build` quien inyecta el wrapper y escribe
+      # `flutter.sdk`. Invocar Gradle antes falla — verificado, no supuesto.
+      - name: Tests JVM de la capa nativa (Kotlin)
+        working-directory: android
+        run: ./gradlew :app:testDebugUnitTest --console=plain
+
+      # "Cero telemetría, cero red saliente" deja de ser una promesa y pasa a
+      # ser un hecho comprobado en cada build: si una dependencia introdujera
+      # el permiso INTERNET en el manifiesto fusionado de release, esto falla.
+      - name: Verificar que el release no declara INTERNET
+        run: bash scripts/check-no-internet.sh
+
+      - name: Publicar artefacto de CI
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: nexora-mobile-apk-ci
+          path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 7
+          if-no-files-found: error
+
+  build-ios:
+    name: Build iOS (sin firma)
+    runs-on: macos-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
+
+      - name: Instalar Flutter (tag exacto)
+        run: |
+          git clone --depth 1 --branch "$FLUTTER_VERSION" https://github.com/flutter/flutter.git "$RUNNER_TEMP/flutter"
+          echo "$RUNNER_TEMP/flutter/bin" >> "$GITHUB_PATH"
+
+      - name: Dependencias
+        run: flutter pub get
+
+      # Compila la app iOS completa (código Dart + canal nativo Swift) sin
+      # firmar: valida la plataforma sin requerir cuenta Apple Developer.
+      # Distribuir un .ipa real sí la requiere → docs/RELEASE_MOVIL.md.
+      - name: Build iOS sin firma
+        run: flutter build ios --release --no-codesign

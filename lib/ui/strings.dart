@@ -1,0 +1,1290 @@
+/// Textos multilingües ES/EN/PT/IT/FR — Dart puro, sin framework de
+/// localización.
+///
+/// Deliberadamente simple: cinco idiomas, una clase, getters testeables.
+/// Los ids de hallazgo y las constantes de permiso se traducen aquí; el
+/// export JSON nunca se traduce.
+library;
+
+import '../core/models.dart';
+
+// Los textos que más crecen viven en archivos aparte. Son `part` (misma
+// librería) y no imports: así siguen viendo `_pick`, el mecanismo privado de
+// traducción, sin tener que hacerlo público solo para poder partir el archivo.
+part 'strings/findings.dart';
+part 'strings/permissions.dart';
+
+/// Idiomas soportados por la UI. El orden es el de aparición en el selector.
+enum AppLang { es, en, pt, it, fr }
+
+/// Resuelve el idioma efectivo a partir del código guardado en la config y
+/// del idioma del equipo. `code` vacío (o desconocido) = "automático": se usa
+/// el idioma del dispositivo; si tampoco se reconoce, se cae a inglés.
+AppLang resolveLanguage(String code, {required String deviceLanguageCode}) {
+  AppLang? fromCode(String c) => switch (c.toLowerCase()) {
+    'es' => AppLang.es,
+    'en' => AppLang.en,
+    'pt' => AppLang.pt,
+    'it' => AppLang.it,
+    'fr' => AppLang.fr,
+    _ => null,
+  };
+  return fromCode(code) ?? fromCode(deviceLanguageCode) ?? AppLang.en;
+}
+
+/// Nombre nativo de cada idioma, para el selector (no se traduce: cada uno
+/// se muestra en su propia lengua).
+String languageNativeName(AppLang lang) => switch (lang) {
+  AppLang.es => 'Español',
+  AppLang.en => 'English',
+  AppLang.pt => 'Português',
+  AppLang.it => 'Italiano',
+  AppLang.fr => 'Français',
+};
+
+/// Código ISO 639-1 de cada idioma; el que se guarda en la config.
+String languageCodeOf(AppLang lang) => switch (lang) {
+  AppLang.es => 'es',
+  AppLang.en => 'en',
+  AppLang.pt => 'pt',
+  AppLang.it => 'it',
+  AppLang.fr => 'fr',
+};
+
+class AppStrings {
+  const AppStrings(this.lang);
+
+  final AppLang lang;
+
+  /// Compatibilidad puntual: algún sitio aún razona en "¿es español?".
+  bool get spanish => lang == AppLang.es;
+
+  String _pick(String es, String en, String pt, String it, String fr) =>
+      switch (lang) {
+        AppLang.es => es,
+        AppLang.en => en,
+        AppLang.pt => pt,
+        AppLang.it => it,
+        AppLang.fr => fr,
+      };
+
+  // Tabs
+  String get tabSummary =>
+      _pick('Resumen', 'Summary', 'Resumo', 'Riepilogo', 'Résumé');
+  String get tabApps => _pick('Apps', 'Apps', 'Apps', 'App', 'Apps');
+  String get tabFlagged =>
+      _pick('Señaladas', 'Flagged', 'Sinalizadas', 'Segnalate', 'Signalées');
+  String get tabNetwork => _pick('Red', 'Network', 'Rede', 'Rete', 'Réseau');
+  String get tabStorage => _pick(
+    'Almacenamiento',
+    'Storage',
+    'Armazenamento',
+    'Archiviazione',
+    'Stockage',
+  );
+  String get tabDevice =>
+      _pick('Dispositivo', 'Device', 'Dispositivo', 'Dispositivo', 'Appareil');
+  String get tabNearby =>
+      _pick('Cercanía', 'Nearby', 'Proximidade', 'Vicinanze', 'À proximité');
+  String get tabHistory =>
+      _pick('Historial', 'History', 'Histórico', 'Cronologia', 'Historique');
+  String get tabSettings => _pick(
+    'Configuración',
+    'Settings',
+    'Configurações',
+    'Impostazioni',
+    'Réglages',
+  );
+  String get tabAbout => _pick('Acerca', 'About', 'Sobre', 'Info', 'À propos');
+
+  // Acciones
+  String get actionLanguage =>
+      _pick('Idioma', 'Language', 'Idioma', 'Lingua', 'Langue');
+  String get actionRefresh => _pick(
+    'Actualizar captura',
+    'Refresh snapshot',
+    'Atualizar captura',
+    'Aggiorna acquisizione',
+    'Actualiser la capture',
+  );
+  String get actionExport => _pick(
+    'Exportar JSON forense',
+    'Export forensic JSON',
+    'Exportar JSON forense',
+    'Esporta JSON forense',
+    'Exporter le JSON forensique',
+  );
+  String get loading => _pick(
+    'Capturando estado del dispositivo…',
+    'Capturing device state…',
+    'Capturando o estado do dispositivo…',
+    'Acquisizione dello stato del dispositivo…',
+    'Capture de l’état de l’appareil…',
+  );
+  String exportOk(String path) => _pick(
+    'Evidencia copiada al portapapeles y guardada en $path',
+    'Evidence copied to clipboard and saved to $path',
+    'Evidência copiada para a área de transferência e salva em $path',
+    'Prova copiata negli appunti e salvata in $path',
+    'Preuve copiée dans le presse-papiers et enregistrée dans $path',
+  );
+  String get exportFail => _pick(
+    'No se pudo exportar la evidencia',
+    'Could not export evidence',
+    'Não foi possível exportar a evidência',
+    'Impossibile esportare la prova',
+    'Impossible d’exporter la preuve',
+  );
+
+  // Veredicto
+  String get verdictNormal => _pick(
+    'Sistema estable — sin distorsiones',
+    'System stable — no distortions',
+    'Sistema estável — sem distorções',
+    'Sistema stabile — nessuna distorsione',
+    'Système stable — aucune distorsion',
+  );
+  String get verdictWarning => _pick(
+    'Advertencia — hay indicios que revisar',
+    'Warning — signals to review',
+    'Aviso — há indícios a revisar',
+    'Avviso — segnali da verificare',
+    'Avertissement — des signaux à examiner',
+  );
+  String get verdictCritical => _pick(
+    'Crítico — distorsión seria en curso',
+    'Critical — serious distortion',
+    'Crítico — distorção séria em curso',
+    'Critico — distorsione grave in corso',
+    'Critique — distorsion grave en cours',
+  );
+  String verdictScore(int score) => _pick(
+    'Puntaje: $score',
+    'Score: $score',
+    'Pontuação: $score',
+    'Punteggio: $score',
+    'Score : $score',
+  );
+  String get findingsNone => _pick(
+    'Sin hallazgos: el dispositivo se ve estable.',
+    'No findings: the device looks stable.',
+    'Sem achados: o dispositivo parece estável.',
+    'Nessun rilievo: il dispositivo appare stabile.',
+    'Aucune constatation : l’appareil semble stable.',
+  );
+  String get severityNormal =>
+      _pick('Normal', 'Normal', 'Normal', 'Normale', 'Normal');
+  String get severityWarning =>
+      _pick('Advertencia', 'Warning', 'Aviso', 'Avviso', 'Avertissement');
+  String get severityCritical =>
+      _pick('Crítico', 'Critical', 'Crítico', 'Critico', 'Critique');
+  String recommendation(String text) => _pick(
+    'Recomendación: $text',
+    'Recommendation: $text',
+    'Recomendação: $text',
+    'Raccomandazione: $text',
+    'Recommandation : $text',
+  );
+
+  // Memoria / almacenamiento / batería
+  String get memTitle =>
+      _pick('Memoria', 'Memory', 'Memória', 'Memoria', 'Mémoire');
+  String get memUsed => _pick('Usada', 'Used', 'Usada', 'Usata', 'Utilisée');
+  String get memAvailable => _pick(
+    'Disponible',
+    'Available',
+    'Disponível',
+    'Disponibile',
+    'Disponible',
+  );
+  String get memTotal => _pick('Total', 'Total', 'Total', 'Totale', 'Total');
+  String get storageTitle => _pick(
+    'Almacenamiento',
+    'Storage',
+    'Armazenamento',
+    'Archiviazione',
+    'Stockage',
+  );
+  String get storageFree => _pick('Libre', 'Free', 'Livre', 'Libero', 'Libre');
+  String get storageUsed => _pick('Usado', 'Used', 'Usado', 'Usato', 'Utilisé');
+  String get storageTotal =>
+      _pick('Total', 'Total', 'Total', 'Totale', 'Total');
+  String get cacheTitle => _pick(
+    'Caché de esta app',
+    'This app\'s cache',
+    'Cache deste app',
+    'Cache di questa app',
+    'Cache de cette app',
+  );
+  String get cacheSize =>
+      _pick('Tamaño', 'Size', 'Tamanho', 'Dimensione', 'Taille');
+  String get cacheNote => _pick(
+    'Android e iOS no permiten leer la caché de otras apps; esta cifra es la caché propia de Nexora.',
+    'Android and iOS do not allow reading other apps\' caches; this figure is Nexora\'s own cache.',
+    'Android e iOS não permitem ler o cache de outros apps; este valor é o cache do próprio Nexora.',
+    'Android e iOS non permettono di leggere la cache di altre app; questo valore è la cache di Nexora.',
+    'Android et iOS n’autorisent pas la lecture du cache des autres apps ; ce chiffre est le cache propre de Nexora.',
+  );
+  String get cacheClear => _pick(
+    'Limpiar caché propia',
+    'Clear own cache',
+    'Limpar cache próprio',
+    'Svuota la cache',
+    'Vider le cache propre',
+  );
+  String cacheCleared(String freed) => _pick(
+    'Caché propia liberada: $freed',
+    'Own cache cleared: $freed',
+    'Cache próprio liberado: $freed',
+    'Cache liberata: $freed',
+    'Cache propre libéré : $freed',
+  );
+  String get volumeInternal => _pick(
+    'Interno (datos)',
+    'Internal (data)',
+    'Interno (dados)',
+    'Interno (dati)',
+    'Interne (données)',
+  );
+  String get volumeRemovable =>
+      _pick('extraíble', 'removable', 'removível', 'rimovibile', 'amovible');
+  String get volumesNone => _pick(
+    'Sin volúmenes adicionales: este equipo no tiene tarjeta SD ni USB conectado (o el SO no los expone). No es un fallo — se muestran solo cuando existen.',
+    'No additional volumes: this device has no SD card or USB attached (or the OS does not expose them). Not a failure — they are listed only when present.',
+    'Sem volumes adicionais: este aparelho não tem cartão SD nem USB conectado (ou o SO não os expõe). Não é falha — só aparecem quando existem.',
+    'Nessun volume aggiuntivo: questo dispositivo non ha scheda SD né USB collegata (o il SO non li espone). Non è un errore — compaiono solo quando presenti.',
+    'Aucun volume supplémentaire : cet appareil n’a ni carte SD ni USB connecté (ou l’OS ne les expose pas). Ce n’est pas une panne — ils n’apparaissent que s’ils existent.',
+  );
+  String get batteryTitle =>
+      _pick('Batería', 'Battery', 'Bateria', 'Batteria', 'Batterie');
+  String get batteryLevel =>
+      _pick('Nivel', 'Level', 'Nível', 'Livello', 'Niveau');
+  String get batteryState =>
+      _pick('Estado', 'State', 'Estado', 'Stato', 'État');
+  String get batteryCharging =>
+      _pick('Cargando', 'Charging', 'Carregando', 'In carica', 'En charge');
+  String get batteryDischarging => _pick(
+    'Descargando',
+    'Discharging',
+    'Descarregando',
+    'In scarica',
+    'En décharge',
+  );
+  String get batteryTemp => _pick(
+    'Temperatura',
+    'Temperature',
+    'Temperatura',
+    'Temperatura',
+    'Température',
+  );
+  String get batteryHealth =>
+      _pick('Salud', 'Health', 'Saúde', 'Salute', 'Santé');
+  String get notAvailableOnPlatform => _pick(
+    'No disponible en este SO',
+    'Not available on this OS',
+    'Indisponível neste SO',
+    'Non disponibile su questo SO',
+    'Indisponible sur cet OS',
+  );
+
+  // Red
+  String get networkTitle => _pick(
+    'Estado de red',
+    'Network state',
+    'Estado da rede',
+    'Stato della rete',
+    'État du réseau',
+  );
+  String get netConnected =>
+      _pick('Conectado', 'Connected', 'Conectado', 'Connesso', 'Connecté');
+  String get netTransport =>
+      _pick('Transporte', 'Transport', 'Transporte', 'Trasporto', 'Transport');
+  String get netVpn => _pick(
+    'VPN activa',
+    'VPN active',
+    'VPN ativa',
+    'VPN attiva',
+    'VPN active',
+  );
+  String get netMetered => _pick(
+    'Red medida',
+    'Metered network',
+    'Rede limitada',
+    'Rete a consumo',
+    'Réseau facturé',
+  );
+  String get netDown => _pick(
+    'Bajada estimada',
+    'Estimated downlink',
+    'Download estimado',
+    'Download stimato',
+    'Débit descendant estimé',
+  );
+  String get netUp => _pick(
+    'Subida estimada',
+    'Estimated uplink',
+    'Upload estimado',
+    'Upload stimato',
+    'Débit montant estimé',
+  );
+  String get netTrafficTitle => _pick(
+    'Tráfico acumulado (desde el arranque)',
+    'Accumulated traffic (since boot)',
+    'Tráfego acumulado (desde a inicialização)',
+    'Traffico accumulato (dall’avvio)',
+    'Trafic cumulé (depuis le démarrage)',
+  );
+  String get netRx =>
+      _pick('Recibido', 'Received', 'Recebido', 'Ricevuto', 'Reçu');
+  String get netTx => _pick('Enviado', 'Sent', 'Enviado', 'Inviato', 'Envoyé');
+  String get netTrafficNote => _pick(
+    'Contadores globales del SO. Nexora no inspecciona el contenido de tu tráfico.',
+    'OS-wide counters. Nexora does not inspect your traffic contents.',
+    'Contadores globais do SO. O Nexora não inspeciona o conteúdo do seu tráfego.',
+    'Contatori globali del SO. Nexora non ispeziona il contenuto del tuo traffico.',
+    'Compteurs globaux de l’OS. Nexora n’inspecte pas le contenu de votre trafic.',
+  );
+  String get yes => _pick('Sí', 'Yes', 'Sim', 'Sì', 'Oui');
+  String get no => _pick('No', 'No', 'Não', 'No', 'Non');
+
+  // Apps
+  String get appsTitle => _pick(
+    'Auditoría de apps',
+    'App audit',
+    'Auditoria de apps',
+    'Controllo delle app',
+    'Audit des apps',
+  );
+  String get appsTotal => _pick(
+    'Apps de usuario',
+    'User apps',
+    'Apps do usuário',
+    'App utente',
+    'Apps utilisateur',
+  );
+  String get appsRiskyCount => _pick(
+    'Con superficie riesgosa',
+    'With risky surface',
+    'Com superfície arriscada',
+    'Con superficie a rischio',
+    'À surface risquée',
+  );
+  String get appsHonestyNote => _pick(
+    'Un puntaje alto no prueba malicia: mide la superficie de permisos que la app SOLICITA. Android no permite ver el consumo de otras apps.',
+    'A high score does not prove malice: it measures the permission surface the app REQUESTS. Android does not allow reading other apps\' resource usage.',
+    'Uma pontuação alta não prova malícia: mede a superfície de permissões que o app SOLICITA. O Android não permite ver o consumo de outros apps.',
+    'Un punteggio alto non prova malizia: misura la superficie di permessi che l’app RICHIEDE. Android non permette di vedere il consumo di altre app.',
+    'Un score élevé ne prouve pas la malveillance : il mesure la surface de permissions que l’app DEMANDE. Android n’autorise pas à voir la consommation des autres apps.',
+  );
+  String get appsUnsupported => _pick(
+    'iOS no permite listar las apps instaladas. No es un fallo de Nexora: es diseño del sistema operativo.',
+    'iOS does not allow listing installed apps. This is not a Nexora limitation: it is OS design.',
+    'O iOS não permite listar os apps instalados. Não é falha do Nexora: é design do sistema operacional.',
+    'iOS non permette di elencare le app installate. Non è un limite di Nexora: è il design del sistema operativo.',
+    'iOS n’autorise pas la liste des apps installées. Ce n’est pas une limite de Nexora : c’est la conception du système.',
+  );
+  String appRiskScore(int score) => _pick(
+    'riesgo $score',
+    'risk $score',
+    'risco $score',
+    'rischio $score',
+    'risque $score',
+  );
+  String appUsage(String time) => _pick(
+    'Uso 24 h: $time',
+    '24 h use: $time',
+    'Uso 24 h: $time',
+    'Uso 24 h: $time',
+    'Utilisation 24 h : $time',
+  );
+  String get appsUsageGrant => _pick(
+    'Ver tiempo en pantalla (permiso opcional)',
+    'See screen time (optional permission)',
+    'Ver tempo de tela (permissão opcional)',
+    'Vedi il tempo di utilizzo (permesso opzionale)',
+    'Voir le temps d’écran (permission facultative)',
+  );
+  String get appsUsageNote => _pick(
+    'Con el acceso de uso (lo concedes tú en Ajustes del sistema) cada app muestra su tiempo en pantalla de las últimas 24 h y la lista se ordena por uso — la respuesta directa a "¿qué app me está gastando el teléfono?".',
+    'With usage access (you grant it in system Settings) each app shows its screen time over the last 24 h and the list sorts by usage — the direct answer to "which app is draining my phone?".',
+    'Com o acesso de uso (você concede nas Configurações do sistema) cada app mostra o tempo de tela das últimas 24 h e a lista é ordenada por uso — a resposta direta a "qual app está gastando meu telefone?".',
+    'Con l’accesso all’utilizzo (lo concedi tu nelle Impostazioni di sistema) ogni app mostra il tempo di utilizzo delle ultime 24 h e la lista è ordinata per uso — la risposta diretta a "quale app mi sta consumando il telefono?".',
+    'Avec l’accès à l’usage (que vous accordez dans les Réglages système) chaque app affiche son temps d’écran des dernières 24 h et la liste est triée par usage — la réponse directe à « quelle app épuise mon téléphone ? ».',
+  );
+  String appPerms(String perms) => _pick(
+    'Permisos peligrosos: $perms',
+    'Dangerous permissions: $perms',
+    'Permissões perigosas: $perms',
+    'Permessi pericolosi: $perms',
+    'Permissions dangereuses : $perms',
+  );
+  String get appPermsTitle => _pick(
+    'Permisos que pide esta app',
+    'Permissions this app asks for',
+    'Permissões que este app pede',
+    'Permessi richiesti da questa app',
+    'Permissions demandées par cette app',
+  );
+  String get appPermGranted =>
+      _pick('concedido', 'granted', 'concedido', 'concesso', 'accordé');
+  String get appPermRequestedOnly => _pick(
+    'pedido, no concedido',
+    'requested, not granted',
+    'pedido, não concedido',
+    'richiesto, non concesso',
+    'demandé, non accordé',
+  );
+  String get appActiveCapsTitle => _pick(
+    'Capacidades sensibles activas',
+    'Active sensitive capabilities',
+    'Capacidades sensíveis ativas',
+    'Capacità sensibili attive',
+    'Capacités sensibles actives',
+  );
+  String appDataUsage(String total) => _pick(
+    'Datos 24 h: $total',
+    '24 h data: $total',
+    'Dados 24 h: $total',
+    'Dati 24 h: $total',
+    'Données 24 h : $total',
+  );
+  String appFlags(String flags) => _pick(
+    'Señales: $flags',
+    'Flags: $flags',
+    'Sinais: $flags',
+    'Segnali: $flags',
+    'Signaux : $flags',
+  );
+
+  // Pestaña "Señaladas" (apps riesgosas)
+  String get flaggedTitle => _pick(
+    'Apps señaladas',
+    'Flagged apps',
+    'Apps sinalizados',
+    'App segnalate',
+    'Apps signalées',
+  );
+  String flaggedCount(int count) => _pick(
+    '$count app(s) con superficie riesgosa o instaladas fuera de la tienda',
+    '$count app(s) with a risky surface or installed outside the store',
+    '$count app(s) com superfície arriscada ou instalados fora da loja',
+    '$count app con superficie a rischio o installate fuori dallo store',
+    '$count app(s) à surface risquée ou installées hors du magasin',
+  );
+  String get flaggedEmpty => _pick(
+    'No hay apps señaladas: ninguna app de usuario pide una superficie de permisos riesgosa ni llegó por sideload. Buena señal.',
+    'No flagged apps: no user app requests a risky permission surface or arrived via sideload. Good sign.',
+    'Nenhum app sinalizado: nenhum app de usuário pede uma superfície de permissões arriscada nem veio por sideload. Bom sinal.',
+    'Nessuna app segnalata: nessuna app utente richiede una superficie di permessi a rischio né è arrivata via sideload. Buon segno.',
+    'Aucune app signalée : aucune app utilisateur ne demande une surface de permissions risquée ni n’est arrivée par sideload. Bon signe.',
+  );
+  String get flaggedNote => _pick(
+    'Señalada no significa maliciosa: significa que pide más de lo habitual o no vino de la tienda oficial. Revísala tú y decide.',
+    'Flagged does not mean malicious: it means it asks for more than usual or did not come from the official store. Review it yourself and decide.',
+    'Sinalizado não significa malicioso: significa que pede mais do que o normal ou não veio da loja oficial. Revise você mesmo e decida.',
+    'Segnalata non significa dannosa: significa che chiede più del solito o non proviene dallo store ufficiale. Controllala tu e decidi.',
+    'Signalée ne veut pas dire malveillante : elle demande plus que d’habitude ou ne vient pas du magasin officiel. À vous de vérifier et de décider.',
+  );
+
+  // Dispositivo
+  String get deviceTitle =>
+      _pick('Dispositivo', 'Device', 'Dispositivo', 'Dispositivo', 'Appareil');
+  String get deviceManufacturer => _pick(
+    'Fabricante',
+    'Manufacturer',
+    'Fabricante',
+    'Produttore',
+    'Fabricant',
+  );
+  String get deviceModel =>
+      _pick('Modelo', 'Model', 'Modelo', 'Modello', 'Modèle');
+  String get deviceOs => _pick(
+    'Sistema operativo',
+    'Operating system',
+    'Sistema operacional',
+    'Sistema operativo',
+    'Système d’exploitation',
+  );
+  String get deviceSkin => _pick(
+    'Capa del fabricante',
+    'Vendor skin',
+    'Camada do fabricante',
+    'Interfaccia del produttore',
+    'Surcouche du fabricant',
+  );
+  String get devicePatch => _pick(
+    'Parche de seguridad',
+    'Security patch',
+    'Patch de segurança',
+    'Patch di sicurezza',
+    'Correctif de sécurité',
+  );
+  String get deviceCores => _pick(
+    'Núcleos de CPU',
+    'CPU cores',
+    'Núcleos de CPU',
+    'Core della CPU',
+    'Cœurs du CPU',
+  );
+  String get deviceUptime => _pick(
+    'Tiempo encendido',
+    'Uptime',
+    'Tempo ligado',
+    'Tempo di accensione',
+    'Temps allumé',
+  );
+  String get rootTitle => _pick(
+    'Indicadores de root/jailbreak',
+    'Root/jailbreak indicators',
+    'Indicadores de root/jailbreak',
+    'Indicatori di root/jailbreak',
+    'Indicateurs de root/jailbreak',
+  );
+  String get rootNone => _pick(
+    'Sin indicadores conocidos.',
+    'No known indicators.',
+    'Sem indicadores conhecidos.',
+    'Nessun indicatore noto.',
+    'Aucun indicateur connu.',
+  );
+  String get rootNote => _pick(
+    'Un indicador es un indicio, no una prueba. Un equipo rooteado a propósito genera el mismo indicio.',
+    'An indicator is a signal, not proof. A deliberately rooted device produces the same signal.',
+    'Um indicador é um indício, não uma prova. Um aparelho rooteado de propósito gera o mesmo indício.',
+    'Un indicatore è un indizio, non una prova. Un dispositivo rootato di proposito produce lo stesso indizio.',
+    'Un indicateur est un indice, pas une preuve. Un appareil rooté volontairement produit le même indice.',
+  );
+
+  // Historial
+  String historyTitle(int count) => _pick(
+    'Últimas $count capturas',
+    'Last $count snapshots',
+    'Últimas $count capturas',
+    'Ultime $count acquisizioni',
+    '$count dernières captures',
+  );
+  String get historyEmpty => _pick(
+    'Aún no hay historial. Cada actualización guarda una captura local.',
+    'No history yet. Every refresh stores a local snapshot.',
+    'Ainda não há histórico. Cada atualização salva uma captura local.',
+    'Ancora nessuna cronologia. Ogni aggiornamento salva un’acquisizione locale.',
+    'Pas encore d’historique. Chaque actualisation enregistre une capture locale.',
+  );
+  String historyRow(int mem, int storage, int risky) => _pick(
+    'RAM disp. $mem % · Disco libre $storage % · Apps riesgosas $risky',
+    'RAM avail. $mem % · Free disk $storage % · Risky apps $risky',
+    'RAM disp. $mem % · Disco livre $storage % · Apps arriscados $risky',
+    'RAM disp. $mem % · Disco libero $storage % · App a rischio $risky',
+    'RAM dispo. $mem % · Disque libre $storage % · Apps risquées $risky',
+  );
+
+  // Acerca
+  String get aboutVersion =>
+      _pick('Versión', 'Version', 'Versão', 'Versione', 'Version');
+  String get aboutAuthor =>
+      _pick('Autor', 'Author', 'Autor', 'Autore', 'Auteur');
+  String get aboutLicense =>
+      _pick('Licencia', 'License', 'Licença', 'Licenza', 'Licence');
+  String get aboutPhilosophyTitle =>
+      _pick('Filosofía', 'Philosophy', 'Filosofia', 'Filosofia', 'Philosophie');
+  String get aboutPhilosophyBody => _pick(
+    'Cualquier distorsión anómala de los recursos del dispositivo puede ser el primer indicio de que algo está ocurriendo. Nexora vigila esas distorsiones, las correlaciona y explica la causa con evidencia. Diagnóstico primero, intervención después.',
+    'Any anomalous distortion of device resources can be the first sign that something is happening. Nexora watches those distortions, correlates them and explains the cause with evidence. Diagnosis first, intervention second.',
+    'Qualquer distorção anômala dos recursos do dispositivo pode ser o primeiro indício de que algo está acontecendo. O Nexora vigia essas distorções, correlaciona-as e explica a causa com evidência. Diagnóstico primeiro, intervenção depois.',
+    'Qualsiasi distorsione anomala delle risorse del dispositivo può essere il primo indizio che qualcosa sta accadendo. Nexora sorveglia queste distorsioni, le correla e spiega la causa con prove. Prima la diagnosi, poi l’intervento.',
+    'Toute distorsion anormale des ressources de l’appareil peut être le premier signe que quelque chose se passe. Nexora surveille ces distorsions, les corrèle et explique la cause avec des preuves. Le diagnostic d’abord, l’intervention ensuite.',
+  );
+  String get aboutPrivacyTitle => _pick(
+    'Privacidad local',
+    'Local privacy',
+    'Privacidade local',
+    'Privacy locale',
+    'Confidentialité locale',
+  );
+  String get aboutPrivacyBody => _pick(
+    'Esta app no usa internet: no declara el permiso INTERNET en release. El historial vive en el sandbox de la app y la evidencia solo sale del dispositivo si tú la exportas.',
+    'This app does not use the internet: it does not declare the INTERNET permission in release. History lives in the app sandbox and evidence only leaves the device if you export it.',
+    'Este app não usa a internet: não declara a permissão INTERNET em release. O histórico vive no sandbox do app e a evidência só sai do dispositivo se você a exportar.',
+    'Questa app non usa internet: non dichiara il permesso INTERNET in release. La cronologia vive nella sandbox dell’app e la prova esce dal dispositivo solo se la esporti tu.',
+    'Cette app n’utilise pas internet : elle ne déclare pas la permission INTERNET en release. L’historique réside dans le sandbox de l’app et la preuve ne quitte l’appareil que si vous l’exportez.',
+  );
+  String snapshotTaken(String when) => _pick(
+    'Captura tomada: $when',
+    'Snapshot taken: $when',
+    'Captura feita: $when',
+    'Acquisizione effettuata: $when',
+    'Capture prise : $when',
+  );
+
+  // Acciones de intervención (abren la pantalla del sistema)
+  String get actionFreeSpace => _pick(
+    'Liberar espacio',
+    'Free up space',
+    'Liberar espaço',
+    'Libera spazio',
+    'Libérer de l’espace',
+  );
+  String get actionBatteryUsage => _pick(
+    'Ver batería',
+    'View battery',
+    'Ver bateria',
+    'Vedi batteria',
+    'Voir la batterie',
+  );
+  String get actionAppDetails => _pick(
+    'Ver en el sistema',
+    'View in system',
+    'Ver no sistema',
+    'Apri nel sistema',
+    'Voir dans le système',
+  );
+  String get actionSystemUpdate => _pick(
+    'Buscar actualizaciones',
+    'Check for updates',
+    'Buscar atualizações',
+    'Cerca aggiornamenti',
+    'Rechercher des mises à jour',
+  );
+  String get actionUnavailable => _pick(
+    'Esa pantalla del sistema no está disponible en este equipo.',
+    'That system screen is not available on this device.',
+    'Essa tela do sistema não está disponível neste aparelho.',
+    'Quella schermata di sistema non è disponibile su questo dispositivo.',
+    'Cet écran système n’est pas disponible sur cet appareil.',
+  );
+
+  // Configuración
+  String get settingsCaptureTitle =>
+      _pick('Captura', 'Capture', 'Captura', 'Acquisizione', 'Capture');
+  String get settingsInterval => _pick(
+    'Auto-captura con la app abierta',
+    'Auto-capture while the app is open',
+    'Autocaptura com o app aberto',
+    'Acquisizione automatica con l’app aperta',
+    'Capture auto quand l’app est ouverte',
+  );
+  String get settingsIntervalOff =>
+      _pick('Apagada', 'Off', 'Desligada', 'Spenta', 'Désactivée');
+  String settingsIntervalMinutes(int m) => _pick(
+    'Cada $m min',
+    'Every $m min',
+    'A cada $m min',
+    'Ogni $m min',
+    'Toutes les $m min',
+  );
+  String get settingsBackground => _pick(
+    'Captura en segundo plano (mín. 15 min, lo impone Android)',
+    'Background capture (min. 15 min, enforced by Android)',
+    'Captura em segundo plano (mín. 15 min, imposto pelo Android)',
+    'Acquisizione in background (min. 15 min, imposto da Android)',
+    'Capture en arrière-plan (min. 15 min, imposé par Android)',
+  );
+  String get settingsChargingOnly => _pick(
+    'Solo cuando está cargando',
+    'Only while charging',
+    'Somente ao carregar',
+    'Solo durante la carica',
+    'Uniquement en charge',
+  );
+  String get settingsNotifyCritical => _pick(
+    'Notificar si una captura en segundo plano pasa a Crítico',
+    'Notify if a background capture turns Critical',
+    'Notificar se uma captura em segundo plano ficar Crítica',
+    'Notifica se un’acquisizione in background diventa Critica',
+    'Notifier si une capture en arrière-plan devient Critique',
+  );
+  String get settingsBackgroundUnsupported => _pick(
+    'No disponible en este SO.',
+    'Not available on this OS.',
+    'Indisponível neste SO.',
+    'Non disponibile su questo SO.',
+    'Indisponible sur cet OS.',
+  );
+  String get settingsThresholdsTitle => _pick(
+    'Umbrales de detección',
+    'Detection thresholds',
+    'Limiares de detecção',
+    'Soglie di rilevamento',
+    'Seuils de détection',
+  );
+  String get settingsThresholdsNote => _pick(
+    'Los cambios aplican al instante y quedan guardados. El export JSON registra siempre la evidencia cruda, no el umbral.',
+    'Changes apply instantly and are saved. The JSON export always records raw evidence, not the threshold.',
+    'As mudanças aplicam-se na hora e ficam salvas. O export JSON registra sempre a evidência crua, não o limiar.',
+    'Le modifiche si applicano subito e restano salvate. L’export JSON registra sempre la prova grezza, non la soglia.',
+    'Les changements s’appliquent aussitôt et sont enregistrés. L’export JSON consigne toujours la preuve brute, pas le seuil.',
+  );
+  String get thresholdMemWarning => _pick(
+    'Memoria: advertencia si disponible <',
+    'Memory: warning if available <',
+    'Memória: aviso se disponível <',
+    'Memoria: avviso se disponibile <',
+    'Mémoire : avertissement si disponible <',
+  );
+  String get thresholdMemCritical => _pick(
+    'Memoria: crítico si disponible <',
+    'Memory: critical if available <',
+    'Memória: crítico se disponível <',
+    'Memoria: critico se disponibile <',
+    'Mémoire : critique si disponible <',
+  );
+  String get thresholdStorageWarning => _pick(
+    'Disco: advertencia si libre <',
+    'Storage: warning if free <',
+    'Disco: aviso se livre <',
+    'Disco: avviso se libero <',
+    'Disque : avertissement si libre <',
+  );
+  String get thresholdStorageCritical => _pick(
+    'Disco: crítico si libre <',
+    'Storage: critical if free <',
+    'Disco: crítico se livre <',
+    'Disco: critico se libero <',
+    'Disque : critique si libre <',
+  );
+  String get thresholdBatteryWarning => _pick(
+    'Batería: advertencia si temperatura ≥',
+    'Battery: warning if temperature ≥',
+    'Bateria: aviso se temperatura ≥',
+    'Batteria: avviso se temperatura ≥',
+    'Batterie : avertissement si température ≥',
+  );
+  String get thresholdBatteryCritical => _pick(
+    'Batería: crítico si temperatura ≥',
+    'Battery: critical if temperature ≥',
+    'Bateria: crítico se temperatura ≥',
+    'Batteria: critico se temperatura ≥',
+    'Batterie : critique si température ≥',
+  );
+  String get settingsRestoreDefaults => _pick(
+    'Restaurar valores por defecto',
+    'Restore defaults',
+    'Restaurar padrões',
+    'Ripristina valori predefiniti',
+    'Restaurer les valeurs par défaut',
+  );
+  String get settingsLanguageTitle =>
+      _pick('Idioma', 'Language', 'Idioma', 'Lingua', 'Langue');
+  String get settingsLanguageAuto => _pick(
+    'Automático (sistema)',
+    'Automatic (system)',
+    'Automático (sistema)',
+    'Automatico (sistema)',
+    'Automatique (système)',
+  );
+  String get settingsViewModeTitle => _pick(
+    'Modo de visualización',
+    'Display mode',
+    'Modo de exibição',
+    'Modalità di visualizzazione',
+    'Mode d’affichage',
+  );
+  String get viewModeSimple =>
+      _pick('Simple', 'Simple', 'Simples', 'Semplice', 'Simple');
+  String get viewModeNormal =>
+      _pick('Normal', 'Normal', 'Normal', 'Normale', 'Normal');
+  String get viewModeAdvanced =>
+      _pick('Avanzado', 'Advanced', 'Avançado', 'Avanzato', 'Avancé');
+  String get settingsViewModeNote => _pick(
+    'Simple muestra solo lo esencial (Resumen, Señaladas y Configuración), ideal para quien no es técnico. Normal añade red, almacenamiento, dispositivo e historial. Avanzado muestra todo, incluida Cercanía Bluetooth.',
+    'Simple shows only the essentials (Summary, Flagged and Settings), ideal for non-technical people. Normal adds network, storage, device and history. Advanced shows everything, including Bluetooth Nearby.',
+    'Simples mostra só o essencial (Resumo, Sinalizadas e Configurações), ideal para quem não é técnico. Normal adiciona rede, armazenamento, dispositivo e histórico. Avançado mostra tudo, incluindo Proximidade Bluetooth.',
+    'Semplice mostra solo l’essenziale (Riepilogo, Segnalate e Impostazioni), ideale per chi non è tecnico. Normale aggiunge rete, archiviazione, dispositivo e cronologia. Avanzato mostra tutto, incluse le Vicinanze Bluetooth.',
+    'Simple n’affiche que l’essentiel (Résumé, Signalées et Réglages), idéal pour les non-techniciens. Normal ajoute réseau, stockage, appareil et historique. Avancé affiche tout, y compris la proximité Bluetooth.',
+  );
+  String get settingsNearbyHistory => _pick(
+    'Histórico de Cercanía entre sesiones (detecta rastreadores multi-día)',
+    'Cross-session Nearby history (detects multi-day trackers)',
+    'Histórico de Proximidade entre sessões (detecta rastreadores multi-dias)',
+    'Cronologia Vicinanze tra sessioni (rileva tracker multi-giorno)',
+    'Historique de proximité entre sessions (détecte les traceurs multi-jours)',
+  );
+
+  // Evidencia (backup / restaurar / borrar / informe)
+  String get evidenceTitle =>
+      _pick('Evidencia', 'Evidence', 'Evidência', 'Prove', 'Preuves');
+  String get evidenceNote => _pick(
+    'Tu evidencia es tuya: respáldala para que sobreviva a desinstalar o cambiar de teléfono, o bórrala cuando quieras. Nada sale del dispositivo salvo que tú lo compartas.',
+    'Your evidence is yours: back it up so it survives uninstalling or switching phones, or wipe it whenever you want. Nothing leaves the device unless you share it.',
+    'Sua evidência é sua: faça backup para que sobreviva à desinstalação ou à troca de telefone, ou apague quando quiser. Nada sai do dispositivo a menos que você compartilhe.',
+    'Le tue prove sono tue: fai il backup così sopravvivono alla disinstallazione o al cambio di telefono, oppure cancellale quando vuoi. Nulla esce dal dispositivo se non lo condividi tu.',
+    'Vos preuves sont à vous : sauvegardez-les pour qu’elles survivent à une désinstallation ou à un changement de téléphone, ou effacez-les quand vous voulez. Rien ne quitte l’appareil sauf si vous le partagez.',
+  );
+  String get evidenceBackup => _pick(
+    'Exportar backup',
+    'Export backup',
+    'Exportar backup',
+    'Esporta backup',
+    'Exporter la sauvegarde',
+  );
+  String get evidenceRestore => _pick(
+    'Restaurar backup',
+    'Restore backup',
+    'Restaurar backup',
+    'Ripristina backup',
+    'Restaurer la sauvegarde',
+  );
+  String get evidenceWipe => _pick(
+    'Borrar evidencia',
+    'Wipe evidence',
+    'Apagar evidência',
+    'Cancella prove',
+    'Effacer les preuves',
+  );
+  String get evidenceReport => _pick(
+    'Generar informe forense',
+    'Generate forensic report',
+    'Gerar relatório forense',
+    'Genera rapporto forense',
+    'Générer le rapport forensique',
+  );
+  String backupDone(String path) => _pick(
+    'Backup guardado en $path',
+    'Backup saved to $path',
+    'Backup salvo em $path',
+    'Backup salvato in $path',
+    'Sauvegarde enregistrée dans $path',
+  );
+  String get restoreOk => _pick(
+    'Backup restaurado. Actualizando…',
+    'Backup restored. Refreshing…',
+    'Backup restaurado. Atualizando…',
+    'Backup ripristinato. Aggiornamento…',
+    'Sauvegarde restaurée. Actualisation…',
+  );
+  String get restoreFail => _pick(
+    'El archivo no es un backup válido de Nexora.',
+    'The file is not a valid Nexora backup.',
+    'O arquivo não é um backup válido do Nexora.',
+    'Il file non è un backup valido di Nexora.',
+    'Le fichier n’est pas une sauvegarde Nexora valide.',
+  );
+  String get wipeConfirmTitle => _pick(
+    '¿Borrar toda la evidencia?',
+    'Wipe all evidence?',
+    'Apagar toda a evidência?',
+    'Cancellare tutte le prove?',
+    'Effacer toutes les preuves ?',
+  );
+  String get wipeConfirmBody => _pick(
+    'Se eliminarán historial, baseline, cercanía y exports de este dispositivo. La configuración se conserva. No se puede deshacer.',
+    'History, baseline, nearby and exports will be deleted from this device. Settings are kept. This cannot be undone.',
+    'Serão excluídos histórico, baseline, proximidade e exports deste dispositivo. As configurações são mantidas. Não pode ser desfeito.',
+    'Verranno eliminati cronologia, baseline, vicinanze ed export da questo dispositivo. Le impostazioni vengono mantenute. Non è reversibile.',
+    'L’historique, la baseline, la proximité et les exports seront supprimés de cet appareil. Les réglages sont conservés. Irréversible.',
+  );
+  String get wipeDone => _pick(
+    'Evidencia borrada.',
+    'Evidence wiped.',
+    'Evidência apagada.',
+    'Prove cancellate.',
+    'Preuves effacées.',
+  );
+  String get cancel =>
+      _pick('Cancelar', 'Cancel', 'Cancelar', 'Annulla', 'Annuler');
+  String get confirm =>
+      _pick('Borrar', 'Wipe', 'Apagar', 'Cancella', 'Effacer');
+  String get reportShareTitle => _pick(
+    'Informe forense Nexora',
+    'Nexora forensic report',
+    'Relatório forense Nexora',
+    'Rapporto forense Nexora',
+    'Rapport forensique Nexora',
+  );
+  String get shareFailed => _pick(
+    'No se pudo compartir en este equipo.',
+    'Could not share on this device.',
+    'Não foi possível compartilhar neste aparelho.',
+    'Impossibile condividere su questo dispositivo.',
+    'Impossible de partager sur cet appareil.',
+  );
+
+  // Diagnóstico (registro de errores)
+  String get diagTitle => _pick(
+    'Diagnóstico',
+    'Diagnostics',
+    'Diagnóstico',
+    'Diagnostica',
+    'Diagnostic',
+  );
+  String get diagNone => _pick(
+    'Sin errores registrados.',
+    'No errors recorded.',
+    'Nenhum erro registrado.',
+    'Nessun errore registrato.',
+    'Aucune erreur enregistrée.',
+  );
+  String get diagShare => _pick(
+    'Compartir registro',
+    'Share log',
+    'Compartilhar registro',
+    'Condividi registro',
+    'Partager le journal',
+  );
+  String get diagClear => _pick(
+    'Borrar registro',
+    'Clear log',
+    'Apagar registro',
+    'Cancella registro',
+    'Effacer le journal',
+  );
+  String get diagNote => _pick(
+    'Si la app falla, el error queda aquí (local, nunca se envía). Compártelo para reportar el problema.',
+    'If the app fails, the error stays here (local, never sent). Share it to report the problem.',
+    'Se o app falhar, o erro fica aqui (local, nunca enviado). Compartilhe para relatar o problema.',
+    'Se l’app va in errore, l’errore resta qui (locale, mai inviato). Condividilo per segnalare il problema.',
+    'Si l’app échoue, l’erreur reste ici (locale, jamais envoyée). Partagez-la pour signaler le problème.',
+  );
+
+  // Onboarding
+  String get onboardTitle1 => _pick(
+    'Diagnóstico primero',
+    'Diagnosis first',
+    'Diagnóstico primeiro',
+    'Prima la diagnosi',
+    'Le diagnostic d’abord',
+  );
+  String get onboardBody1 => _pick(
+    'Nexora vigila memoria, almacenamiento, batería, red y apps de tu teléfono, y explica con evidencia si algo se comporta distinto.',
+    'Nexora watches your phone\'s memory, storage, battery, network and apps, and explains with evidence when something behaves differently.',
+    'O Nexora vigia memória, armazenamento, bateria, rede e apps do seu telefone, e explica com evidência se algo se comporta diferente.',
+    'Nexora sorveglia memoria, archiviazione, batteria, rete e app del tuo telefono e spiega con prove se qualcosa si comporta in modo diverso.',
+    'Nexora surveille la mémoire, le stockage, la batterie, le réseau et les apps de votre téléphone, et explique avec des preuves si quelque chose se comporte différemment.',
+  );
+  String get onboardTitle2 => _pick(
+    'Lo que NO hace',
+    'What it does NOT do',
+    'O que NÃO faz',
+    'Cosa NON fa',
+    'Ce qu’il NE fait PAS',
+  );
+  String get onboardBody2 => _pick(
+    'No es antivirus ni "limpiador": no elimina malware ni mata apps (Android no lo permite). Te muestra indicios y te lleva a la pantalla del sistema donde tú decides.',
+    'It is not an antivirus or "cleaner": it does not remove malware or kill apps (Android forbids it). It shows you signals and takes you to the system screen where you decide.',
+    'Não é antivírus nem "limpador": não remove malware nem mata apps (o Android não permite). Mostra indícios e leva você à tela do sistema onde você decide.',
+    'Non è un antivirus né un "pulitore": non rimuove malware né chiude app (Android lo vieta). Ti mostra indizi e ti porta alla schermata di sistema dove decidi tu.',
+    'Ce n’est pas un antivirus ni un « nettoyeur » : il ne supprime pas les malwares et ne ferme pas les apps (Android l’interdit). Il vous montre des indices et vous mène à l’écran système où vous décidez.',
+  );
+  String get onboardTitle3 => _pick(
+    'Todo local',
+    'All local',
+    'Tudo local',
+    'Tutto locale',
+    'Tout en local',
+  );
+  String get onboardBody3 => _pick(
+    'Sin internet, sin cuentas, sin telemetría: la app ni siquiera declara el permiso de red. Tu evidencia solo sale si tú la compartes.',
+    'No internet, no accounts, no telemetry: the app does not even declare the network permission. Your evidence only leaves if you share it.',
+    'Sem internet, sem contas, sem telemetria: o app nem declara a permissão de rede. Sua evidência só sai se você compartilhar.',
+    'Niente internet, niente account, niente telemetria: l’app non dichiara nemmeno il permesso di rete. La tua prova esce solo se la condividi tu.',
+    'Pas d’internet, pas de comptes, pas de télémétrie : l’app ne déclare même pas la permission réseau. Vos preuves ne sortent que si vous les partagez.',
+  );
+  String get onboardNext =>
+      _pick('Siguiente', 'Next', 'Próximo', 'Avanti', 'Suivant');
+  String get onboardStart =>
+      _pick('Empezar', 'Get started', 'Começar', 'Inizia', 'Commencer');
+
+  // Elección de interfaz en el arranque (v0.8.0). La opción básica viene
+  // marcada: quien no sepa qué elegir se queda con la que menos abruma.
+  String get onboardTitleMode => _pick(
+    '¿Cómo quieres verla?',
+    'How do you want to see it?',
+    'Como você quer vê-lo?',
+    'Come vuoi vederla?',
+    'Comment voulez-vous la voir ?',
+  );
+  String get onboardBodyMode => _pick(
+    'Elige cuánta información quieres en pantalla. Puedes cambiarlo cuando quieras en Configuración.',
+    'Choose how much information you want on screen. You can change it any time in Settings.',
+    'Escolha quanta informação quer na tela. Você pode mudar quando quiser em Configurações.',
+    'Scegli quante informazioni vuoi sullo schermo. Puoi cambiarlo quando vuoi in Impostazioni.',
+    'Choisissez la quantité d’informations à l’écran. Vous pouvez la changer à tout moment dans Réglages.',
+  );
+  String get onboardModeRecommended => _pick(
+    'Recomendada',
+    'Recommended',
+    'Recomendada',
+    'Consigliata',
+    'Recommandée',
+  );
+  String get viewModeSimpleHint => _pick(
+    'Lo esencial: el semáforo, las apps señaladas y poco más.',
+    'The essentials: the traffic light, flagged apps and little else.',
+    'O essencial: o semáforo, os apps sinalizados e pouco mais.',
+    'L’essenziale: il semaforo, le app segnalate e poco altro.',
+    'L’essentiel : le feu tricolore, les apps signalées et peu d’autre.',
+  );
+  String get viewModeNormalHint => _pick(
+    'Añade red, almacenamiento, dispositivo e historial.',
+    'Adds network, storage, device and history.',
+    'Adiciona rede, armazenamento, dispositivo e histórico.',
+    'Aggiunge rete, archiviazione, dispositivo e cronologia.',
+    'Ajoute réseau, stockage, appareil et historique.',
+  );
+  String get viewModeAdvancedHint => _pick(
+    'Todo, incluida la Cercanía Bluetooth.',
+    'Everything, including Bluetooth Nearby.',
+    'Tudo, incluindo Proximidade Bluetooth.',
+    'Tutto, incluse le Vicinanze Bluetooth.',
+    'Tout, y compris la proximité Bluetooth.',
+  );
+
+  // Cercanía (BLE)
+  String get nearbyTitle => _pick(
+    'Cercanía Bluetooth',
+    'Bluetooth nearby',
+    'Proximidade Bluetooth',
+    'Vicinanze Bluetooth',
+    'Bluetooth à proximité',
+  );
+  String get nearbyIntro => _pick(
+    'Escaneo manual de dispositivos Bluetooth LE cercanos. 100 % local y bajo demanda: nada se guarda ni se exporta, y la app sigue sin usar internet.',
+    'Manual scan of nearby Bluetooth LE devices. 100% local and on demand: nothing is stored or exported, and the app still uses no internet.',
+    'Varredura manual de dispositivos Bluetooth LE próximos. 100 % local e sob demanda: nada é salvo nem exportado, e o app continua sem usar internet.',
+    'Scansione manuale dei dispositivi Bluetooth LE vicini. 100 % locale e su richiesta: nulla viene salvato o esportato e l’app continua a non usare internet.',
+    'Balayage manuel des appareils Bluetooth LE proches. 100 % local et à la demande : rien n’est stocké ni exporté, et l’app n’utilise toujours pas internet.',
+  );
+  String nearbyScan(int seconds) => _pick(
+    'Escanear ($seconds s)',
+    'Scan ($seconds s)',
+    'Escanear ($seconds s)',
+    'Scansiona ($seconds s)',
+    'Balayer ($seconds s)',
+  );
+  String get nearbyScanning => _pick(
+    'Escaneando…',
+    'Scanning…',
+    'Escaneando…',
+    'Scansione…',
+    'Balayage…',
+  );
+  String get nearbyPermissionDenied => _pick(
+    'Sin permiso de Bluetooth no hay escaneo. Concédelo e inténtalo de nuevo.',
+    'Without the Bluetooth permission there is no scan. Grant it and try again.',
+    'Sem permissão de Bluetooth não há varredura. Conceda e tente novamente.',
+    'Senza il permesso Bluetooth non c’è scansione. Concedilo e riprova.',
+    'Sans la permission Bluetooth, pas de balayage. Accordez-la et réessayez.',
+  );
+  String get nearbyUnsupported => _pick(
+    'El escaneo BLE no está disponible en este equipo (sin Bluetooth o SO sin soporte).',
+    'BLE scanning is not available on this device (no Bluetooth or unsupported OS).',
+    'A varredura BLE não está disponível neste aparelho (sem Bluetooth ou SO sem suporte).',
+    'La scansione BLE non è disponibile su questo dispositivo (senza Bluetooth o SO non supportato).',
+    'Le balayage BLE n’est pas disponible sur cet appareil (pas de Bluetooth ou OS non pris en charge).',
+  );
+  String nearbySummary(int devices, int scans) => _pick(
+    '$devices dispositivo(s) vistos en $scans escaneo(s) de esta sesión',
+    '$devices device(s) seen across $scans scan(s) this session',
+    '$devices dispositivo(s) vistos em $scans varredura(s) desta sessão',
+    '$devices dispositivo/i visti in $scans scansione/i di questa sessione',
+    '$devices appareil(s) vus sur $scans balayage(s) de cette session',
+  );
+  String get nearbyPersistent => _pick(
+    'PERSISTENTE',
+    'PERSISTENT',
+    'PERSISTENTE',
+    'PERSISTENTE',
+    'PERSISTANT',
+  );
+  String nearbyPersistentNote(int count) => _pick(
+    '$count dispositivo(s) reaparecen a lo largo de la sesión. Un rastreador ajeno se comporta así — pero unos audífonos tuyos también: indicio, no prueba.',
+    '$count device(s) keep reappearing across the session. A foreign tracker behaves like this — but so do your own earbuds: a signal, not proof.',
+    '$count dispositivo(s) reaparecem ao longo da sessão. Um rastreador alheio se comporta assim — mas seus fones também: indício, não prova.',
+    '$count dispositivo/i riappaiono nel corso della sessione. Un tracker estraneo si comporta così — ma anche i tuoi auricolari: indizio, non prova.',
+    '$count appareil(s) réapparaissent au fil de la session. Un traceur étranger se comporte ainsi — mais vos écouteurs aussi : indice, pas preuve.',
+  );
+  String get nearbyHonestyNote => _pick(
+    'Las direcciones BLE modernas rotan (MAC aleatorizada): un mismo aparato puede aparecer como varios. Los escaneos son solo de esta sesión.',
+    'Modern BLE addresses rotate (randomized MAC): one device may appear as several. Scans belong to this session only.',
+    'Os endereços BLE modernos rotacionam (MAC aleatório): um mesmo aparelho pode aparecer como vários. As varreduras são só desta sessão.',
+    'Gli indirizzi BLE moderni ruotano (MAC casuale): uno stesso dispositivo può apparire come più. Le scansioni valgono solo per questa sessione.',
+    'Les adresses BLE modernes tournent (MAC aléatoire) : un même appareil peut apparaître comme plusieurs. Les balayages ne valent que pour cette session.',
+  );
+  String nearbySeen(int scans) => _pick(
+    'visto en $scans escaneo(s)',
+    'seen in $scans scan(s)',
+    'visto em $scans varredura(s)',
+    'visto in $scans scansione/i',
+    'vu sur $scans balayage(s)',
+  );
+
+  // Alerta local de veredicto crítico
+  String get alertCriticalTitle => _pick(
+    'Nexora: veredicto CRÍTICO',
+    'Nexora: CRITICAL verdict',
+    'Nexora: veredito CRÍTICO',
+    'Nexora: verdetto CRITICO',
+    'Nexora : verdict CRITIQUE',
+  );
+  String get alertCriticalBody => _pick(
+    'La última captura en segundo plano detectó una distorsión seria. Abre la app para ver la evidencia.',
+    'The latest background snapshot detected a serious distortion. Open the app to see the evidence.',
+    'A última captura em segundo plano detectou uma distorção séria. Abra o app para ver a evidência.',
+    'L’ultima acquisizione in background ha rilevato una distorsione grave. Apri l’app per vedere la prova.',
+    'La dernière capture en arrière-plan a détecté une distorsion grave. Ouvrez l’app pour voir la preuve.',
+  );
+  String get alertNewAppTitle => _pick(
+    'Nexora: app nueva con superficie riesgosa',
+    'Nexora: new app with risky surface',
+    'Nexora: novo app com superfície arriscada',
+    'Nexora: nuova app con superficie a rischio',
+    'Nexora : nouvelle app à surface risquée',
+  );
+  String alertNewAppBody(String names) => _pick(
+    'Se instaló $names con permisos peligrosos o por sideload mientras Nexora vigilaba. Revísala en la pestaña Apps.',
+    '$names was installed with dangerous permissions or via sideload while Nexora was watching. Review it in the Apps tab.',
+    '$names foi instalado com permissões perigosas ou por sideload enquanto o Nexora vigiava. Revise na aba Apps.',
+    '$names è stata installata con permessi pericolosi o via sideload mentre Nexora sorvegliava. Controllala nella scheda App.',
+    '$names a été installée avec des permissions dangereuses ou par sideload pendant que Nexora surveillait. Vérifiez-la dans l’onglet Apps.',
+  );
+
+  // Historial: tendencia y comparación
+  String get trendTitle => _pick(
+    'Tendencia de las últimas capturas',
+    'Trend across recent snapshots',
+    'Tendência das últimas capturas',
+    'Andamento delle ultime acquisizioni',
+    'Tendance des dernières captures',
+  );
+  String get trendMemLegend => _pick(
+    'RAM disponible %',
+    'Available RAM %',
+    'RAM disponível %',
+    'RAM disponibile %',
+    'RAM disponible %',
+  );
+  String get trendStorageLegend => _pick(
+    'Disco libre %',
+    'Free storage %',
+    'Disco livre %',
+    'Disco libero %',
+    'Disque libre %',
+  );
+  String get trendTempLegend => _pick(
+    'Temp. batería (0–60 °C)',
+    'Battery temp (0–60 °C)',
+    'Temp. bateria (0–60 °C)',
+    'Temp. batteria (0–60 °C)',
+    'Temp. batterie (0–60 °C)',
+  );
+  String get compareHint => _pick(
+    'Toca dos capturas para compararlas (A → B).',
+    'Tap two snapshots to compare them (A → B).',
+    'Toque em duas capturas para compará-las (A → B).',
+    'Tocca due acquisizioni per confrontarle (A → B).',
+    'Touchez deux captures pour les comparer (A → B).',
+  );
+  String get compareTitle => _pick(
+    'Comparación A → B',
+    'Comparison A → B',
+    'Comparação A → B',
+    'Confronto A → B',
+    'Comparaison A → B',
+  );
+  String get compareClear => _pick(
+    'Quitar selección',
+    'Clear selection',
+    'Limpar seleção',
+    'Rimuovi selezione',
+    'Effacer la sélection',
+  );
+  String get compareMem => _pick(
+    'RAM disponible',
+    'Available RAM',
+    'RAM disponível',
+    'RAM disponibile',
+    'RAM disponible',
+  );
+  String get compareStorage => _pick(
+    'Disco libre',
+    'Free storage',
+    'Disco livre',
+    'Disco libero',
+    'Disque libre',
+  );
+  String get compareScore =>
+      _pick('Puntaje', 'Score', 'Pontuação', 'Punteggio', 'Score');
+  String get compareRisky => _pick(
+    'Apps riesgosas',
+    'Risky apps',
+    'Apps arriscados',
+    'App a rischio',
+    'Apps risquées',
+  );
+
+  // Informe (PDF) — títulos y frases propias del informe forense
+  String get reportTitle => _pick(
+    'Informe forense',
+    'Forensic report',
+    'Relatório forense',
+    'Rapporto forense',
+    'Rapport forensique',
+  );
+  String get reportGenerated =>
+      _pick('Generado', 'Generated', 'Gerado', 'Generato', 'Généré');
+  String get reportDevice =>
+      _pick('Equipo', 'Device', 'Aparelho', 'Dispositivo', 'Appareil');
+  String get reportVerdict =>
+      _pick('Veredicto', 'Verdict', 'Veredito', 'Verdetto', 'Verdict');
+  String get reportFindings =>
+      _pick('Hallazgos', 'Findings', 'Achados', 'Rilievi', 'Constatations');
+  String get reportMetrics =>
+      _pick('Métricas', 'Metrics', 'Métricas', 'Metriche', 'Métriques');
+  String reportAvailableOf(String total) => _pick(
+    'disponibles de $total',
+    'available of $total',
+    'disponíveis de $total',
+    'disponibili di $total',
+    'disponibles sur $total',
+  );
+  String reportFreeOf(String total) => _pick(
+    'libres de $total',
+    'free of $total',
+    'livres de $total',
+    'liberi di $total',
+    'libres sur $total',
+  );
+  String reportAppsLine(int total, int risky) => _pick(
+    '$total apps de usuario, $risky con superficie riesgosa',
+    '$total user apps, $risky with risky surface',
+    '$total apps do usuário, $risky com superfície arriscada',
+    '$total app utente, $risky con superficie a rischio',
+    '$total apps utilisateur, $risky à surface risquée',
+  );
+  String get reportColSnapshot =>
+      _pick('Captura', 'Snapshot', 'Captura', 'Acquisizione', 'Capture');
+  String get reportColStorage =>
+      _pick('Disco', 'Storage', 'Disco', 'Disco', 'Disque');
+  String get reportColScore =>
+      _pick('Puntaje', 'Score', 'Pontuação', 'Punteggio', 'Score');
+  String get reportIntegrityTitle => _pick(
+    'Integridad de la evidencia',
+    'Evidence integrity',
+    'Integridade da evidência',
+    'Integrità delle prove',
+    'Intégrité des preuves',
+  );
+  String reportChainOk(int sealed, int total) => _pick(
+    'Cadena de hashes VERIFICADA: $sealed de $total capturas selladas (SHA-256 encadenado).',
+    'Hash chain VERIFIED: $sealed of $total snapshots sealed (chained SHA-256).',
+    'Cadeia de hashes VERIFICADA: $sealed de $total capturas seladas (SHA-256 encadeado).',
+    'Catena di hash VERIFICATA: $sealed di $total acquisizioni sigillate (SHA-256 concatenato).',
+    'Chaîne de hachages VÉRIFIÉE : $sealed sur $total captures scellées (SHA-256 chaîné).',
+  );
+  String get reportChainTampered => _pick(
+    'ATENCIÓN: la cadena de hashes NO verifica — el historial pudo ser alterado.',
+    'WARNING: the hash chain does NOT verify — the history may have been tampered with.',
+    'ATENÇÃO: a cadeia de hashes NÃO verifica — o histórico pode ter sido alterado.',
+    'ATTENZIONE: la catena di hash NON verifica — la cronologia potrebbe essere stata alterata.',
+    'ATTENTION : la chaîne de hachages NE se vérifie PAS — l’historique a pu être altéré.',
+  );
+  String get reportFooter => _pick(
+    'Generado localmente por NEXORA GUARD (sin permiso INTERNET: nada salió del dispositivo hasta que su dueño compartió este archivo).',
+    'Generated locally by NEXORA GUARD (no INTERNET permission: nothing left the device until its owner shared this file).',
+    'Gerado localmente pelo NEXORA GUARD (sem permissão INTERNET: nada saiu do dispositivo até o dono compartilhar este arquivo).',
+    'Generato localmente da NEXORA GUARD (senza permesso INTERNET: nulla è uscito dal dispositivo finché il proprietario non ha condiviso questo file).',
+    'Généré localement par NEXORA GUARD (sans permission INTERNET : rien n’a quitté l’appareil jusqu’à ce que son propriétaire partage ce fichier).',
+  );
+
+  // Hallazgos (ids estables → texto localizado)
+}

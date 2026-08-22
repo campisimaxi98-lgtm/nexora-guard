@@ -1,0 +1,222 @@
+/// Configuración persistente de la app — Dart puro (`dart:io` + JSON).
+///
+/// Equivalente móvil de la configuración de la edición Windows: idioma,
+/// intervalo de auto-captura y umbrales de detección modificables. Vive en
+/// un JSON del sandbox; un archivo corrupto degrada a valores por defecto.
+library;
+
+import 'dart:convert';
+import 'dart:io';
+
+import 'rule_engine.dart';
+
+class AppConfig {
+  const AppConfig({
+    this.languageCode = '',
+    this.viewMode = 'simple',
+    this.autoRefreshMinutes = 5,
+    this.backgroundCapture = false,
+    this.backgroundChargingOnly = true,
+    this.notifyCritical = true,
+    this.nearbyHistory = false,
+    this.onboardingSeen = false,
+    this.memoryWarningPct = 20,
+    this.memoryCriticalPct = 10,
+    this.storageWarningPct = 15,
+    this.storageCriticalPct = 5,
+    this.batteryTempWarningCelsius = 40,
+    this.batteryTempCriticalCelsius = 45,
+  });
+
+  factory AppConfig.fromMap(Map<String, dynamic> map) {
+    int asInt(Object? v, int fallback) => v is num ? v.toInt() : fallback;
+    bool asBool(Object? v, bool fallback) => v is bool ? v : fallback;
+    const d = AppConfig();
+    // El idioma pasó de un booleano `spanish` a un código libre. Si viene un
+    // config viejo con `spanish`, se migra: true→'es', false→'en'.
+    final String languageCode;
+    if (map['languageCode'] is String) {
+      languageCode = map['languageCode'] as String;
+    } else if (map['spanish'] is bool) {
+      languageCode = (map['spanish'] as bool) ? 'es' : 'en';
+    } else {
+      languageCode = d.languageCode;
+    }
+    const validModes = {'simple', 'normal', 'advanced'};
+    final mode = map['viewMode'];
+    return AppConfig(
+      languageCode: languageCode,
+      viewMode: mode is String && validModes.contains(mode) ? mode : d.viewMode,
+      autoRefreshMinutes: asInt(
+        map['autoRefreshMinutes'],
+        d.autoRefreshMinutes,
+      ),
+      backgroundCapture: asBool(map['backgroundCapture'], d.backgroundCapture),
+      backgroundChargingOnly: asBool(
+        map['backgroundChargingOnly'],
+        d.backgroundChargingOnly,
+      ),
+      notifyCritical: asBool(map['notifyCritical'], d.notifyCritical),
+      nearbyHistory: asBool(map['nearbyHistory'], d.nearbyHistory),
+      onboardingSeen: asBool(map['onboardingSeen'], d.onboardingSeen),
+      memoryWarningPct: asInt(map['memoryWarningPct'], d.memoryWarningPct),
+      memoryCriticalPct: asInt(map['memoryCriticalPct'], d.memoryCriticalPct),
+      storageWarningPct: asInt(map['storageWarningPct'], d.storageWarningPct),
+      storageCriticalPct: asInt(
+        map['storageCriticalPct'],
+        d.storageCriticalPct,
+      ),
+      batteryTempWarningCelsius: asInt(
+        map['batteryTempWarningCelsius'],
+        d.batteryTempWarningCelsius,
+      ),
+      batteryTempCriticalCelsius: asInt(
+        map['batteryTempCriticalCelsius'],
+        d.batteryTempCriticalCelsius,
+      ),
+    );
+  }
+
+  /// Código de idioma de la UI: `'es'`, `'en'`, `'pt'`, `'it'`, `'fr'`, o
+  /// `''` (cadena vacía) para "automático": tomar el idioma del equipo. La
+  /// resolución a un idioma concreto vive en la UI ([resolveLanguage]).
+  final String languageCode;
+
+  /// Modo de visualización de la UI: `'simple'` (pocas pestañas grandes, para
+  /// personas no técnicas / tercera edad), `'normal'` (todas menos las más
+  /// técnicas) o `'advanced'` (todo). Ver `_visibleTabs` en `main.dart`.
+  ///
+  /// Desde v0.8.0 el valor por defecto es `'simple'` y la introducción de
+  /// primera vez lo pregunta con esa opción ya marcada: el usuario que más
+  /// necesita este sensor es el que menos quiere ver diez pestañas técnicas.
+  /// Una config existente conserva su modo — el cambio solo afecta a
+  /// instalaciones nuevas.
+  final String viewMode;
+
+  /// 0 = auto-captura apagada; el original de escritorio usa 5 minutos.
+  final int autoRefreshMinutes;
+  final bool backgroundCapture;
+  final bool backgroundChargingOnly;
+
+  /// Notificación local cuando una captura en segundo plano pasa a
+  /// CRÍTICO. Local de verdad: sin permiso INTERNET no hay push posible.
+  final bool notifyCritical;
+
+  /// Histórico de Cercanía entre sesiones (opt-in): registra en qué DÍAS
+  /// se vio cada dirección BLE para detectar rastreadores multi-día.
+  final bool nearbyHistory;
+
+  /// La introducción de primera vez ya se mostró.
+  final bool onboardingSeen;
+  final int memoryWarningPct;
+  final int memoryCriticalPct;
+  final int storageWarningPct;
+  final int storageCriticalPct;
+  final int batteryTempWarningCelsius;
+  final int batteryTempCriticalCelsius;
+
+  RuleThresholds get thresholds => RuleThresholds(
+    memoryWarningRatio: memoryWarningPct / 100,
+    memoryCriticalRatio: memoryCriticalPct / 100,
+    storageWarningRatio: storageWarningPct / 100,
+    storageCriticalRatio: storageCriticalPct / 100,
+    batteryTempWarningCelsius: batteryTempWarningCelsius.toDouble(),
+    batteryTempCriticalCelsius: batteryTempCriticalCelsius.toDouble(),
+  );
+
+  AppConfig copyWith({
+    String? languageCode,
+    String? viewMode,
+    int? autoRefreshMinutes,
+    bool? backgroundCapture,
+    bool? backgroundChargingOnly,
+    bool? notifyCritical,
+    bool? nearbyHistory,
+    bool? onboardingSeen,
+    int? memoryWarningPct,
+    int? memoryCriticalPct,
+    int? storageWarningPct,
+    int? storageCriticalPct,
+    int? batteryTempWarningCelsius,
+    int? batteryTempCriticalCelsius,
+  }) => AppConfig(
+    languageCode: languageCode ?? this.languageCode,
+    viewMode: viewMode ?? this.viewMode,
+    autoRefreshMinutes: autoRefreshMinutes ?? this.autoRefreshMinutes,
+    backgroundCapture: backgroundCapture ?? this.backgroundCapture,
+    backgroundChargingOnly:
+        backgroundChargingOnly ?? this.backgroundChargingOnly,
+    notifyCritical: notifyCritical ?? this.notifyCritical,
+    nearbyHistory: nearbyHistory ?? this.nearbyHistory,
+    onboardingSeen: onboardingSeen ?? this.onboardingSeen,
+    memoryWarningPct: memoryWarningPct ?? this.memoryWarningPct,
+    memoryCriticalPct: memoryCriticalPct ?? this.memoryCriticalPct,
+    storageWarningPct: storageWarningPct ?? this.storageWarningPct,
+    storageCriticalPct: storageCriticalPct ?? this.storageCriticalPct,
+    batteryTempWarningCelsius:
+        batteryTempWarningCelsius ?? this.batteryTempWarningCelsius,
+    batteryTempCriticalCelsius:
+        batteryTempCriticalCelsius ?? this.batteryTempCriticalCelsius,
+  );
+
+  Map<String, Object?> toMap() => {
+    'languageCode': languageCode,
+    'viewMode': viewMode,
+    'autoRefreshMinutes': autoRefreshMinutes,
+    'backgroundCapture': backgroundCapture,
+    'backgroundChargingOnly': backgroundChargingOnly,
+    'notifyCritical': notifyCritical,
+    'nearbyHistory': nearbyHistory,
+    'onboardingSeen': onboardingSeen,
+    'memoryWarningPct': memoryWarningPct,
+    'memoryCriticalPct': memoryCriticalPct,
+    'storageWarningPct': storageWarningPct,
+    'storageCriticalPct': storageCriticalPct,
+    'batteryTempWarningCelsius': batteryTempWarningCelsius,
+    'batteryTempCriticalCelsius': batteryTempCriticalCelsius,
+  };
+}
+
+class ConfigStore {
+  ConfigStore(this.directoryPath);
+
+  final String directoryPath;
+
+  File get _file => File('$directoryPath/nexora-config.json');
+
+  /// Archivo heredado de v0.1.x que solo guardaba el idioma; se migra al
+  /// config unificado la primera vez que se guarda.
+  File get _legacyLanguageFile => File('$directoryPath/nexora-language');
+
+  Future<AppConfig> load() async {
+    try {
+      final file = _file;
+      if (await file.exists()) {
+        final map = jsonDecode(await file.readAsString());
+        if (map is Map<String, dynamic>) return AppConfig.fromMap(map);
+      }
+      final legacy = _legacyLanguageFile;
+      if (await legacy.exists()) {
+        final code = (await legacy.readAsString()).trim();
+        return AppConfig(languageCode: code == 'en' ? 'en' : 'es');
+      }
+    } on FileSystemException {
+      // Sin acceso al disco se opera con los valores por defecto.
+    } on FormatException {
+      // Config corrupto: valores por defecto, sin crash.
+    }
+    return const AppConfig();
+  }
+
+  Future<void> save(AppConfig config) async {
+    try {
+      final file = _file;
+      await file.parent.create(recursive: true);
+      await file.writeAsString(jsonEncode(config.toMap()), flush: true);
+      final legacy = _legacyLanguageFile;
+      if (await legacy.exists()) await legacy.delete();
+    } on FileSystemException {
+      // La configuración aplica en la sesión aunque no se pueda persistir.
+    }
+  }
+}

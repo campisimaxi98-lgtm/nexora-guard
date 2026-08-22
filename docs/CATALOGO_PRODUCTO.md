@@ -1,0 +1,96 @@
+﻿# Catálogo de la familia Nexora
+
+Documento fuente de verdad para distinguir las **dos ediciones** de la familia
+Nexora: qué cubre cada una, qué comparten y a quién sirve cada una. Si una
+superficie pública (landing, README, release) contradice este catálogo, este
+documento tiene prioridad.
+
+## 1. Las dos ediciones
+
+| | Nexora **Windows** Inspector | Nexora **Mobile** Inspector |
+|---|---|---|
+| Versión | v0.19.0 | v0.8.0 |
+| Lenguaje | Rust (GUI egui + CLI) | Flutter (Dart + Kotlin + Swift) |
+| Plataforma | Windows 10/11 | Android 8.0+ (producción) · iOS 13+ (compila en CI, distribución en pausa) |
+| Qué es | Sensor forense de escritorio con señales de comportamiento (persistencia, servicios, red local, anomalías) — declaradamente **no** un antivirus ni un EDR: complementa, no reemplaza | Sensor forense de bolsillo: distorsiones de memoria, almacenamiento, batería y red, auditoría de superficie de permisos por app y, desde v0.8.0, **comportamiento observado** (cada app comparada consigo misma) |
+| Distribución | GitHub Release: instalador, portable, CLI-only, módulo PowerShell, extensión VS Code | GitHub Release: APK firmado por ABI (arm64-v8a, armeabi-v7a) + universal |
+| Repo | <https://github.com/nexora-app-org/nexora-windows-inspector> | <https://github.com/nexora-app-org/nexora-guard> |
+| Landing | <https://nexora-app-org.github.io/nexora-windows-inspector/> | <https://nexora-app-org.github.io/nexora-guard/> |
+
+## 2. Qué cubre cada una
+
+### Edición Windows (Rust)
+
+- Semáforo global, top de procesos con severidad, presión CPU/RAM/I/O.
+- Baselines de **autoarranque**, **servicios** y **red conocida** con
+  clasificación NUEVO/MODIFICADO/ELIMINADO y alertas (`persistence-change`,
+  `service-change`, `unknown-device`).
+- Modo de precisión ETW/WPR, historial SQLite con comparación A/B, reportes
+  forenses en Markdown, CLI completa.
+
+### Edición Mobile (Flutter)
+
+- Semáforo global + motor de reglas local con 11 familias de hallazgo:
+  memoria, almacenamiento, temperatura/salud de batería, superficie de
+  permisos por app (Android), apps nuevas, escalada de permisos,
+  root/jailbreak, parche de seguridad antiguo, carga en ascenso sostenido
+  y las dos de **comportamiento observado** de v0.8.0 —consumo anómalo por
+  app y correlación temporal con instalaciones recientes—
+  (→ [HEURISTICAS.md](HEURISTICAS.md)), con umbrales modificables.
+- **Capacidad real, no solo declarada** (v0.7.0): permisos concedidos vs.
+  solo pedidos y detección de stalkerware **activo** (accesibilidad,
+  lector de notificaciones, administrador del dispositivo).
+- **Informe forense en PDF** e historial sellado con cadena SHA-256
+  verificable; **modos de visualización** (básico/normal/avanzado) que se
+  eligen en el primer arranque.
+- Tiempo en pantalla por app (permiso de acceso de uso, opt-in real del
+  usuario) y **widget de pantalla de inicio** con el semáforo.
+- Auto-captura configurable + captura en segundo plano (WorkManager,
+  opción solo-cargando) con **notificación local de veredicto crítico**;
+  volúmenes SD/USB; escaneo BLE opt-in (Cercanía); acciones que abren la
+  pantalla del sistema donde el usuario interviene.
+- **Baseline de apps** (`new-apps`): el equivalente móvil del
+  `persistence-change` de la edición Windows.
+- Historial local (JSON Lines, retención 500) con gráfico de tendencia y
+  comparación A→B, y export JSON forense.
+- Límites del SO declarados, no disfrazados: iOS no permite listar apps
+  ajenas y Android no expone CPU/RAM de otras apps
+  (→ [LIMITACIONES.md](LIMITACIONES.md)).
+
+## 3. Qué comparten (el ADN de la familia)
+
+| Rasgo común | Concreción |
+|---|---|
+| Filosofía | Cualquier distorsión anómala de recursos puede ser el primer indicio; diagnóstico primero, intervención después |
+| Export forense comparable | JSON con **ids de hallazgo neutrales al idioma**, estables entre versiones y comparables entre ediciones y dispositivos |
+| Privacidad | Todo local: cero telemetría; la edición móvil ni siquiera declara el permiso `INTERNET` |
+| Honestidad técnica | Mapa explícito de qué se detecta y qué queda fuera por diseño del SO (`DETECCION_AMENAZAS.md` en ambos repos) |
+| Interfaz | Semáforo por severidad y evidencia junto a cada hallazgo; la edición móvil habla **cinco idiomas** con autodetección (ES/EN/PT/IT/FR) |
+| Entrega | CI en GitHub Actions, release automatizado por tag con hashes `SHA256SUMS.txt` |
+| Licencia | Apache 2.0 en ambas |
+
+La diferencia de peso entre ambas (binario Rust ~MB de un dígito vs APK
+Flutter) está documentada con números en el trade-off de
+[ARCHITECTURE.md](ARCHITECTURE.md#trade-off-honesto-peso-del-apk-flutter-vs-rust).
+
+## 4. A quién sirve cada una
+
+| Perfil | Edición recomendada | Por qué |
+|---|---|---|
+| Soporte técnico / power user de PC | Windows | Correlación proceso-disco-red-servicios y ruta ETW/WPR para casos duros |
+| Analista que vigila persistencia y cambios | Windows | Motor de baselines (autoarranque, servicios, red local) con alertas |
+| Usuario de teléfono con síntomas ("va lento", "se calienta") | Mobile | Semáforo + evidencia sin conocimientos técnicos |
+| Quien audita qué apps piden permisos peligrosos | Mobile (Android) | Puntaje de riesgo por superficie de permisos, overlay/sideload/device-admin |
+| Quien necesita evidencia de PC **y** teléfono en un mismo caso | Ambas | Los exports JSON usan ids comparables entre ediciones |
+
+## 5. Reglas de comunicación
+
+- Ninguna edición se presenta como antivirus, EDR ni "limpiador mágico":
+  ambas son **sensores de apoyo a la decisión** que dejan evidencia.
+- No prometer en una edición lo que solo existe en la otra (p. ej.
+  baselines de servicios/autoarranque/red local: solo Windows; el baseline
+  de apps instaladas existe en ambas desde móvil v0.5.0).
+- iOS se comunica siempre como "compila en CI, distribución en pausa" — nunca
+  como plataforma soportada en producción.
+- Un botón de descarga no debe prometer un artefacto que el workflow no
+  publica.

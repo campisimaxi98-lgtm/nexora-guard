@@ -1,0 +1,31 @@
+name: nexora_guard
+description: >-
+  NEXORA GUARD — sensor forense de diagnóstico para Android e
+  iOS. Hermano móvil de nexora-windows-inspector: vigila distorsiones
+  anómalas de recursos, audita la superficie de permisos y deja evidencia
+  local exportable. Cero telemetría.
+publish_to: "none"
+
+# Fuente de verdad de la versión del producto: <semver>+<build number>.
+# El workflow de release verifica que el tag coincida con la parte semver.
+version: 0.8.0+10
+
+environment:
+  sdk: ^3.12.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  # Test de integración en dispositivo/emulador (parte del SDK de Flutter,
+  # no de pub.dev: mantiene la regla "cero dependencias externas"). No lo
+  # corre `flutter test` — se ejecuta con `flutter test integration_test`.
+  integration_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true

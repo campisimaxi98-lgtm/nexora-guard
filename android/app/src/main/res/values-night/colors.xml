@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Tema oscuro: mismo fondo NEXORA, texto dorado. -->
+    <color name="widget_bg">#F2060913</color>
+    <color name="widget_text">#FFE8C675</color>
+    <color name="widget_text_dim">#CCE8C675</color>
+</resources>

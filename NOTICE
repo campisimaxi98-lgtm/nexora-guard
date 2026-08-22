@@ -1,0 +1,20 @@
+NEXORA GUARD
+Copyright (c) 2026 Max
+
+Este producto es un trabajo derivado de "RootCause Mobile Inspector",
+Copyright (c) 2026 Vladimir Acuña, distribuido bajo la Apache License,
+Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0).
+
+Cambios respecto del proyecto original:
+- Rebranding completo a la identidad NEXORA / NEXORA GUARD (nombre,
+  paquete de aplicación, íconos, paleta de colores, textos de interfaz).
+- Cambio de identificadores de paquete: com.rootcause.mobileinspector
+  -> com.nexora.guard; rootcause_mobile_inspector -> nexora_guard.
+- Nueva paleta visual (dorado / azul / rojo sobre fondo oscuro) y tema
+  Material 3 correspondiente.
+- Autoría del trabajo derivado: Max.
+
+El código y la lógica funcional subyacente (recolectores de datos,
+motor de reglas, exportación de evidencia, etc.) provienen del proyecto
+original y conservan su licencia Apache-2.0. Ver LICENSE para el texto
+completo de la licencia y el aviso de copyright original.
