@@ -10,6 +10,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'core/auth_store.dart';
 import 'core/config_store.dart';
 import 'core/crash_log.dart';
 import 'core/history_store.dart';
@@ -25,6 +26,7 @@ import 'platform/evidence_service.dart';
 import 'ui/report.dart';
 import 'ui/screens.dart';
 import 'ui/strings.dart';
+import 'ui/nexora_logo.dart';
 import 'ui/theme.dart';
 
 void main() {
@@ -119,7 +121,12 @@ Future<void> backgroundCapture() async {
 }
 
 class NexoraApp extends StatelessWidget {
-  const NexoraApp({super.key});
+  const NexoraApp({super.key, this.authStore});
+
+  /// Inyección para tests: un [AuthStore] precargado evita depender del
+  /// canal nativo. En producción queda null y el gate resuelve el
+  /// directorio de datos por su cuenta.
+  final AuthStore? authStore;
 
   @override
   Widget build(BuildContext context) => MaterialApp(
@@ -127,12 +134,133 @@ class NexoraApp extends StatelessWidget {
     debugShowCheckedModeBanner: false,
     theme: nexoraLightTheme(),
     darkTheme: nexoraDarkTheme(),
-    home: const InspectorHome(),
+    home: AuthGate(store: authStore, child: const InspectorHome()),
   );
 }
 
+/// Puerta de sesión local: decide entre la pantalla de bienvenida (crear
+/// cuenta o iniciar sesión) y la app propiamente dicha. Mientras carga el
+/// estado muestra una pantalla de arranque con la marca. Sin directorio de
+/// datos (entorno sin canal nativo) se pasa derecho: degradar con elegancia
+/// gana siempre sobre bloquear.
+class AuthGate extends StatefulWidget {
+  const AuthGate({super.key, required this.child, this.store});
+
+  final Widget child;
+  final AuthStore? store;
+
+  @override
+  State<AuthGate> createState() => _AuthGateState();
+}
+
+class _AuthGateState extends State<AuthGate> {
+  AuthStore? _store;
+  bool _ready = false;
+
+  /// Reserva para el caso degenerado sin directorio de datos: se crea UNA
+  /// vez y se reusa entre rebuilds (no un temporal por cada build).
+  AuthStore? _fallbackStore;
+
+  AuthStore get fallbackStore => _fallbackStore ??= AuthStore(
+    Directory.systemTemp.createTempSync('nexora-auth'),
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    _bootstrap();
+  }
+
+  Future<void> _bootstrap() async {
+    var store = widget.store;
+    if (store == null) {
+      try {
+        final dir = await const PlatformCollectors().documentsPath();
+        if (dir != null) {
+          store = AuthStore(Directory(dir))..load();
+        }
+      } on FileSystemException {
+        // Sin disco no hay dónde persistir la cuenta: se opera abierta.
+      }
+    } else {
+      // Inyección de tests: carga síncrona, lista al instante.
+      store.load();
+    }
+    if (!mounted) return;
+    setState(() {
+      _store = store;
+      _ready = true;
+    });
+  }
+
+  AppStrings get _strings => AppStrings(
+    resolveLanguage(
+      '',
+      deviceLanguageCode:
+          WidgetsBinding.instance.platformDispatcher.locale.languageCode,
+    ),
+  );
+
+  void _onAuthenticated() {
+    if (mounted) setState(() {});
+  }
+
+  void _logout() {
+    _store?.logout();
+    if (mounted) setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_ready) {
+      // Arranque con marca: escudo + pulso, nada de spinner genérico.
+      return Scaffold(
+        backgroundColor: nexoraBackground,
+        body: Center(
+          child: TweenAnimationBuilder<double>(
+            tween: Tween(begin: 0.85, end: 1),
+            duration: const Duration(milliseconds: 900),
+            curve: Curves.easeOut,
+            builder: (context, t, child) => Transform.scale(
+              scale: t,
+              child: Opacity(opacity: t, child: child),
+            ),
+            child: const Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                NexoraLogo(size: 120, showRing: true),
+                SizedBox(height: 24),
+                SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+    final store = _store;
+    if (store == null || !store.loggedIn) {
+      return AuthScreen(
+        strings: _strings,
+        store: store ?? fallbackStore,
+        onAuthenticated: _onAuthenticated,
+      );
+    }
+    return InspectorHome(onLogout: _logout, accountEmail: store.account?.email);
+  }
+}
+
 class InspectorHome extends StatefulWidget {
-  const InspectorHome({super.key});
+  const InspectorHome({super.key, this.onLogout, this.accountEmail});
+
+  /// Lo invoca Configuración al pedir cerrar la sesión local.
+  final VoidCallback? onLogout;
+
+  /// Correo de la cuenta activa, para mostrarlo en Configuración.
+  final String? accountEmail;
 
   @override
   State<InspectorHome> createState() => _InspectorHomeState();
@@ -532,6 +660,8 @@ class _InspectorHomeState extends State<InspectorHome> {
       onBackup: () => _backup(strings),
       onRestore: () => _restore(strings),
       onWipe: () => _wipe(strings),
+      onLogout: widget.onLogout,
+      accountEmail: widget.accountEmail,
     ),
     'about' => AboutScreen(
       strings: strings,

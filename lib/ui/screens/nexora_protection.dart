@@ -61,9 +61,7 @@ class NexoraProtectionScreen extends StatelessWidget {
             child: Column(
               children: [
                 Icon(
-                  network?.connected == true
-                      ? Icons.public
-                      : Icons.public_off,
+                  network?.connected == true ? Icons.public : Icons.public_off,
                   size: 46,
                   color: network?.connected == true
                       ? nexoraBlue
@@ -112,9 +110,7 @@ class NexoraProtectionScreen extends StatelessWidget {
               Expanded(
                 child: _NetStat(
                   label: 'Subida',
-                  value: network == null
-                      ? '—'
-                      : '${network.upstreamKbps} kbps',
+                  value: network == null ? '—' : '${network.upstreamKbps} kbps',
                 ),
               ),
               const SizedBox(width: 10),
@@ -185,7 +181,10 @@ class _NetStat extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 2),
-        Text(label, style: const TextStyle(color: Colors.white38, fontSize: 11)),
+        Text(
+          label,
+          style: const TextStyle(color: Colors.white38, fontSize: 11),
+        ),
       ],
     ),
   );

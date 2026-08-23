@@ -137,7 +137,10 @@ class _NexoraQuickScanScreenState extends State<NexoraQuickScanScreen> {
                     ),
                     subtitle: Text(
                       rows[i].$2,
-                      style: const TextStyle(color: Colors.white38, fontSize: 12),
+                      style: const TextStyle(
+                        color: Colors.white38,
+                        fontSize: 12,
+                      ),
                     ),
                     trailing: _StatusChip(severity: rows[i].$3),
                   ),

@@ -5,6 +5,37 @@ Todos los cambios notables de NEXORA GUARD. El formato sigue
 [SemVer](https://semver.org/lang/es/). La versión actual es la fuente de
 verdad en `pubspec.yaml`.
 
+## [0.9.0] - 2026-08-23 — Puerta local y medidor radial
+
+### Added
+
+- **Pantalla de bienvenida con el escudo NEXORA en grande**: identidad visual
+  propia al abrir la app — escudo dorado con halo, anillos concéntricos en
+  deriva lenta, estrellas titilando y wordmark con degradado dorado sobre el
+  fondo profundo. Dibujada 100 % a mano con `CustomPainter` (cero
+  dependencias nuevas, cero imágenes en runtime).
+- **Cuentas locales**: crear cuenta (correo + contraseña) o iniciar sesión si
+  ya existe. La contraseña nunca se guarda: queda **SHA-256 estirada** (4096
+  iteraciones) con salt aleatorio de 128 bits — la misma primitiva FIPS que
+  sella el historial. Una sola cuenta por teléfono; cerrar sesión desde
+  Configuración.
+- **Honestidad primero**: la cuenta es **local**, vive únicamente en este
+  teléfono y no hay backend ni nube — la app sigue sin permiso INTERNET y el
+  guardián del manifiesto sigue pasando. Es una cerradura de privacidad para
+  uso cotidiano, no criptografía contra root.
+- **Medidor radial del puntaje global**: el semáforo ahora incluye un arco
+  de 270° animado (0 → puntaje), coloreado por severidad con halo suave,
+  ticks y cifra central. El banner de veredicto muestra además los ids de
+  hallazgo como chips.
+- **Barras de métricas coloreadas**: memoria y almacenamiento usan barras
+  redondeadas que cambian a amarillo/rojo según umbral (antes: indicadores
+  lineales pelados).
+
+### Changed
+
+- La pantalla de arranque (mientras carga la puerta) muestra el escudo con
+  pulso en lugar de un spinner genérico.
+
 ## [0.8.0] - 2026-08-03 — De la superficie al comportamiento
 
 Hasta aquí el sensor evaluaba lo que una app **declara** (permisos) y lo

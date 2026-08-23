@@ -13,6 +13,12 @@ const nexoraRed = Color(0xFFC0392B); // Peligro, estafa, alerta
 const nexoraBackground = Color(0xFF0A0F24); // fondo azul muy oscuro/negro
 const nexoraSurface = Color(0xFF12224A);
 
+// Tokens auxiliares usados por las pantallas de la shell NEXORA
+// (dashboard/bot/perfil): superficie elevada, borde sutil y acento vino.
+const nexoraSurfaceRaised = Color(0xFF1A2C57);
+const nexoraBorder = Color(0xFF2B3F6F);
+const nexoraWine = Color(0xFF6E2142);
+
 // Severidad de hallazgos, mapeada a la paleta NEXORA.
 // Verde solo como indicador secundario (estado "normal").
 const severityGreen = Color(0xFF2E9E5B);

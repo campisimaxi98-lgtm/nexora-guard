@@ -14,6 +14,7 @@ library;
 
 export 'screens/about.dart';
 export 'screens/apps.dart';
+export 'screens/auth.dart';
 export 'screens/device.dart';
 export 'screens/history.dart';
 export 'screens/nearby.dart';

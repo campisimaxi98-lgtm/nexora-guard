@@ -58,9 +58,7 @@ class SummaryScreen extends StatelessWidget {
         SectionCard(
           title: strings.memTitle,
           children: [
-            LinearProgressIndicator(
-              value: (1.0 - mem.availableRatio).clamp(0.0, 1.0),
-            ),
+            MeterBar(value: 1.0 - mem.availableRatio),
             const SizedBox(height: 8),
             InfoRow(label: strings.memUsed, value: formatBytes(mem.usedBytes)),
             InfoRow(
@@ -76,9 +74,7 @@ class SummaryScreen extends StatelessWidget {
         SectionCard(
           title: strings.storageTitle,
           children: [
-            LinearProgressIndicator(
-              value: (1.0 - st.freeRatio).clamp(0.0, 1.0),
-            ),
+            MeterBar(value: 1.0 - st.freeRatio),
             const SizedBox(height: 8),
             InfoRow(
               label: strings.storageFree,

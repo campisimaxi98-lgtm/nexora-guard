@@ -40,7 +40,9 @@ String _answerFor(String question) {
         'conocidos de amenaza. Todo el análisis ocurre en tu propio '
         'teléfono — no se envían tus datos a ningún servidor.';
   }
-  if (q.contains('revisar') || q.contains('dispositivo') || q.contains('escan')) {
+  if (q.contains('revisar') ||
+      q.contains('dispositivo') ||
+      q.contains('escan')) {
     return 'Para revisar tu dispositivo ahora mismo, andá a la pestaña '
         '"Análisis" y tocá "Iniciar análisis". Te va a mostrar el estado '
         'de apps, red y almacenamiento en tiempo real.';

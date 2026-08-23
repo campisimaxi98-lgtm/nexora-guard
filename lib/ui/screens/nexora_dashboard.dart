@@ -329,14 +329,11 @@ class _ActivityRow extends StatelessWidget {
     };
     return ListTile(
       dense: true,
-      leading: Icon(
-        switch (severity) {
-          Severity.normal => Icons.check_circle,
-          Severity.warning => Icons.warning_amber_rounded,
-          Severity.critical => Icons.error,
-        },
-        color: severityColor(severity),
-      ),
+      leading: Icon(switch (severity) {
+        Severity.normal => Icons.check_circle,
+        Severity.warning => Icons.warning_amber_rounded,
+        Severity.critical => Icons.error,
+      }, color: severityColor(severity)),
       title: Text(
         label,
         style: const TextStyle(color: Colors.white, fontSize: 13.5),
@@ -353,9 +350,9 @@ class _NexoraBotCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) => InkWell(
     borderRadius: BorderRadius.circular(16),
-    onTap: () => Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const NexoraBotScreen()),
-    ),
+    onTap: () => Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => const NexoraBotScreen())),
     child: Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(

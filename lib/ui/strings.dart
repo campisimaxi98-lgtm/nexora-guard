@@ -1286,5 +1286,98 @@ class AppStrings {
     'Généré localement par NEXORA GUARD (sans permission INTERNET : rien n’a quitté l’appareil jusqu’à ce que son propriétaire partage ce fichier).',
   );
 
+  // Cuentas locales (pantalla de bienvenida y sesión)
+
+  String get authTagline => _pick(
+    'Sensor forense de diagnóstico',
+    'Forensic diagnostic sensor',
+    'Sensor forense de diagnóstico',
+    'Sensore forense diagnostico',
+    'Capteur forensique de diagnostic',
+  );
+  String get authSignIn =>
+      _pick('Iniciar sesión', 'Sign in', 'Entrar', 'Accedi', 'Se connecter');
+  String get authSignUp => _pick(
+    'Crear cuenta',
+    'Create account',
+    'Criar conta',
+    'Crea account',
+    'Créer un compte',
+  );
+  String get authEmail => _pick(
+    'Correo electrónico',
+    'Email address',
+    'Endereço de e-mail',
+    'Indirizzo e-mail',
+    'Adresse e-mail',
+  );
+  String get authPassword =>
+      _pick('Contraseña', 'Password', 'Senha', 'Password', 'Mot de passe');
+  String get authConfirmPassword => _pick(
+    'Repetir contraseña',
+    'Repeat password',
+    'Repetir senha',
+    'Ripeti password',
+    'Répéter le mot de passe',
+  );
+  String get authEnterButton =>
+      _pick('Entrar', 'Enter', 'Entrar', 'Entra', 'Entrer');
+  String get authCreateButton => _pick(
+    'Crear mi cuenta',
+    'Create my account',
+    'Criar minha conta',
+    'Crea il mio account',
+    'Créer mon compte',
+  );
+  String get authErrInvalidEmail => _pick(
+    'Ingresá un correo válido',
+    'Enter a valid email address',
+    'Digite um e-mail válido',
+    'Inserisci un indirizzo e-mail valido',
+    'Saisissez une adresse e-mail valide',
+  );
+  String get authErrWeakPassword => _pick(
+    'La contraseña necesita al menos 6 caracteres',
+    'The password needs at least 6 characters',
+    'A senha precisa de pelo menos 6 caracteres',
+    'La password richiede almeno 6 caratteri',
+    'Le mot de passe exige au moins 6 caractères',
+  );
+  String get authErrMismatch => _pick(
+    'Las contraseñas no coinciden',
+    'Passwords do not match',
+    'As senhas não coincidem',
+    'Le password non coincidono',
+    'Les mots de passe ne coïncident pas',
+  );
+  String get authErrEmailTaken => _pick(
+    'Ya hay una cuenta en este teléfono: iniciá sesión',
+    'An account already exists on this phone: sign in',
+    'Já existe uma conta neste telefone: entre',
+    'Esiste già un account su questo telefono: accedi',
+    "Un compte existe déjà sur ce téléphone : connectez-vous",
+  );
+  String get authErrWrongCredentials => _pick(
+    'Correo o contraseña incorrectos',
+    'Wrong email or password',
+    'E-mail ou senha incorretos',
+    'E-mail o password non corretti',
+    'E-mail ou mot de passe incorrects',
+  );
+  String get authLocalNote => _pick(
+    'Tu cuenta vive solo en este teléfono. Sin internet: nada sale de él.',
+    'Your account lives only on this phone. No internet: nothing leaves it.',
+    'Sua conta vive só neste telefone. Sem internet: nada sai dele.',
+    'Il tuo account vive solo su questo telefono. Niente internet: nulla esce.',
+    'Votre compte vit uniquement sur ce téléphone. Sans internet : rien n’en sort.',
+  );
+  String get authLogout => _pick(
+    'Cerrar sesión',
+    'Sign out',
+    'Sair da conta',
+    'Esci dall’account',
+    'Se déconnecter',
+  );
+
   // Hallazgos (ids estables → texto localizado)
 }

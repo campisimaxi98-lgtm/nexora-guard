@@ -132,8 +132,10 @@ class _NexoraAlertsScreenState extends State<NexoraAlertsScreen> {
                 : ListView.builder(
                     padding: const EdgeInsets.only(bottom: 24),
                     itemCount: filtered.length,
-                    itemBuilder: (context, i) =>
-                        FindingCard(finding: filtered[i], strings: widget.strings),
+                    itemBuilder: (context, i) => FindingCard(
+                      finding: filtered[i],
+                      strings: widget.strings,
+                    ),
                   ),
           ),
         ],

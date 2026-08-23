@@ -89,14 +89,7 @@ class _NexoraShieldPainter extends CustomPainter {
       ..cubicTo(w * 0.735, h * 0.64, w * 0.635, h * 0.765, w * 0.5, h * 0.845)
       ..cubicTo(w * 0.365, h * 0.765, w * 0.265, h * 0.64, w * 0.265, h * 0.45)
       ..lineTo(w * 0.265, h * 0.205)
-      ..cubicTo(
-        w * 0.265,
-        h * 0.205,
-        w * 0.365,
-        h * 0.155,
-        w * 0.5,
-        h * 0.155,
-      )
+      ..cubicTo(w * 0.265, h * 0.205, w * 0.365, h * 0.155, w * 0.5, h * 0.155)
       ..close();
     canvas.drawPath(
       inner,

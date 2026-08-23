@@ -115,16 +115,11 @@ void main() {
       auditSupported: false,
     );
     expect(result.isEmpty, isTrue);
-    expect(
-      File('${tmp.path}/nexora-apps-baseline.json').existsSync(),
-      isFalse,
-    );
+    expect(File('${tmp.path}/nexora-apps-baseline.json').existsSync(), isFalse);
   });
 
   test('baseline corrupto se reconstruye sin acusar a nadie', () async {
-    await File(
-      '${tmp.path}/nexora-apps-baseline.json',
-    ).writeAsString('{roto');
+    await File('${tmp.path}/nexora-apps-baseline.json').writeAsString('{roto');
     final store = BaselineStore(tmp.path);
     final result = await store.diffAndUpdate(
       [buildAppRisk(packageName: 'com.a')],

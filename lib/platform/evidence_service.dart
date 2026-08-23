@@ -48,8 +48,7 @@ class EvidenceService {
     } on FormatException {
       return false;
     }
-    if (decoded is! Map<String, dynamic> ||
-        decoded['nexoraBackup'] is! num) {
+    if (decoded is! Map<String, dynamic> || decoded['nexoraBackup'] is! num) {
       return false;
     }
     for (final entry in _files.entries) {

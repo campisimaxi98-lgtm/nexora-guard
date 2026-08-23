@@ -167,7 +167,10 @@ class _LegendStat extends StatelessWidget {
         ),
       ),
       const SizedBox(height: 2),
-      Text(label, style: const TextStyle(color: Colors.white54, fontSize: 11.5)),
+      Text(
+        label,
+        style: const TextStyle(color: Colors.white54, fontSize: 11.5),
+      ),
     ],
   );
 }
@@ -262,13 +265,7 @@ class _DonutPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth
       ..color = Colors.white10;
-    canvas.drawArc(
-      rect.deflate(strokeWidth / 2),
-      0,
-      6.28319,
-      false,
-      base,
-    );
+    canvas.drawArc(rect.deflate(strokeWidth / 2), 0, 6.28319, false, base);
     if (total == 0) return;
 
     double start = -1.5708; // -90°
@@ -280,13 +277,7 @@ class _DonutPainter extends CustomPainter {
         ..strokeWidth = strokeWidth
         ..strokeCap = StrokeCap.butt
         ..color = color;
-      canvas.drawArc(
-        rect.deflate(strokeWidth / 2),
-        start,
-        sweep,
-        false,
-        paint,
-      );
+      canvas.drawArc(rect.deflate(strokeWidth / 2), start, sweep, false, paint);
       start += sweep;
     }
 

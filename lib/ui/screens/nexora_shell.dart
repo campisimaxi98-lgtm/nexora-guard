@@ -82,9 +82,7 @@ class _NexoraShellState extends State<NexoraShell> {
     if (snapshot == null || verdict == null) {
       return const Scaffold(
         backgroundColor: nexoraBackground,
-        body: Center(
-          child: CircularProgressIndicator(color: nexoraGold),
-        ),
+        body: Center(child: CircularProgressIndicator(color: nexoraGold)),
       );
     }
 

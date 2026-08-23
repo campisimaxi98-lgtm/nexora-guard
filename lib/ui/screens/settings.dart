@@ -19,6 +19,8 @@ class SettingsScreen extends StatelessWidget {
     this.onRestore,
     this.onWipe,
     this.onReport,
+    this.onLogout,
+    this.accountEmail,
   });
 
   final AppConfig config;
@@ -28,6 +30,12 @@ class SettingsScreen extends StatelessWidget {
   final VoidCallback? onRestore;
   final VoidCallback? onWipe;
   final VoidCallback? onReport;
+
+  /// Sesión local: si hay callback, se muestra la sección de cuenta.
+  final VoidCallback? onLogout;
+
+  /// Correo de la cuenta activa (solo informativo).
+  final String? accountEmail;
 
   /// Fila de umbral con paso de ±1 dentro de [min, max].
   Widget _stepper(
@@ -299,6 +307,33 @@ class SettingsScreen extends StatelessWidget {
             ),
           ],
         ),
+        if (onLogout != null)
+          SectionCard(
+            title: strings.authSignIn,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.account_circle_outlined, size: 20),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      accountEmail ?? '',
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton.icon(
+                  icon: const Icon(Icons.logout, size: 18),
+                  label: Text(strings.authLogout),
+                  onPressed: onLogout,
+                ),
+              ),
+            ],
+          ),
       ],
     );
   }
