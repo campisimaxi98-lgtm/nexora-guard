@@ -1,0 +1,10 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Único permiso que distingue este flavor del `offline`: habilita el
+         chat en línea con el backend NEXORA GUARD (ver
+         lib/core/nexora_chat_client.dart). El manifiesto de `main/` sigue
+         siendo la base — este archivo solo se fusiona por encima de él
+         cuando se compila con `--flavor connected`. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+</manifest>
