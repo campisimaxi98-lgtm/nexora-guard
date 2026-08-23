@@ -6,9 +6,9 @@ class Meta {
   static const String suiteName = 'NEXORA';
   static const String coreName = 'NEXORA BRAIN';
   static const String slogan = 'Un cerebro. Toda la inteligencia.';
-  static const String version = '0.8.0';
-  static const String author = 'Max';
+  static const String version = '1.0.0';
+  static const String author = 'Maximiliano Campissi';
   static const String repository =
-      'https://github.com/nexora-app-org/nexora-guard';
+      'https://github.com/campisimaxi98-lgtm/nexora-guard';
   static const String license = 'Apache-2.0';
 }

@@ -622,6 +622,11 @@ class _InspectorHomeState extends State<InspectorHome> {
       snapshot: snapshot,
       verdict: verdict,
       strings: strings,
+      riskyApps: snapshot.apps
+          .where(
+            (a) => a.riskScore >= _config.thresholds.riskyAppScoreThreshold,
+          )
+          .length,
       onOpenSystemScreen: _openSystemScreen,
     ),
     'apps' => AppsScreen(
@@ -736,16 +741,8 @@ class _InspectorHomeState extends State<InspectorHome> {
           ),
         ),
         body: snapshot == null || verdict == null
-            ? Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const CircularProgressIndicator(),
-                    const SizedBox(height: 12),
-                    Text(strings.loading),
-                  ],
-                ),
-              )
+            // Radar animado de captura: marca viva en vez de spinner genérico.
+            ? RadarScan(strings: strings)
             : TabBarView(
                 children: [
                   for (final t in visible)

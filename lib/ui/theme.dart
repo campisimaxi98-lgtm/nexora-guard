@@ -31,9 +31,22 @@ Color severityColor(Severity s) => switch (s) {
   Severity.critical => severityRed,
 };
 
+/// Transición estándar de la app: deslizamiento con desvanecido hacia
+/// adelante en todas las plataformas — movimiento consistente y sobrio.
+const _pageTransitions = PageTransitionsTheme(
+  builders: {
+    TargetPlatform.android: FadeForwardsPageTransitionsBuilder(),
+    TargetPlatform.iOS: FadeForwardsPageTransitionsBuilder(),
+    TargetPlatform.linux: FadeForwardsPageTransitionsBuilder(),
+    TargetPlatform.macOS: FadeForwardsPageTransitionsBuilder(),
+    TargetPlatform.windows: FadeForwardsPageTransitionsBuilder(),
+  },
+);
+
 ThemeData nexoraDarkTheme() => ThemeData(
   useMaterial3: true,
   brightness: Brightness.dark,
+  pageTransitionsTheme: _pageTransitions,
   colorScheme: ColorScheme.fromSeed(
     seedColor: nexoraBlue,
     brightness: Brightness.dark,
@@ -67,6 +80,7 @@ ThemeData nexoraDarkTheme() => ThemeData(
 ThemeData nexoraLightTheme() => ThemeData(
   useMaterial3: true,
   brightness: Brightness.light,
+  pageTransitionsTheme: _pageTransitions,
   colorScheme: ColorScheme.fromSeed(
     seedColor: nexoraBlue,
     brightness: Brightness.light,

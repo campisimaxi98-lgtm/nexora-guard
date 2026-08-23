@@ -51,6 +51,9 @@ String languageCodeOf(AppLang lang) => switch (lang) {
   AppLang.fr => 'fr',
 };
 
+/// Autoría de la app, visible en la bienvenida, Acerca y Configuración.
+const String nexoraCreatorName = 'Maximiliano Campissi';
+
 class AppStrings {
   const AppStrings(this.lang);
 
@@ -1378,6 +1381,40 @@ class AppStrings {
     'Esci dall’account',
     'Se déconnecter',
   );
+
+  // Panel interactivo (dona de riesgo y métricas animadas)
+  String get donutTitle => _pick(
+    'Composición del riesgo',
+    'Risk composition',
+    'Composição do risco',
+    'Composizione del rischio',
+    'Composition du risque',
+  );
+  String get donutHint => _pick(
+    'Tocá un arco o la leyenda para ver el detalle.',
+    'Tap an arc or the legend for details.',
+    'Toque em um arco ou na legenda para ver o detalhe.',
+    'Tocca un arco o la legenda per i dettagli.',
+    'Touchez un arc ou la légende pour le détail.',
+  );
+  String get donutEmpty => _pick(
+    'Sin hallazgos que desglosar: todo en orden.',
+    'No findings to break down: all clear.',
+    'Sem achados a detalhar: tudo em ordem.',
+    'Nessun rilievo da analizzare: tutto ok.',
+    'Rien à détailler : tout est en ordre.',
+  );
+  String get metricSignals => _pick(
+    'Señales activas',
+    'Active signals',
+    'Sinais ativos',
+    'Segnali attivi',
+    'Signaux actifs',
+  );
+
+  // Crédito de autoría
+  String get createdBy =>
+      _pick('Creado por', 'Created by', 'Criado por', 'Creato da', 'Créé par');
 
   // Hallazgos (ids estables → texto localizado)
 }

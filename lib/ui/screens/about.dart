@@ -3,7 +3,9 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../nexora_logo.dart';
 import '../strings.dart';
+import '../theme.dart';
 import '../widgets.dart';
 
 class AboutScreen extends StatelessWidget {
@@ -86,6 +88,29 @@ class AboutScreen extends StatelessWidget {
             ),
           ],
         ],
+      ),
+      // Crédito de autoría con la marca.
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 20),
+        child: Column(
+          children: [
+            const NexoraLogo(size: 56, showRing: false),
+            const SizedBox(height: 10),
+            Text(
+              strings.createdBy,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+            const SizedBox(height: 2),
+            Text(
+              nexoraCreatorName,
+              style: const TextStyle(
+                fontWeight: FontWeight.w800,
+                fontSize: 15,
+                color: nexoraGold,
+              ),
+            ),
+          ],
+        ),
       ),
     ],
   );

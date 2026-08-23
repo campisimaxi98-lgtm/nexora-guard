@@ -48,3 +48,8 @@ Thumbs.db
 *.aab
 *.ipa
 output-metadata.json
+
+# Firma release local - NUNCA subir al repositorio
+android/key.properties
+*.jks
+*.keystore

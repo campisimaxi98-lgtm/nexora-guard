@@ -334,6 +334,21 @@ class SettingsScreen extends StatelessWidget {
               ),
             ],
           ),
+        // Crédito discreto al pie de la configuración.
+        Padding(
+          padding: const EdgeInsets.only(top: 6, bottom: 18),
+          child: Center(
+            child: Text(
+              '${strings.createdBy} $nexoraCreatorName',
+              style: TextStyle(
+                fontSize: 11,
+                color: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.color?.withValues(alpha: 0.55),
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }

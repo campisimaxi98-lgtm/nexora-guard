@@ -5,6 +5,38 @@ Todos los cambios notables de NEXORA GUARD. El formato sigue
 [SemVer](https://semver.org/lang/es/). La versión actual es la fuente de
 verdad en `pubspec.yaml`.
 
+## [1.0.0] - 2026-08-23 — Radar vivo, gráficos táctiles y listos para tiendas
+
+### Added
+
+- **Radar de escaneo animado**: mientras se captura el estado del dispositivo,
+  un radar giratorio con estela dorada, ecos que destellan al ser barridos y
+  el escudo NEXORA en el centro reemplaza al spinner genérico.
+- **Panel rápido con cifras que cuentan**: cuatro métricas (RAM disponible,
+  disco libre, batería y apps riesgosas) entran en cascada y sus números
+  suben de 0 a su valor con curva easeOutCubic.
+- **Dona interactiva de composición del riesgo**: los hallazgos por severidad
+  se dibujan como arcos que se barren al entrar; tocar un arco o la leyenda
+  resalta el tramo, lo engrosa, atenúa el resto y muestra el porcentaje y el
+  nombre de la severidad en el centro. Cinco idiomas para títulos y leyenda.
+- **Gráfico de tendencia interactivo**: el historial ahora responde al tacto —
+  arrastrar o tocar recorre las capturas con indicador vertical y burbuja que
+  muestra fecha, RAM, disco y temperatura real (°C) por punto. El trazado se
+  dibuja al entrar con revelado progresivo y área sombreada.
+- **Transiciones de página** deslizadas con desvanecido en todas las
+  plataformas (`FadeForwardsPageTransitionsBuilder`).
+- **Crédito de autoría**: "Maximiliano Campissi" visible en la bienvenida,
+  Acerca (tarjeta con escudo) y Configuración; `Meta.author` actualizado junto
+  con el repositorio real.
+- **Preparación para tiendas**: firma release con keystore propio (env vars de
+  CI **o** `android/key.properties` local, con fallback debug), App Bundle
+  firmado (`app-release.aab`), ícono 512×512 y feature graphic 1024×500
+  generados desde la marca (`test/store_assets_test.dart` +
+  `scripts/make_store_assets.py`), sitio público en GitHub Pages con la
+  política de privacidad exigida por Play Console, y guía completa
+  `docs/STORE_SUBMISSION.md`.
+- 5 tests nuevos de widgets interactivos (141 en total).
+
 ## [0.9.0] - 2026-08-23 — Puerta local y medidor radial
 
 ### Added

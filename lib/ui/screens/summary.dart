@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/models.dart';
 import '../strings.dart';
+import '../theme.dart';
 import '../widgets.dart';
 
 class SummaryScreen extends StatelessWidget {
@@ -13,12 +14,17 @@ class SummaryScreen extends StatelessWidget {
     required this.snapshot,
     required this.verdict,
     required this.strings,
+    required this.riskyApps,
     this.onOpenSystemScreen,
   });
 
   final Snapshot snapshot;
   final Verdict verdict;
   final AppStrings strings;
+
+  /// Apps de usuario con riesgo >= umbral configurado (calculado por quien
+  /// posee la config); alimenta la cuarta métrica del panel rápido.
+  final int riskyApps;
   final void Function(String screen)? onOpenSystemScreen;
 
   /// Pantalla del sistema que resuelve cada hallazgo, si existe una directa.
@@ -35,9 +41,78 @@ class SummaryScreen extends StatelessWidget {
     final mem = snapshot.memory;
     final st = snapshot.storage;
     final bat = snapshot.battery;
+    final theme = Theme.of(context);
+
+    // Conteo por severidad para la dona interactiva.
+    final donutCounts = <Severity, int>{};
+    for (final f in verdict.findings) {
+      donutCounts[f.severity] = (donutCounts[f.severity] ?? 0) + 1;
+    }
+
     return ListView(
       children: [
         VerdictBanner(verdict: verdict, strings: strings),
+        // Panel rápido: cuatro cifras que cuentan de 0 a su valor al entrar.
+        StaggerIn(
+          index: 0,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(12, 4, 12, 4),
+            child: GridView.count(
+              crossAxisCount: 2,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              mainAxisSpacing: 10,
+              crossAxisSpacing: 10,
+              childAspectRatio: 1.5,
+              children: [
+                MetricTile(
+                  icon: Icons.memory_rounded,
+                  value: (mem.availableRatio * 100).round(),
+                  label: strings.memAvailable,
+                  color: nexoraBlue,
+                ),
+                MetricTile(
+                  icon: Icons.save_rounded,
+                  value: (st.freeRatio * 100).round(),
+                  label: strings.storageFree,
+                  color: severityGreen,
+                ),
+                MetricTile(
+                  icon: Icons.battery_charging_full_rounded,
+                  value: bat.levelPercent,
+                  label: strings.batteryLevel,
+                  color: nexoraGold,
+                ),
+                MetricTile(
+                  icon: Icons.gpp_maybe_rounded,
+                  value: riskyApps,
+                  suffix: '',
+                  label: strings.compareRisky,
+                  color: nexoraRed,
+                ),
+              ],
+            ),
+          ),
+        ),
+        // Dona interactiva: se barre al entrar y responde al tacto.
+        if (verdict.findings.isNotEmpty)
+          StaggerIn(
+            index: 1,
+            child: SectionCard(
+              title: strings.donutTitle,
+              children: [
+                Center(
+                  child: ThreatDonut(counts: donutCounts, strings: strings),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  strings.donutHint,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodySmall,
+                ),
+              ],
+            ),
+          ),
         if (verdict.findings.isEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),

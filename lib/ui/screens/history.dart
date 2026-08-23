@@ -1,4 +1,4 @@
-/// Pestaña Historial: gráfico de tendencia y comparación A→B con deltas.
+/// Pestaña Historial: gráfico de tendencia interactivo y comparación A→B.
 library;
 
 import 'package:flutter/material.dart';
@@ -7,64 +7,11 @@ import '../../core/history_store.dart';
 import '../strings.dart';
 import '../widgets.dart';
 
-/// Gráfico de tendencia sin dependencias: dos series porcentuales (RAM
-/// disponible y disco libre) sobre las capturas del historial, de la más
-/// antigua a la más reciente.
-class _TrendPainter extends CustomPainter {
-  const _TrendPainter({
-    required this.memSeries,
-    required this.storageSeries,
-    required this.tempSeries,
-    required this.memColor,
-    required this.storageColor,
-    required this.tempColor,
-    required this.gridColor,
-  });
-
-  final List<int> memSeries;
-  final List<int> storageSeries;
-
-  /// Temperatura escalada a 0-100 (0-60 °C); vacía si no hay datos.
-  final List<int> tempSeries;
-  final Color memColor;
-  final Color storageColor;
-  final Color tempColor;
-  final Color gridColor;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final grid = Paint()
-      ..color = gridColor
-      ..strokeWidth = 1;
-    for (final pct in const [0, 50, 100]) {
-      final y = size.height * (1 - pct / 100);
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), grid);
-    }
-    _polyline(canvas, size, memSeries, memColor);
-    _polyline(canvas, size, storageSeries, storageColor);
-    _polyline(canvas, size, tempSeries, tempColor);
-  }
-
-  void _polyline(Canvas canvas, Size size, List<int> series, Color color) {
-    if (series.length < 2) return;
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = 2.5
-      ..style = PaintingStyle.stroke
-      ..strokeCap = StrokeCap.round;
-    final step = size.width / (series.length - 1);
-    final path = Path();
-    for (var i = 0; i < series.length; i++) {
-      final x = step * i;
-      final y = size.height * (1 - series[i].clamp(0, 100) / 100);
-      i == 0 ? path.moveTo(x, y) : path.lineTo(x, y);
-    }
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(_TrendPainter old) =>
-      old.memSeries != memSeries || old.storageSeries != storageSeries;
+/// Etiqueta corta para el eje X del gráfico: dd/MM HH:mm.
+String _shortStamp(int millis) {
+  final dt = DateTime.fromMillisecondsSinceEpoch(millis);
+  String two(int v) => v.toString().padLeft(2, '0');
+  return '${two(dt.day)}/${two(dt.month)} ${two(dt.hour)}:${two(dt.minute)}';
 }
 
 class HistoryScreen extends StatefulWidget {
@@ -166,33 +113,41 @@ class _HistoryScreenState extends State<HistoryScreen> {
           SectionCard(
             title: strings.trendTitle,
             children: [
-              SizedBox(
-                height: 110,
-                width: double.infinity,
-                child: Semantics(
-                  label: strings.trendTitle,
-                  child: CustomPaint(
-                    painter: _TrendPainter(
-                      memSeries: [
+              Semantics(
+                label: strings.trendTitle,
+                child: InteractiveLineChart(
+                  xLabels: [
+                    for (final r in chronological)
+                      _shortStamp(r.timestampMillis),
+                  ],
+                  series: [
+                    LineSeries(
+                      label: strings.compareMem,
+                      points: [
                         for (final r in chronological) r.memAvailablePct,
                       ],
-                      storageSeries: [
-                        for (final r in chronological) r.storageFreePct,
-                      ],
-                      // 0-60 °C escalados al eje 0-100 del gráfico; la
-                      // leyenda lo declara. Sin datos (iOS), sin línea.
-                      tempSeries: chronological.any((r) => r.batteryTempC >= 0)
-                          ? [
-                              for (final r in chronological)
-                                (r.batteryTempC.clamp(0, 60) * 100 ~/ 60),
-                            ]
-                          : const [],
-                      memColor: memColor,
-                      storageColor: storageColor,
-                      tempColor: theme.colorScheme.error,
-                      gridColor: theme.dividerColor.withValues(alpha: 0.4),
+                      color: memColor,
                     ),
-                  ),
+                    LineSeries(
+                      label: strings.compareStorage,
+                      points: [for (final r in chronological) r.storageFreePct],
+                      color: storageColor,
+                    ),
+                    // 0-60 °C escalados al eje 0-100 del gráfico; la leyenda
+                    // lo declara y la burbuja muestra el °C real.
+                    if (chronological.any((r) => r.batteryTempC >= 0))
+                      LineSeries(
+                        label: strings.batteryTemp,
+                        points: [
+                          for (final r in chronological)
+                            (r.batteryTempC.clamp(0, 60) * 100 ~/ 60),
+                        ],
+                        color: theme.colorScheme.error,
+                        formatValue: (v) =>
+                            '${(v * 60 / 100).toStringAsFixed(0)} °C',
+                      ),
+                  ],
+                  gridColor: theme.dividerColor.withValues(alpha: 0.4),
                 ),
               ),
               const SizedBox(height: 8),

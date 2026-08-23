@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
@@ -22,18 +24,29 @@ android {
         versionName = flutter.versionName
     }
 
-    // Firma release: el workflow de release inyecta estas variables de
-    // entorno (ANDROID_KEYSTORE_PATH decodificado desde el secreto
-    // ANDROID_KEYSTORE_BASE64). Sin ellas, cae a la firma debug para que
-    // `flutter build apk --release` funcione en local y en CI sin secretos.
+    // Firma release, en orden de prioridad:
+    // 1. Variables de entorno (CI: ANDROID_KEYSTORE_PATH decodificado desde
+    //    el secreto ANDROID_KEYSTORE_BASE64).
+    // 2. android/key.properties (máquina local; el archivo está gitignored y
+    //    apunta al keystore real guardado FUERA del repositorio).
+    // 3. Firma debug (fallback para compilar sin secretos en cualquier lado).
+    val keystoreProperties = Properties().apply {
+        val f = rootProject.file("key.properties")
+        if (f.exists()) f.inputStream().use { load(it) }
+    }
+
     signingConfigs {
         create("release") {
             val keystorePath = System.getenv("ANDROID_KEYSTORE_PATH")
+                ?: (keystoreProperties["storeFile"] as String?)
             if (keystorePath != null) {
                 storeFile = file(keystorePath)
                 storePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
+                    ?: (keystoreProperties["storePassword"] as String?)
                 keyAlias = System.getenv("ANDROID_KEY_ALIAS")
+                    ?: (keystoreProperties["keyAlias"] as String?)
                 keyPassword = System.getenv("ANDROID_KEY_PASSWORD")
+                    ?: (keystoreProperties["keyPassword"] as String?)
             }
         }
     }
@@ -49,11 +62,14 @@ android {
 
     buildTypes {
         release {
-            signingConfig = if (System.getenv("ANDROID_KEYSTORE_PATH") != null) {
-                signingConfigs.getByName("release")
-            } else {
-                signingConfigs.getByName("debug")
-            }
+            signingConfig =
+                if (System.getenv("ANDROID_KEYSTORE_PATH") != null ||
+                    keystoreProperties["storeFile"] != null
+                ) {
+                    signingConfigs.getByName("release")
+                } else {
+                    signingConfigs.getByName("debug")
+                }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",

@@ -196,6 +196,18 @@ class _AuthScreenState extends State<AuthScreen>
                         ),
                       ],
                     ),
+                    const SizedBox(height: 14),
+                    // Crédito de autoría, siempre visible en la puerta de entrada.
+                    Text(
+                      '${s.createdBy} ${nexoraCreatorName.toUpperCase()}',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 11,
+                        letterSpacing: 1.2,
+                        fontWeight: FontWeight.w600,
+                        color: nexoraGold.withValues(alpha: 0.55),
+                      ),
+                    ),
                   ],
                 ),
               ),
