@@ -214,6 +214,47 @@ class CollectorLogicTest {
         assertFalse("android.permission.VIBRATE" in CollectorLogic.DANGEROUS_PERMISSIONS)
     }
 
+    // ── Carga de CPU real (/proc/stat) ──────────────────────────────────
+
+    private val procStatLine =
+        "cpu  192523 538 53606 1576612 13317 0 3419 0 0 0"
+
+    @Test
+    fun `parsea el agregado cpu de proc stat`() {
+        val times = CollectorLogic.parseCpuTimes(procStatLine)!!
+        assertEquals(192523L + 538L + 53606L + 1576612L + 13317L + 3419L, times.total)
+        assertEquals(1576612L + 13317L, times.idle)
+    }
+
+    @Test
+    fun `una linea que no es del agregado cpu no adivina`() {
+        assertEquals(null, CollectorLogic.parseCpuTimes("cpu0 10 20 30 40"))
+        assertEquals(null, CollectorLogic.parseCpuTimes("mem  10 20"))
+        assertEquals(null, CollectorLogic.parseCpuTimes("cpu  no-numeros 1 2 3"))
+        assertEquals(null, CollectorLogic.parseCpuTimes(null))
+        assertEquals(null, CollectorLogic.parseCpuTimes(""))
+    }
+
+    @Test
+    fun `porcentaje real entre dos lecturas consecutivas`() {
+        val prev = CollectorLogic.parseCpuTimes(procStatLine)!!
+        // 500 jiffies más, 100 de ellos idle: 80% de carga.
+        val next = CollectorLogic.CpuTimes(prev.total + 500, prev.idle + 100)
+        assertEquals(80, CollectorLogic.cpuLoadPercent(prev, next))
+    }
+
+    @Test
+    fun `sin lectura previa no hay ventana y no se inventa un cero`() {
+        val curr = CollectorLogic.parseCpuTimes(procStatLine)!!
+        assertEquals(null, CollectorLogic.cpuLoadPercent(null, curr))
+    }
+
+    @Test
+    fun `delta nulo (mismo tick) devuelve null, nunca 0`() {
+        val t = CollectorLogic.parseCpuTimes(procStatLine)!!
+        assertEquals(null, CollectorLogic.cpuLoadPercent(t, t))
+    }
+
     private fun propOf(vararg pairs: Pair<String, String>): (String) -> String? {
         val map = pairs.toMap()
         return { map[it] }

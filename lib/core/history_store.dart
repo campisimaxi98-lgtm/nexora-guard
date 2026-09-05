@@ -39,6 +39,9 @@ class HistoryRow {
     required this.storageFreePct,
     required this.riskyApps,
     this.batteryTempC = -1,
+    this.batteryPercent = -1,
+    this.cpuUsedPercent = -1,
+    this.cpuPercentAvailable = false,
   });
 
   final int timestampMillis;
@@ -51,6 +54,18 @@ class HistoryRow {
   /// Temperatura de batería (°C redondeados); -1 si la plataforma no la
   /// expone (iOS) — la serie del gráfico la omite.
   final int batteryTempC;
+
+  /// Nivel de batería (%) de la captura; -1 si se desconoce.
+  final int batteryPercent;
+
+  /// Carga de CPU real (%) medida entre capturas; -1 si no hubo ventana
+  /// (primera captura) o la plataforma no la expuso.
+  final int cpuUsedPercent;
+
+  /// `true` cuando esta captura tiene una lectura real de CPU.
+  final bool cpuPercentAvailable;
+
+  bool get batteryInfoAvailable => batteryTempC >= 0 || batteryPercent >= 0;
 }
 
 class HistoryStore {
@@ -170,10 +185,12 @@ class HistoryStore {
     final memory = map['memory'] is Map ? map['memory'] as Map : const {};
     final storage = map['storage'] is Map ? map['storage'] as Map : const {};
     final battery = map['battery'] is Map ? map['battery'] as Map : const {};
+    final device = map['device'] is Map ? map['device'] as Map : const {};
     final apps = map['apps'] is List ? map['apps'] as List : const [];
 
     int pct(num total, num part) => total > 0 ? (part * 100 ~/ total) : 0;
     num asNum(Object? v) => v is num ? v : 0;
+    int asIntOrNeg(Object? v) => v is num ? v.toInt() : -1;
 
     return HistoryRow(
       timestampMillis: asNum(map['timestampMillis']).toInt(),
@@ -200,6 +217,9 @@ class HistoryStore {
       batteryTempC: battery['temperatureAvailable'] == true
           ? asNum(battery['temperatureCelsius']).round()
           : -1,
+      batteryPercent: asIntOrNeg(battery['levelPercent']),
+      cpuUsedPercent: asIntOrNeg(device['cpuLoadPercent']),
+      cpuPercentAvailable: device['cpuLoadPercent'] is num,
     );
   }
 }

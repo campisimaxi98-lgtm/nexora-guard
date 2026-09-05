@@ -310,6 +310,7 @@ class DeviceInfo {
     required this.appsAuditSupported,
     this.vendorSkin = '',
     this.usageAccessGranted = false,
+    this.cpuLoadPercent = -1,
   });
 
   factory DeviceInfo.fromMap(Map<Object?, Object?> map) => DeviceInfo(
@@ -324,6 +325,7 @@ class DeviceInfo {
     appsAuditSupported: _asBool(map['appsAuditSupported']),
     vendorSkin: _asString(map['vendorSkin'], ''),
     usageAccessGranted: _asBool(map['usageAccessGranted']),
+    cpuLoadPercent: map['cpuLoadPercent'] is int ? map['cpuLoadPercent']! as int : -1,
   );
 
   final String manufacturer;
@@ -345,6 +347,12 @@ class DeviceInfo {
   /// `true` si el usuario concedió el acceso de uso (permiso especial);
   /// habilita el tiempo en pantalla por app.
   final bool usageAccessGranted;
+
+  /// Carga de CPU REAL (0..100) medida por el nativo entre capturas;
+  /// -1 si la plataforma no la expuso en esta captura — nunca se simula.
+  final int cpuLoadPercent;
+
+  bool get cpuLoadAvailable => cpuLoadPercent >= 0;
 }
 
 /// Captura completa del estado del dispositivo en un instante.

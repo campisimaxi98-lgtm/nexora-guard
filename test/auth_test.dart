@@ -10,6 +10,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nexora_guard/core/auth_store.dart';
+import 'package:nexora_guard/core/password_recovery.dart';
 
 void main() {
   late Directory dir;
@@ -114,5 +115,78 @@ void main() {
     final alien = freshStore();
     expect(alien.account, isNull);
     expect(alien.loggedIn, isFalse);
+  });
+
+  test('sin "Recordarme" la sesión dura solo este arranque', () async {
+    final store = freshStore();
+    expect(
+      store.register('maxi@nexora.dev', 'secreta1', rememberMe: false),
+      AuthResult.ok,
+    );
+    // En esta instancia hay sesión…
+    expect(store.loggedIn, isTrue);
+
+    // …pero otra instancia NO retoma sesión: pidió no quedar registrada.
+    final reopened = freshStore();
+    expect(reopened.loggedIn, isFalse);
+    expect(reopened.account, isNotNull);
+
+    // Con credenciales correctas entra, todavía sin persistir.
+    expect(
+      reopened.login('maxi@nexora.dev', 'secreta1', rememberMe: false),
+      AuthResult.ok,
+    );
+    final third = freshStore();
+    expect(third.loggedIn, isFalse);
+  });
+
+  test('con "Recordarme" la sesión sobrevive al reinicio', () async {
+    final store = freshStore();
+    store.register('maxi@nexora.dev', 'secreta1', rememberMe: true);
+    final reopened = freshStore();
+    expect(reopened.loggedIn, isTrue);
+  });
+
+  test('el registro guarda el perfil opcional (nombre, usuario, avatar)', () async {
+    final store = freshStore();
+    store.register(
+      'maxi@nexora.dev',
+      'secreta1',
+      name: 'Maxi',
+      username: 'maxi_guard',
+    );
+    final reopened = freshStore();
+    expect(reopened.account!.name, 'Maxi');
+    expect(reopened.account!.username, 'maxi_guard');
+
+    // Avatar opcional no rompe nada al persistir.
+    expect(
+      freshStore().register('avatar@nexora.dev', 'secreta2'),
+      AuthResult.emailTaken,
+    );
+  });
+
+  test('updateProfile cambia el perfil sin tocar credenciales', () async {
+    final store = freshStore();
+    store.register('maxi@nexora.dev', 'secreta1', username: 'antes');
+    store.logout();
+
+    final second = freshStore();
+    expect(second.updateProfile(name: 'Nuevo', username: 'despues'), isTrue);
+
+    final third = freshStore();
+    expect(third.account!.name, 'Nuevo');
+    expect(third.account!.username, 'despues');
+    // La contraseña sigue validando contra el mismo hash.
+    expect(third.login('maxi@nexora.dev', 'secreta1'), AuthResult.ok);
+  });
+
+  test('recuperación offline responde honesto: nada se envía', () async {
+    const service = LocalOfflineRecoveryService();
+    expect(service.supported, isFalse);
+    expect(
+      await service.requestReset('maxi@nexora.dev'),
+      PasswordRecoveryResult.notConfigured,
+    );
   });
 }

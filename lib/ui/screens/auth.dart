@@ -1,22 +1,34 @@
-/// Pantalla de bienvenida de NEXORA GUARD — identidad visual y puerta local.
+/// Puerta de cuenta de NEXORA GUARD — identidad visual y sesión local.
 ///
-/// Es la primera pantalla que ve quien abre la app: el escudo NEXORA en
-/// grande sobre fondo profundo, con anillos concéntricos en deriva lenta.
-/// Ofrece dos modos: crear la cuenta local del teléfono o iniciar sesión si
-/// ya existe. Todo ocurre sin red: la cuenta vive únicamente en este equipo
-/// (ver `core/auth_store.dart`).
+/// Es la primera pantalla funcional tras la portada: el escudo NEXORA sobre
+/// el fondo profundo con el planeta digital tenue y anillos en deriva lenta.
+/// Modos:
+/// - Iniciar sesión: correo + contraseña + "Recordarme" (si NO está
+///   marcado, la sesión dura solo este arranque) + acceso a recupero.
+/// - Crear cuenta: foto opcional, nombre, usuario, correo, contraseña,
+///   confirmación y aceptación de términos.
+/// Todo ocurre sin red: la cuenta vive únicamente en este equipo
+/// (ver `core/auth_store.dart`). La recuperación de contraseña es
+/// arquitectura preparada (ver `core/password_recovery.dart`): sin
+/// servicio remoto, responde con honestidad que nada se envía.
 library;
 
 import 'dart:math' as math;
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
 import '../../core/auth_store.dart';
+import '../../core/password_recovery.dart';
+import '../components.dart';
 import '../nexora_logo.dart';
 import '../strings.dart';
 import '../theme.dart';
 
 enum _AuthMode { signIn, signUp }
+
+/// Modo con el que abre la pantalla de cuenta (lo decide la portada).
+enum AuthMode { signIn, signUp }
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({
@@ -24,11 +36,23 @@ class AuthScreen extends StatefulWidget {
     required this.strings,
     required this.store,
     required this.onAuthenticated,
+    this.initialMode,
+    this.recovery = const LocalOfflineRecoveryService(),
+    this.pickImage,
   });
 
   final AppStrings strings;
   final AuthStore store;
   final VoidCallback onAuthenticated;
+
+  /// Si es null, el modo se deduce solo (cuenta existente → iniciar sesión).
+  final AuthMode? initialMode;
+
+  /// Proveedor de recupero; por defecto el local honesto (offline).
+  final PasswordRecoveryService recovery;
+
+  /// Selector de imagen nativa opcional (avatar del registro).
+  final Future<Uint8List?> Function()? pickImage;
 
   @override
   State<AuthScreen> createState() => _AuthScreenState();
@@ -36,21 +60,32 @@ class AuthScreen extends StatefulWidget {
 
 class _AuthScreenState extends State<AuthScreen>
     with SingleTickerProviderStateMixin {
-  _AuthMode _mode = _AuthMode.signUp;
+  late _AuthMode _mode;
 
-  // Si ya existe una cuenta registrada, el modo natural es iniciar sesión.
   @override
   void initState() {
     super.initState();
-    if (widget.store.account != null) _mode = _AuthMode.signIn;
+    _mode = switch (widget.initialMode) {
+      AuthMode.signIn => _AuthMode.signIn,
+      AuthMode.signUp => _AuthMode.signUp,
+      // Si ya existe una cuenta registrada, el modo natural es iniciar sesión.
+      null => widget.store.account != null
+          ? _AuthMode.signIn
+          : _AuthMode.signUp,
+    };
   }
 
   final _formKey = GlobalKey<FormState>();
   final _email = TextEditingController();
   final _password = TextEditingController();
   final _confirm = TextEditingController();
+  final _name = TextEditingController();
+  final _username = TextEditingController();
 
+  Uint8List? _avatar;
   bool _obscure = true;
+  bool _rememberMe = true;
+  bool _termsAccepted = false;
   String? _error;
 
   late final AnimationController _drift = AnimationController(
@@ -64,21 +99,55 @@ class _AuthScreenState extends State<AuthScreen>
     _email.dispose();
     _password.dispose();
     _confirm.dispose();
+    _name.dispose();
+    _username.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickAvatar() async {
+    final picker = widget.pickImage;
+    if (picker == null) return;
+    final bytes = await picker();
+    if (bytes != null && mounted) setState(() => _avatar = bytes);
+  }
+
+  void _openRecovery() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => RecoveryScreen(strings: widget.strings, email: _email.text),
+      ),
+    );
   }
 
   void _submit() {
     final s = widget.strings;
     if (!_formKey.currentState!.validate()) return;
-    if (_mode == _AuthMode.signUp && _confirm.text != _password.text) {
-      setState(() => _error = s.authErrMismatch);
-      return;
+    if (_mode == _AuthMode.signUp) {
+      if (_confirm.text != _password.text) {
+        setState(() => _error = s.authErrMismatch);
+        return;
+      }
+      if (!_termsAccepted) {
+        setState(() => _error = s.authErrTerms);
+        return;
+      }
     }
     setState(() => _error = null);
     // Operación local y síncrona (un JSON minúsculo): sin esperas visibles.
     final result = _mode == _AuthMode.signUp
-        ? widget.store.register(_email.text, _password.text)
-        : widget.store.login(_email.text, _password.text);
+        ? widget.store.register(
+            _email.text,
+            _password.text,
+            name: _name.text,
+            username: _username.text,
+            avatarBase64: _avatar == null ? '' : _avatarBase64(),
+            rememberMe: _rememberMe,
+          )
+        : widget.store.login(
+            _email.text,
+            _password.text,
+            rememberMe: _rememberMe,
+          );
     switch (result) {
       case AuthResult.ok:
         widget.onAuthenticated();
@@ -98,11 +167,29 @@ class _AuthScreenState extends State<AuthScreen>
     }
   }
 
+  /// Base64 sin prefijo del avatar elegido (mismo formato que el del
+  /// colector nativo); en un test sin imágenes reales queda vacío.
+  String _avatarBase64() {
+    final bytes = _avatar;
+    if (bytes == null || bytes.isEmpty) return '';
+    // Sin `dart:convert` en este archivo de UI: se delega el encode al
+    // núcleo (archivo compartido) para no duplicar primitivas.
+    return avatarToBase64(bytes);
+  }
+
   String? _validateEmail(String? value) =>
       (value ?? '').trim().isEmpty ? widget.strings.authErrInvalidEmail : null;
 
   String? _validatePassword(String? value) =>
-      (value ?? '').length < 6 ? widget.strings.authErrWeakPassword : null;
+      (value ?? '').length < 8 ? widget.strings.authErrWeakPassword : null;
+
+  String? _validateUsername(String? value) {
+    final v = value?.trim() ?? '';
+    if (v.length < 3 || RegExp(r'\s').hasMatch(v)) {
+      return widget.strings.authErrUsername;
+    }
+    return null;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -114,6 +201,20 @@ class _AuthScreenState extends State<AuthScreen>
       backgroundColor: nexoraBackground,
       body: Stack(
         children: [
+          // Planeta digital tenue detrás de todo (clima del ecosistema).
+          Positioned.fill(
+            child: Opacity(
+              opacity: 0.28,
+              child: FittedBox(
+                fit: BoxFit.cover,
+                child: SizedBox(
+                  width: 900,
+                  height: 900,
+                  child: NexoraPlanet(size: 900),
+                ),
+              ),
+            ),
+          ),
           Positioned.fill(
             child: AnimatedBuilder(
               animation: _drift,
@@ -220,12 +321,13 @@ class _AuthScreenState extends State<AuthScreen>
 
   Widget _card(BuildContext context) {
     final s = widget.strings;
+    final isSignUp = _mode == _AuthMode.signUp;
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: nexoraSurface.withValues(alpha: 0.55),
+        color: nexoraSurface.withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: nexoraGold.withValues(alpha: 0.25)),
+        border: Border.all(color: nexoraGold.withValues(alpha: 0.22)),
       ),
       child: Form(
         key: _formKey,
@@ -249,7 +351,31 @@ class _AuthScreenState extends State<AuthScreen>
                 _error = null;
               }),
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 16),
+            if (isSignUp) _avatarRow(s),
+            if (isSignUp) ...[
+              const SizedBox(height: 14),
+              TextFormField(
+                controller: _username,
+                textCapitalization: TextCapitalization.none,
+                validator: _validateUsername,
+                decoration: InputDecoration(
+                  labelText: s.authUsername,
+                  prefixIcon: const Icon(Icons.alternate_email),
+                  border: const OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 14),
+              TextFormField(
+                controller: _name,
+                decoration: InputDecoration(
+                  labelText: s.authName,
+                  prefixIcon: const Icon(Icons.person_outline),
+                  border: const OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 14),
+            ],
             TextFormField(
               controller: _email,
               keyboardType: TextInputType.emailAddress,
@@ -285,7 +411,7 @@ class _AuthScreenState extends State<AuthScreen>
               duration: const Duration(milliseconds: 220),
               curve: Curves.easeOut,
               alignment: Alignment.topCenter,
-              child: _mode == _AuthMode.signUp
+              child: isSignUp
                   ? Padding(
                       padding: const EdgeInsets.only(top: 14),
                       child: TextFormField(
@@ -302,6 +428,67 @@ class _AuthScreenState extends State<AuthScreen>
                     )
                   : const SizedBox.shrink(),
             ),
+            if (isSignUp)
+              Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: InkWell(
+                  onTap: () => setState(() => _termsAccepted = !_termsAccepted),
+                  borderRadius: BorderRadius.circular(8),
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: Checkbox(
+                          value: _termsAccepted,
+                          onChanged: (v) =>
+                              setState(() => _termsAccepted = v ?? false),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          s.authTerms,
+                          style: const TextStyle(fontSize: 12.5),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else ...[
+              const SizedBox(height: 12),
+              InkWell(
+                onTap: () => setState(() => _rememberMe = !_rememberMe),
+                borderRadius: BorderRadius.circular(8),
+                child: Row(
+                  children: [
+                    SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: Checkbox(
+                        value: _rememberMe,
+                        onChanged: (v) =>
+                            setState(() => _rememberMe = v ?? true),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        s.authRememberMe,
+                        style: const TextStyle(fontSize: 12.5),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
             if (_error != null) ...[
               const SizedBox(height: 12),
               Row(
@@ -321,15 +508,188 @@ class _AuthScreenState extends State<AuthScreen>
             FilledButton.icon(
               onPressed: _submit,
               icon: Icon(
-                _mode == _AuthMode.signUp
-                    ? Icons.person_add_alt_1_rounded
-                    : Icons.login_rounded,
+                isSignUp ? Icons.person_add_alt_1_rounded : Icons.login_rounded,
               ),
-              label: Text(
-                _mode == _AuthMode.signUp
-                    ? s.authCreateButton
-                    : s.authEnterButton,
+              label: Text(isSignUp ? s.authCreateButton : s.authEnterButton),
+            ),
+            if (!isSignUp) ...[
+              const SizedBox(height: 6),
+              TextButton(
+                onPressed: _openRecovery,
+                child: Text(
+                  s.authForgotPassword,
+                  style: const TextStyle(
+                    color: nexoraGoldLight,
+                    fontSize: 12.5,
+                  ),
+                ),
               ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _avatarRow(AppStrings s) {
+    final picker = widget.pickImage;
+    return Row(
+      children: [
+        GestureDetector(
+          onTap: picker == null ? null : _pickAvatar,
+          child: CircleAvatar(
+            radius: 26,
+            backgroundColor: nexoraBorder.withValues(alpha: 0.6),
+            foregroundImage: _avatar == null
+                ? null
+                : Image.memory(_avatar!).image,
+            child: _avatar == null
+                ? Icon(
+                    Icons.photo_camera_outlined,
+                    color: nexoraGoldLight,
+                    size: 22,
+                  )
+                : null,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Flexible(
+          child: TextButton(
+            onPressed: picker == null ? null : _pickAvatar,
+            child: Text(s.authAvatarLabel),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// Pantalla de REcuperación de contraseña — honesta por diseño.
+///
+/// Sin backend (offline) NO se envía nada: la pantalla explica que el
+/// servicio de envío aún no existe y que la arquitectura ya lo contempla,
+/// según [PasswordRecoveryService]. Nunca simula un enlace, un correo ni
+/// una operación exitosa que no ocurrió.
+class RecoveryScreen extends StatefulWidget {
+  const RecoveryScreen({super.key, required this.strings, this.email});
+
+  final AppStrings strings;
+  final String? email;
+
+  @override
+  State<RecoveryScreen> createState() => _RecoveryScreenState();
+}
+
+class _RecoveryScreenState extends State<RecoveryScreen> {
+  static const _service = LocalOfflineRecoveryService();
+  late final TextEditingController _email = TextEditingController(
+    text: widget.email ?? '',
+  );
+
+  @override
+  void dispose() {
+    _email.dispose();
+    super.dispose();
+  }
+
+  void _send() {
+    // Operación honesta: el servicio local responde "no configurado".
+    _service.requestReset(_email.text.trim()).then((result) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            result == PasswordRecoveryResult.ok
+                ? widget.strings.authRecoverSent
+                : widget.strings.authRecoverNote,
+          ),
+        ),
+      );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final s = widget.strings;
+    return Scaffold(
+      backgroundColor: nexoraBackground,
+      appBar: AppBar(
+        backgroundColor: nexoraBackground,
+        foregroundColor: nexoraGoldLight,
+        title: Text(s.authRecoverTitle),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const SizedBox(height: 12),
+            const Icon(Icons.key_off_outlined, color: nexoraGold, size: 46),
+            const SizedBox(height: 16),
+            Text(
+              s.authRecoverTitle,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              s.authRecoverBody,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 13,
+                color: Theme.of(context).disabledColor,
+              ),
+            ),
+            const SizedBox(height: 18),
+            TextField(
+              controller: _email,
+              keyboardType: TextInputType.emailAddress,
+              decoration: const InputDecoration(
+                labelText: 'Email',
+                prefixIcon: Icon(Icons.mail_outline),
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 16),
+            FilledButton.icon(
+              onPressed: _send,
+              icon: const Icon(Icons.send_rounded, size: 18),
+              label: Text(s.authRecoverSend),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: nexoraSurface,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: nexoraBorder),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(
+                    Icons.info_outline,
+                    color: nexoraOrange,
+                    size: 18,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      s.authRecoverNote,
+                      style: const TextStyle(fontSize: 12.5, height: 1.45),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            TextButton.icon(
+              onPressed: () => Navigator.of(context).pop(),
+              icon: const Icon(Icons.arrow_back, size: 18),
+              label: Text(s.authRecoverBack),
             ),
           ],
         ),
@@ -383,7 +743,7 @@ class _BackdropPainter extends CustomPainter {
     final goldGlow = Paint()
       ..shader = RadialGradient(
         colors: [
-          nexoraGold.withValues(alpha: 0.16),
+          nexoraGold.withValues(alpha: 0.14),
           nexoraGold.withValues(alpha: 0.0),
         ],
       ).createShader(Rect.fromCircle(center: center, radius: size.width * 0.7));
@@ -393,7 +753,7 @@ class _BackdropPainter extends CustomPainter {
       ..shader =
           RadialGradient(
             colors: [
-              nexoraBlue.withValues(alpha: 0.20),
+              nexoraBlue.withValues(alpha: 0.18),
               nexoraBlue.withValues(alpha: 0.0),
             ],
           ).createShader(

@@ -92,6 +92,9 @@ class SnapshotJson {
       'sdkInt': s.device.sdkInt,
       'securityPatch': s.device.securityPatch,
       'cpuCores': s.device.cpuCores,
+      // La carga real de CPU se agrega SIN subir schemaVersion (política de
+      // esquema: solo romper campos existentes sube el número).
+      if (s.device.cpuLoadAvailable) 'cpuLoadPercent': s.device.cpuLoadPercent,
       'uptimeMillis': s.device.uptimeMillis,
       'rootIndicators': s.device.rootIndicators,
       'appsAuditSupported': s.device.appsAuditSupported,

@@ -75,6 +75,42 @@ void main() {
     expect(await store.recent(), isEmpty);
   });
 
+  test('la fila del historial guarda CPU y batería cuando son reales', () async {
+    final store = HistoryStore(tempDir.path);
+    final snapshot = buildSnapshot(
+      device: const DeviceInfo(
+        manufacturer: 'Test',
+        model: 'Test',
+        osVersion: '14',
+        sdkInt: 34,
+        securityPatch: '2025-08',
+        cpuCores: 8,
+        uptimeMillis: 1,
+        rootIndicators: [],
+        appsAuditSupported: true,
+        cpuLoadPercent: 37,
+      ),
+    );
+    final map = SnapshotJson.toMap(snapshot, engine.evaluate(snapshot));
+    await store.append(map);
+
+    final row = (await store.recent()).single;
+    expect(row.cpuUsedPercent, 37);
+    expect(row.cpuPercentAvailable, isTrue);
+    expect(row.batteryPercent, 80);
+    expect(row.batteryTempC, 30);
+    expect(row.cpuPercentAvailable && row.cpuUsedPercent >= 0, isTrue);
+  });
+
+  test('sin CPU expuesta la fila se mantiene honesta (-1, no disponible)', () async {
+    final store = HistoryStore(tempDir.path);
+    await store.append(capture(ts: 1));
+
+    final row = (await store.recent()).single;
+    expect(row.cpuUsedPercent, -1);
+    expect(row.cpuPercentAvailable, isFalse);
+  });
+
   group('cadena de integridad (v0.5.0)', () {
     test('cada captura queda sellada y la cadena verifica', () async {
       final store = HistoryStore(tempDir.path);

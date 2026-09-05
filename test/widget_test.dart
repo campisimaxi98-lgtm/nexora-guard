@@ -259,17 +259,29 @@ void main() {
     await tester.pumpWidget(NexoraApp(authStore: store));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 150));
-    // pumps acotados (los anillos de fondo animan en bucle continuo).
+    // pumps acotados (los anillos del planeta animan en bucle continuo).
 
+    // La PORTADA con el planeta es la puerta de entrada sin sesión.
     expect(find.text('NEXORA'), findsOneWidget);
-    expect(find.text('G U A R D'), findsOneWidget);
-    // El entorno corre en en_US: textos en inglés.
+    expect(find.text('S E C U R I T Y'), findsOneWidget);
     expect(find.text('Sign in'), findsOneWidget);
     expect(find.text('Create account'), findsOneWidget);
     // La app todavía NO está visible detrás de la puerta.
     expect(find.byIcon(Icons.home_filled), findsNothing);
 
-    // Crear la cuenta desde la UI abre la app (operación síncrona local).
+    // Ir a crear cuenta desde la portada.
+    await tester.tap(find.text('Create account'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 150));
+
+    expect(find.text('G U A R D'), findsOneWidget);
+
+    // Crear la cuenta desde la UI (con perfil, recordándola y aceptando
+    // los términos) abre la app (operación síncrona local).
+    await tester.enterText(
+      find.widgetWithText(TextFormField, 'Username').first,
+      'nuevo_user',
+    );
     await tester.enterText(
       find.widgetWithText(TextFormField, 'Email address').first,
       'nuevo@nexora.dev',
@@ -282,6 +294,11 @@ void main() {
       find.widgetWithText(TextFormField, 'Repeat password').first,
       'secreta1',
     );
+    final termsCheckbox = find.byType(Checkbox).first;
+    await tester.ensureVisible(termsCheckbox);
+    await tester.pump();
+    await tester.tap(termsCheckbox, warnIfMissed: false);
+    await tester.pump();
     final createButton = find.widgetWithText(FilledButton, 'Create my account');
     await tester.ensureVisible(createButton);
     await tester.pump();
@@ -304,7 +321,16 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 150));
 
+      // La portada muestra "Sign in" sin estar todavía en la pantalla de
+      // cuenta (que tendría el botón "Enter").
       expect(find.text('Sign in'), findsOneWidget);
+      expect(find.text('Enter'), findsNothing);
+
+      // Entrar a iniciar sesión desde la portada.
+      await tester.tap(find.text('Sign in'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 150));
+
       expect(find.text('Enter'), findsOneWidget);
 
       await tester.enterText(

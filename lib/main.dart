@@ -27,7 +27,6 @@ import 'platform/evidence_service.dart';
 import 'ui/report.dart';
 import 'ui/screens.dart';
 import 'ui/strings.dart';
-import 'ui/nexora_logo.dart';
 import 'ui/theme.dart';
 
 void main() {
@@ -160,6 +159,12 @@ class _AuthGateState extends State<AuthGate> {
   AuthStore? _store;
   bool _ready = false;
 
+  /// Portada con el planeta como puerta: se muestra hasta elegir acceder.
+  bool _showCover = true;
+
+  /// Modo elegido en la portada (iniciar sesión / crear cuenta).
+  AuthMode? _pendingMode;
+
   /// Reserva para el caso degenerado sin directorio de datos: se crea UNA
   /// vez y se reusa entre rebuilds (no un temporal por cada build).
   AuthStore? _fallbackStore;
@@ -204,51 +209,47 @@ class _AuthGateState extends State<AuthGate> {
     ),
   );
 
+  void _openAuth(AuthMode mode) {
+    setState(() {
+      _pendingMode = mode;
+      _showCover = false;
+    });
+  }
+
   void _onAuthenticated() {
     if (mounted) setState(() {});
   }
 
   void _logout() {
     _store?.logout();
-    if (mounted) setState(() {});
+    if (mounted) {
+      setState(() {
+        _showCover = true;
+        _pendingMode = null;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     if (!_ready) {
-      // Arranque con marca: escudo + pulso, nada de spinner genérico.
-      return Scaffold(
-        backgroundColor: nexoraBackground,
-        body: Center(
-          child: TweenAnimationBuilder<double>(
-            tween: Tween(begin: 0.85, end: 1),
-            duration: const Duration(milliseconds: 900),
-            curve: Curves.easeOut,
-            builder: (context, t, child) => Transform.scale(
-              scale: t,
-              child: Opacity(opacity: t, child: child),
-            ),
-            child: const Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                NexoraLogo(size: 120, showRing: true),
-                SizedBox(height: 24),
-                SizedBox(
-                  width: 22,
-                  height: 22,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
+      // Arranque: la portada del planeta, con los botones esperando.
+      return NexoraCoverScreen(strings: _strings, busy: true);
     }
     final store = _store;
     if (store == null || !store.loggedIn) {
+      if (_showCover) {
+        return NexoraCoverScreen(
+          strings: _strings,
+          onSignIn: () => _openAuth(AuthMode.signIn),
+          onSignUp: () => _openAuth(AuthMode.signUp),
+        );
+      }
       return AuthScreen(
         strings: _strings,
         store: store ?? fallbackStore,
+        initialMode: _pendingMode,
+        pickImage: () => const PlatformCollectors().pickImageBytes(),
         onAuthenticated: _onAuthenticated,
       );
     }

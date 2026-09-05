@@ -11,6 +11,7 @@ library;
 import 'package:flutter/material.dart';
 
 import '../../meta.dart';
+import '../components.dart';
 import '../nexora_logo.dart';
 import '../theme.dart';
 
@@ -22,7 +23,23 @@ class NexoraSplashScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Scaffold(
     backgroundColor: nexoraBackground,
-    body: SafeArea(
+    body: Stack(
+      children: [
+        // Planeta digital detrás, tenue para no competir con la marca.
+        Positioned.fill(
+          child: Opacity(
+            opacity: 0.55,
+            child: FittedBox(
+              fit: BoxFit.cover,
+              child: SizedBox(
+                width: 720,
+                height: 720,
+                child: NexoraPlanet(size: 720),
+              ),
+            ),
+          ),
+        ),
+        SafeArea(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 28),
         child: Column(
@@ -109,6 +126,8 @@ class NexoraSplashScreen extends StatelessWidget {
           ],
         ),
       ),
+        ),
+      ],
     ),
   );
 }

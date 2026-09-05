@@ -1909,6 +1909,131 @@ class AppStrings {
     'Esci dall’account',
     'Se déconnecter',
   );
+  String get coverSlogan => _pick(
+    'Protegemos lo que más importa.',
+    'We protect what matters most.',
+    'Protegemos o que mais importa.',
+    'Proteggiamo ciò che conta di più.',
+    'Nous protégeons ce qui compte le plus.',
+  );
+  String get coverSubtitle => _pick(
+    'Ecosistema de seguridad digital',
+    'Digital security ecosystem',
+    'Ecossistema de segurança digital',
+    'Ecosistema di sicurezza digitale',
+    'Écosystème de sécurité numérique',
+  );
+  String get authRememberMe => _pick(
+    'Recordarme en este dispositivo',
+    'Remember me on this device',
+    'Lembrar-me neste dispositivo',
+    'Ricordami su questo dispositivo',
+    'Se souvenir de moi sur cet appareil',
+  );
+  String get authForgotPassword => _pick(
+    '¿Olvidaste tu contraseña?',
+    'Forgot your password?',
+    'Esqueceu sua senha?',
+    'Hai dimenticato la password?',
+    'Mot de passe oublié ?',
+  );
+  String get authRecoverTitle => _pick(
+    'Recuperar contraseña',
+    'Recover password',
+    'Recuperar senha',
+    'Recupera password',
+    'Récupérer le mot de passe',
+  );
+  String get authRecoverBack => _pick(
+    'Volver a iniciar sesión',
+    'Back to sign in',
+    'Voltar a entrar',
+    'Torna ad accedere',
+    'Retour à la connexion',
+  );
+  String get authRecoverNote => _pick(
+    'El restablecimiento se envía por un servicio remoto que esta versión '
+      'offline no tiene: la recuperación ya está preparada en la arquitectura, '
+      'pero solo se activará cuando NEXORA GUARD cuente con ese servicio. '
+      'Nada se envía hoy.',
+    'Password reset is sent by a remote service this offline version does '
+      'not have: recovery is already prepared in the architecture, but it '
+      'will only activate when NEXORA GUARD has that service. Nothing is '
+      'sent today.',
+    'A redefinição é enviada por um serviço remoto que esta versão offline '
+      'não tem: a recuperação já está preparada na arquitetura, mas só será '
+      'ativada quando a NEXORA GUARD tiver esse serviço. Nada é enviado hoje.',
+    'Il reset viene inviato da un servizio remoto che questa versione offline '
+      'non possiede: il recupero è già pronto nell’architettura, ma si attiverà '
+      'solo quando NEXORA GUARD avrà quel servizio. Oggi non viene inviato nulla.',
+    'La réinitialisation est envoyée par un service distant que cette version '
+      'hors ligne ne possède pas : la récupération est déjà prête dans '
+      'l’architecture, mais elle ne s’activera que lorsque NEXORA GUARD aura '
+      'ce service. Rien n’est envoyé aujourd’hui.',
+  );
+  String get authTerms => _pick(
+    'Acepto los términos de uso y la política de privacidad',
+    'I accept the terms of use and the privacy policy',
+    'Aceito os termos de uso e a política de privacidade',
+    'Accetto i termini di utilizzo e l''informativa sulla privacy',
+    'J''accepte les conditions d''utilisation et la politique de confidentialité',
+  );
+  String get authErrTerms => _pick(
+    'Aceptá los términos de uso para continuar',
+    'Accept the terms of use to continue',
+    'Aceite os termos de uso para continuar',
+    'Accetta i termini di utilizzo per continuare',
+    'Acceptez les conditions d''utilisation pour continuer',
+  );
+  String get authName => _pick(
+    'Nombre (opcional)',
+    'Name (optional)',
+    'Nome (opcional)',
+    'Nome (opzionale)',
+    'Nom (facultatif)',
+  );
+  String get authUsername => _pick(
+    'Usuario',
+    'Username',
+    'Usuário',
+    'Nome utente',
+    'Nom d''utilisateur',
+  );
+  String get authAvatarLabel => _pick(
+    'Cambiar foto',
+    'Change photo',
+    'Alterar foto',
+    'Cambia foto',
+    'Changer la photo',
+  );
+  String get authRecoverBody => _pick(
+    'Solo esta versión local: no hay servicio de envío.',
+    'This local version only: there is no sending service.',
+    'Somente esta versão local: não há serviço de envio.',
+    'Solo questa versione locale: non c’è un servizio di invio.',
+    'Version locale uniquement : aucun service d''envoi.',
+  );
+  String get authRecoverSend => _pick(
+    'Enviar enlace de restablecimiento',
+    'Send reset link',
+    'Enviar link de redefinição',
+    'Invia link di ripristino',
+    'Envoyer le lien de réinitialisation',
+  );
+  String get authRecoverSent => _pick(
+    'Si el correo existe, el enlace ya viaja hacia él (servicio remoto).',
+    'If the email exists, the link is already on its way (remote service).',
+    'Se o e-mail existir, o link já está a caminho (serviço remoto).',
+    'Se l''e-mail esiste, il link è già in viaggio (servizio remoto).',
+    'Si l''e-mail existe, le lien est déjà en route (service distant).',
+  );
+  String get authErrUsername => _pick(
+    'El usuario necesita al menos 3 caracteres, sin espacios',
+    'The username needs at least 3 characters and no spaces',
+    'O usuário precisa de pelo menos 3 caracteres, sem espaços',
+    'Il nome utente richiede almeno 3 caratteri e senza spazi',
+    'Le nom d''utilisateur doit avoir au moins 3 caractères sans espaces',
+  );
 
   // Panel interactivo (dona de riesgo y métricas animadas)
   String get donutTitle => _pick(
@@ -2455,6 +2580,13 @@ class AppStrings {
     'Core',
     'Cœurs',
   );
+  String get dashCpuLoad => _pick(
+    'Carga de CPU',
+    'CPU load',
+    'Carga da CPU',
+    'Carico CPU',
+    'Charge CPU',
+  );
   String get dashCpuUnavailable => _pick(
     'El sistema no expone la carga de CPU en este momento',
     'The system does not expose CPU load right now',
@@ -2482,6 +2614,13 @@ class AppStrings {
     'Sem conexão',
     'Nessuna connessione',
     'Hors ligne',
+  );
+  String get dashNetworkOn => _pick(
+    'Conectado',
+    'Connected',
+    'Conectado',
+    'Connessa',
+    'Connecté',
   );
   String get dashNetworkNote => _pick(
     'Velocidad medida en vivo',
@@ -2674,4 +2813,602 @@ class AppStrings {
     'Nessuna app per quella ricerca.',
     'Aucune application pour cette recherche.',
   );
+
+  // ── FASE 4: gráfica interactiva ──
+  String get chartTrendTitle => _pick(
+    'Tendencia de métricas',
+    'Metric trends',
+    'Tendência de métricas',
+    'Andamento delle metriche',
+    'Tendance des métriques',
+  );
+  String get chartWin1h => _pick('1H', '1H', '1H', '1H', '1H');
+  String get chartWin6h => _pick('6H', '6H', '6H', '6H', '6H');
+  String get chartWin24h => _pick('24H', '24H', '24H', '24H', '24H');
+  String get chartWin7d => _pick('7D', '7D', '7D', '7D', '7D');
+  String get chartSeriesAll => _pick('TODAS', 'ALL', 'TODAS', 'TUTTE', 'TOUTES');
+  String get chartSeriesSecurity => _pick(
+    'Seguridad',
+    'Security',
+    'Segurança',
+    'Sicurezza',
+    'Sécurité',
+  );
+  String get chartSeriesMemory => _pick(
+    'RAM libre',
+    'Free RAM',
+    'RAM livre',
+    'RAM libera',
+    'RAM libre',
+  );
+  String get chartSeriesStorage => _pick(
+    'Almacenamiento', 
+    'Storage', 
+    'Armazenamento', 
+    'Archiviazione', 
+    'Stockage',
+  );
+  String get chartSeriesApps => _pick(
+    'Apps en riesgo',
+    'Risky apps',
+    'Apps em risco',
+    'App a rischio',
+    'Apps à risque',
+  );
+  String get chartSeriesTemp => _pick(
+    'Temperatura',
+    'Battery temp',
+    'Temperatura',
+    'Temperatura',
+    'Température',
+  );
+  String get chartSeriesCpu => _pick('CPU', 'CPU', 'CPU', 'CPU', 'CPU');
+  String get chartCpuUnavailable => _pick(
+    'La carga de CPU no la expone esta plataforma: la serie se omite, no se inventa.',
+    'This platform does not expose CPU load: the series is omitted, never faked.',
+    'Esta plataforma não expõe a carga da CPU: a série é omitida, nunca inventada.',
+    'Questa piattaforma non espone il carico della CPU: la serie è omessa, mai inventata.',
+    'Cette plateforme n\'expose pas la charge CPU : la série est omise, jamais inventée.',
+  );
+  String get chartNoData => _pick(
+    'Faltan capturas en este rango.',
+    'No captures in this range.',
+    'Faltam capturas neste intervalo.',
+    'Mancano catture in questo intervallo.',
+    'Aucune capture dans cette plage.',
+  );
+  String get chartTapHint => _pick(
+    'Tocá un punto para el detalle',
+    'Tap a point for details',
+    'Toque um ponto para detalhes',
+    'Tocca un punto per i dettagli',
+    'Touchez un point pour les détails',
+  );
+  String get chartUnitPct => _pick('%', '%', '%', '%', '%');
+  String get chartUnitApps => _pick(
+    'apps',
+    'apps',
+    'apps',
+    'app',
+    'apps',
+  );
+  String get chartUnitTemp => _pick('°C', '°C', '°C', '°C', '°C');
+
+  // ── FASE 4: dona interactiva ──
+  String get donutStatusTitle => _pick(
+    'Estado por área',
+    'Status by area',
+    'Estado por área',
+    'Stato per area',
+    'État par zone',
+  );
+  String get donutCenterTitle => _pick(
+    'EQUIPO',
+    'DEVICE',
+    'EQUIPAMENTO',
+    'DISPOSITIVO',
+    'APPAREIL',
+  );
+  String donutNareas(int n) => _pick(
+    '$n áreas',
+    '$n areas',
+    '$n áreas',
+    '$n aree',
+    '$n zones',
+  );
+  String get donutLegendApps => _pick(
+    'Apps en riesgo',
+    'Risky apps',
+    'Apps em risco',
+    'App a rischio',
+    'Apps à risque',
+  );
+  String get donutLegendNetwork => _pick(
+    'Red activa',
+    'Network active',
+    'Rede ativa',
+    'Rete attiva',
+    'Réseau actif',
+  );
+  String get donutNetworkOff => _pick(
+    'Red inactiva',
+    'Network off',
+    'Rede inativa',
+    'Rete inattiva',
+    'Réseau inactif',
+  );
+  String get donutLegendBattery => _pick(
+    'Batería',
+    'Battery',
+    'Bateria',
+    'Batteria',
+    'Batterie',
+  );
+  String get donutLegendStorage => _pick(
+    'Almacenamiento libre',
+    'Free storage',
+    'Armazenamento livre',
+    'Archiviazione libera',
+    'Stockage libre',
+  );
+
+  // ── FASE 6 · NEXORA PLAY ────────────────────────────────────────────
+
+  String get playTitle => _pick(
+    'NEXORA PLAY',
+    'NEXORA PLAY',
+    'NEXORA PLAY',
+    'NEXORA PLAY',
+    'NEXORA PLAY',
+  );
+  String get playSubtitle => _pick(
+    'Entrena tu ojo cibernético con juegos sin conexión',
+    'Sharpen your cyber eye with offline games',
+    'Afie seu olhar cibernético com jogos offline',
+    'Affina il tuo occhio informatico con giochi offline',
+    'Aiguisez votre œil cyber avec des jeux hors ligne',
+  );
+  String get playPrivate => _pick(
+    '100% local: nada sale del dispositivo',
+    '100% local: nothing leaves your device',
+    '100% local: nada sai do dispositivo',
+    '100% locale: nulla esce dal dispositivo',
+    '100% local : rien ne sort de l\'appareil',
+  );
+  String get playGamesTitle => _pick(
+    'Juegos',
+    'Games',
+    'Jogos',
+    'Giochi',
+    'Jeux',
+  );
+  String get playScoresTitle => _pick(
+    'Mejores puntajes',
+    'Best scores',
+    'Melhores pontuações',
+    'Migliori punteggi',
+    'Meilleurs scores',
+  );
+  String get playNoScores => _pick(
+    'Aún no jugaste',
+    'No games yet',
+    'Você ainda não jogou',
+    'Ancora nessuna partita',
+    'Aucune partie encore',
+  );
+  String get playBest => _pick('Mejor', 'Best', 'Melhor', 'Migliore', 'Meilleur');
+  String get playLast => _pick('Última', 'Last', 'Última', 'Ultima', 'Dernière');
+  String get playOpen => _pick('Jugar', 'Play', 'Jogar', 'Gioca', 'Jouer');
+  String get playScoreUnit => _pick('pts', 'pts', 'pts', 'pts', 'pts');
+  String get playAchievementsTitle => _pick(
+    'Logros',
+    'Achievements',
+    'Conquistas',
+    'Obiettivi',
+    'Succès',
+  );
+  String get playAchievementsUnlocked => _pick(
+    'desbloqueados',
+    'unlocked',
+    'desbloqueados',
+    'sbloccati',
+    'débloqués',
+  );
+  String get playLockedBadge => _pick(
+    'Bloqueado',
+    'Locked',
+    'Bloqueado',
+    'Bloccato',
+    'Verrouillé',
+  );
+
+  // ── Catálogo de juegos ──────────────────────────────────────────────
+
+  String get gmMines => _pick(
+    'Cyber Minesweeper',
+    'Cyber Minesweeper',
+    'Cyber Minesweeper',
+    'Cyber Minesweeper',
+    'Cyber Minesweeper',
+  );
+  String get gmMinesTag => _pick(
+    'Despejá el campo minado sin pisar minas',
+    'Clear the minefield without stepping on mines',
+    'Limpe o campo minado sem pisar em minas',
+    'Libera il campo minato senza toccare mine',
+    'Déminnez le terrain sans toucher une mine',
+  );
+  String get gmChess => _pick(
+    'Cyber Chess',
+    'Cyber Chess',
+    'Cyber Chess',
+    'Cyber Chess',
+    'Cyber Chess',
+  );
+  String get gmChessTag => _pick(
+    'Ajedrez didáctico contra un rival simple',
+    'Didactic chess against a simple rival',
+    'Xadrez didático contra um rival simples',
+    'Scacchi didattici contro un rivale semplice',
+    'Échecs pédagogiques contre un rival simple',
+  );
+  String get gmFirewall => _pick(
+    'Firewall',
+    'Firewall',
+    'Firewall',
+    'Firewall',
+    'Firewall',
+  );
+  String get gmFirewallTag => _pick(
+    'Bloqueá los paquetes hostiles antes del núcleo',
+    'Block hostile packets before the core',
+    'Bloqueie pacotes hostis antes do núcleo',
+    'Blocca i pacchetti ostili prima del nucleo',
+    'Bloquez les paquets hostiles avant le noyau',
+  );
+  String get gmPhishing => _pick(
+    'Phishing Detector',
+    'Phishing Detector',
+    'Detector de Phishing',
+    'Rilevatore di Phishing',
+    'Détecteur de Phishing',
+  );
+  String get gmPhishingTag => _pick(
+    'Aprendé a distinguir un fraude de un mensaje real',
+    'Learn to tell a scam from a real message',
+    'Aprenda a distinguir fraude de mensagem real',
+    'Impara a distinguere una truffa da un messaggio reale',
+    'Apprenez à distinguer une fraude d\'un vrai message',
+  );
+
+  // ── Común de partida ────────────────────────────────────────────────
+
+  String get gBack => _pick(
+    'Volver al hub',
+    'Back to hub',
+    'Voltar ao hub',
+    'Torna all\'hub',
+    'Retour au hub',
+  );
+  String get gScore => _pick('Puntaje', 'Score', 'Pontuação', 'Punteggio', 'Score');
+  String get gNewGame => _pick(
+    'Nueva partida',
+    'New game',
+    'Nova partida',
+    'Nuova partita',
+    'Nouvelle partie',
+  );
+  String get gWin => _pick('¡Victoria!', 'Victory!', 'Vitória!', 'Vittoria!', 'Victoire !');
+  String get gLost => _pick('Perdida', 'Lost', 'Derrota', 'Persa', 'Perdu');
+
+  // ── Cyber Minesweeper ───────────────────────────────────────────────
+
+  String get minesRemaining => _pick(
+    'Minas restantes',
+    'Mines left',
+    'Minas restantes',
+    'Mine rimaste',
+    'Mines restantes',
+  );
+  String get minesCleared => _pick(
+    'Casillas libres',
+    'Safe cells',
+    'Células livres',
+    'Celle libere',
+    'Cellules sûres',
+  );
+  String get minesExploded => _pick(
+    '¡Bum! Pisaste una mina.',
+    'Boom! You stepped on a mine.',
+    'Boom! Você pisou numa mina.',
+    'Boom! Hai calpestato una mina.',
+    'Boum ! Vous avez marché sur une mine.',
+  );
+  String get minesWon => _pick(
+    '¡Tablero limpio!',
+    'Board cleared!',
+    'Tabuleiro limpo!',
+    'Campo liberato!',
+    'Champ déminé !',
+  );
+  String get minesModeReveal => _pick(
+    'Destapar',
+    'Reveal',
+    'Revelar',
+    'Scopri',
+    'Révéler',
+  );
+  String get minesModeFlag => _pick(
+    'Marcar',
+    'Flag',
+    'Marcar',
+    'Bandiera',
+    'Drapeau',
+  );
+
+  // ── Cyber Chess ─────────────────────────────────────────────────────
+
+  String get chessYouWhite => _pick(
+    'Jugás con las blancas',
+    'You play White',
+    'Você joga com as brancas',
+    'Giochi con il Bianco',
+    'Vous jouez les Blancs',
+  );
+  String get chessTurnWhite => _pick(
+    'Turno: blancas',
+    'Turn: White',
+    'Vez: brancas',
+    'Turno: Bianco',
+    'Tour : Blancs',
+  );
+  String get chessTurnBlack => _pick(
+    'Turno: negras',
+    'Turn: Black',
+    'Vez: pretas',
+    'Turno: Nero',
+    'Tour : Noirs',
+  );
+  String get chessCheck => _pick(
+    '¡Jaque!',
+    'Check!',
+    'Xeque!',
+    'Scacco!',
+    'Échec !',
+  );
+  String get chessCheckmate => _pick(
+    'Jaque mate',
+    'Checkmate',
+    'Xeque-mate',
+    'Scacco matto',
+    'Échec et mat',
+  );
+  String get chessStalemate => _pick(
+    'Ahogado (empate)',
+    'Stalemate (draw)',
+    'Afogado (empate)',
+    'Stallo (patta)',
+    'Pat (nulle)',
+  );
+  String get chessYouWin => _pick(
+    '¡Ganaste!',
+    'You won!',
+    'Você venceu!',
+    'Hai vinto!',
+    'Vous avez gagné !',
+  );
+  String get chessYouLose => _pick(
+    'El rival te dio jaque mate',
+    'You were checkmated',
+    'Você sofreu xeque-mate',
+    'Hai subito scacco matto',
+    'Vous êtes mat',
+  );
+  String get chessHonest => _pick(
+    'Variante didáctica: sin enroque ni en passant; promoción automática a dama; el rival elige una movida legal al azar.',
+    'Didactic variant: no castling or en passant; automatic pawn promotion; the rival picks a random legal move.',
+    'Variante didática: sem roque nem en passant; promoção automática a dama; o rival escolhe uma jogada legal ao acaso.',
+    'Variante didattica: niente arrocco né en passant; promozione automatica a donna; il rivale sceglie una mossa legale a caso.',
+    'Variante pédagogique : pas de roque ni de en passant ; promotion automatique en dame ; le rival joue une coudée légale au hasard.',
+  );
+  String get chessYourCaptures => _pick(
+    'Tus capturas',
+    'Your captures',
+    'Suas capturas',
+    'I tuoi pezzi catturati',
+    'Vos pièces capturées',
+  );
+  String get chessRivalCaptures => _pick(
+    'Capturas rival',
+    'Rival captures',
+    'Capturas do rival',
+    'Pezzi del rivale',
+    'Pièces du rival',
+  );
+
+  // ── Firewall ────────────────────────────────────────────────────────
+
+  String get fwBlcked => _pick(
+    'Bloqueados',
+    'Blocked',
+    'Bloqueados',
+    'Bloccati',
+    'Bloqués',
+  );
+  String get fwLives => _pick(
+    'Escudos',
+    'Shields',
+    'Escudos',
+    'Scudi',
+    'Boucliers',
+  );
+  String get fwWave => _pick('Ola', 'Wave', 'Onda', 'Onda', 'Vague');
+  String get fwGameOver => _pick(
+    'El núcleo quedó expuesto: paquetes sin bloquear llegaron al final.',
+    'The core was exposed: unblocked packets reached the end.',
+    'O núcleo ficou exposto: pacotes não bloqueados chegaram ao fim.',
+    'Il nucleo è rimasto esposto: pacchetti non bloccati sono arrivati in fondo.',
+    'Le noyau est exposé : des paquets non bloqués sont arrivés au bout.',
+  );
+  String get fwHint => _pick(
+    'Tocá un paquete hostil para bloquearlo antes de que llegue al núcleo.',
+    'Tap a hostile packet to block it before it reaches the core.',
+    'Toque um pacote hostil para bloqueá-lo antes de chegar ao núcleo.',
+    'Tocca un pacchetto ostile per bloccarlo prima che arrivi al nucleo.',
+    'Touchez un paquet hostile pour le bloquer avant le noyau.',
+  );
+
+  // ── Phishing Detector ───────────────────────────────────────────────
+
+  String get phLegit => _pick(
+    'Legítimo',
+    'Legitimate',
+    'Legítimo',
+    'Legittimo',
+    'Légitime',
+  );
+  String get phFraud => _pick(
+    'Fraude',
+    'Fraud',
+    'Fraude',
+    'Frode',
+    'Fraude',
+  );
+  String get phCorrect => _pick(
+    'Correcto',
+    'Correct',
+    'Correto',
+    'Corretto',
+    'Correct',
+  );
+  String get phWasLegit => _pick(
+    'Era legítimo',
+    'It was legitimate',
+    'Era legítimo',
+    'Era legittimo',
+    'C\'était légitime',
+  );
+  String get phWasFraud => _pick(
+    'Era fraude',
+    'It was fraud',
+    'Era fraude',
+    'Era frode',
+    'C\'était une fraude',
+  );
+  String get phSender => _pick(
+    'Remitente',
+    'Sender',
+    'Remetente',
+    'Mittente',
+    'Expéditeur',
+  );
+  String get phAction => _pick(
+    'Contenido',
+    'Content',
+    'Conteúdo',
+    'Contenuto',
+    'Contenu',
+  );
+  String get phCaseOf => _pick(
+    'Mensaje',
+    'Message',
+    'Mensagem',
+    'Messaggio',
+    'Message',
+  );
+  String get phPerfect => _pick(
+    '¡Perfecto!',
+    'Perfect!',
+    'Perfeito!',
+    'Perfetto!',
+    'Parfait !',
+  );
+  String get phResultLine => _pick(
+    'acertaste',
+    'you got right',
+    'você acertou',
+    'ne hai azzeccati',
+    'bonnes réponses',
+  );
+  String get phRemainingOne => _pick(
+    'restante',
+    'left',
+    'restante',
+    'rimasto',
+    'restant',
+  );
+  String get phHonest => _pick(
+    'Casos generados localmente para practicar: ningún correo real sale de tu dispositivo.',
+    'Cases generated locally for practice: no real email ever leaves your device.',
+    'Casos gerados localmente para praticar: nenhum e-mail real sai do seu dispositivo.',
+    'Casi generati localmente per esercitarsi: nessuna email reale lascia il dispositivo.',
+    'Cas générés localement pour s\'entraîner : aucun vrai e-mail ne quitte l\'appareil.',
+  );
+
+  // ── Logros ──────────────────────────────────────────────────────────
+
+  String achName(String id) {
+    switch (id) {
+      case 'first_capture':
+        return _pick('Primera captura', 'First capture', 'Primeira captura', 'Prima cattura', 'Première capture');
+      case 'captures_5':
+        return _pick('Cinco capturas', 'Five captures', 'Cinco capturas', 'Cinque catture', 'Cinq captures');
+      case 'first_signal':
+        return _pick('Señal detectada', 'Signal detected', 'Sinal detectado', 'Segnale rilevato', 'Signal détecté');
+      case 'score_100':
+        return _pick('Centenar', 'Century', 'Centenário', 'Centinaio', 'Centaine');
+      case 'mines_win':
+        return _pick('Limpia minas', 'Mine sweeper', 'Caça-minas', 'Spazza mine', 'Démineur');
+      case 'chess_win':
+        return _pick('Estratega', 'Strategist', 'Estrategista', 'Stratega', 'Stratège');
+      case 'firewall_win':
+        return _pick('Muro', 'Wall', 'Muro', 'Muro', 'Mur');
+      case 'phishing_all':
+        return _pick('Ojo infalible', 'Unfailing eye', 'Olho infalível', 'Occhio infallibile', 'Œil infaillible');
+    }
+    return id;
+  }
+
+  String achDesc(String id) {
+    switch (id) {
+      case 'first_capture':
+        return _pick('Registraste tu primera captura.', 'You recorded your first capture.', 'Você registrou sua primeira captura.', 'Hai registrato la tua prima cattura.', 'Vous avez enregistré votre première capture.');
+      case 'captures_5':
+        return _pick('Cinco capturas en tu historial.', 'Five captures in your history.', 'Cinco capturas no seu histórico.', 'Cinque catture nella cronologia.', 'Cinq captures dans votre historique.');
+      case 'first_signal':
+        return _pick('Apareció el primer hallazgo de riesgo.', 'Your first risk finding appeared.', 'Seu primeiro achado de risco apareceu.', 'È apparso il primo avviso di rischio.', 'Votre premier signalement de risque est apparu.');
+      case 'score_100':
+        return _pick('Alcanzaste 100 puntos en un juego.', 'You reached 100 points in a game.', 'Você atingiu 100 pontos em um jogo.', 'Hai raggiunto 100 punti in un gioco.', 'Vous avez atteint 100 points dans un jeu.');
+      case 'mines_win':
+        return _pick('Limpaste el tablero sin explotar.', 'You cleared the board without exploding.', 'Você limpou o tabuleiro sem explodir.', 'Hai liberato il campo senza esplodere.', 'Vous avez déminé le champ sans exploser.');
+      case 'chess_win':
+        return _pick('Ganaste una partida de ajedrez.', 'You won a chess game.', 'Você venceu uma partida de xadrez.', 'Hai vinto una partita a scacchi.', 'Vous avez gagné une partie d\'échecs.');
+      case 'firewall_win':
+        return _pick('Bloqueaste 50 paquetes hostiles.', 'You blocked 50 hostile packets.', 'Você bloqueou 50 pacotes hostis.', 'Hai bloccato 50 pacchetti ostili.', 'Vous avez bloqué 50 paquets hostiles.');
+      case 'phishing_all':
+        return _pick('Identificaste todos los mensajes.', 'You identified every message.', 'Você identificou todas as mensagens.', 'Hai identificato tutti i messaggi.', 'Vous avez identifié chaque message.');
+    }
+    return id;
+  }
+
+  String get achLockedText => _pick(
+    'Se desbloquea con un hecho real',
+    'Unlocks with a real fact',
+    'Desbloqueia com um fato real',
+    'Si sblocca con un fatto reale',
+    'Se débloque avec un vrai fait',
+  );
+
+  // ── Casos de Phishing (texto por idioma) ────────────────────────────
+  // Orden y veredicto viven en `lib/core/games/phishing_cases.dart`.
+
+  List<(int, String, String)> get phishingCaseLines => [
+    // (id, sender, action) — el veredicto lo da el catálogo puro.
+    (1, _pick('Seguridad Bancaria', 'Banking Security', 'Segurança Bancária', 'Sicurezza Bancaria', 'Sécurité bancaire'), _pick('Verificación urgente: hacé clic para confirmar tu cuenta.', 'Urgent verification: click to confirm your account.', 'Verificação urgente: clique para confirmar sua conta.', 'Verifica urgente: fai clic per confermare il conto.', 'Vérification urgente : cliquez pour confirmer votre compte.')),
+    (2, _pick('Stream Movies', 'Stream Movies', 'Stream Movies', 'Stream Movies', 'Stream Movies'), _pick('Tu resumen de abril: plan estándar.', 'Your April summary: standard plan.', 'Seu resumo de abril: plano padrão.', 'Il tuo riepilogo di aprile: piano standard.', 'Votre récapitulatif d\'avril : forfait standard.')),
+    (3, _pick('Lotería Nacional', 'National Lottery', 'Loteria Nacional', 'Lotteria Nazionale', 'Loterie Nationale'), _pick('¡Premio no reclamado! Entrá a este enlace para cobrarlo hoy.', 'Unclaimed prize! Open this link to claim it today.', 'Prêmio não reclamado! Entre neste link para recebê-lo hoje.', 'Premio non reclamato! Apri questo link per ritirarlo oggi.', 'Prix non réclamé ! Ouvrez ce lien pour l\'encaisser aujourd\'hui.')),
+    (4, _pick('SeguridadByte', 'SeguridadByte', 'SeguridadByte', 'SeguridadByte', 'SeguridadByte'), _pick('Restablecé tu contraseña: el enlace vence en 24 h.', 'Reset your password: the link expires in 24 h.', 'Redefina sua senha: o link expira em 24 h.', 'Reimposta la password: il link scade tra 24 h.', 'Réinitialisez votre mot de passe : le lien expire dans 24 h.')),
+    (5, _pick('CineCity', 'CineCity', 'CineCity', 'CineCity', 'CineCity'), _pick('Tus entradas están listas: revisá el código QR del mensaje.', 'Your tickets are ready: check the QR code in the message.', 'Seus ingressos estão prontos: confira o QR code da mensagem.', 'I tuoi biglietti sono pronti: controlla il QR code del messaggio.', 'Vos billets sont prêts : vérifiez le QR code du message.')),
+    (6, _pick('FacturaRed', 'InvoiceNet', 'FaturaNet', 'FatturaNet', 'FactureNet'), _pick('Factura vencida: descargá el PDF adjunto para pagar.', 'Overdue invoice: download the attached PDF to pay.', 'Fatura vencida: baixe o PDF anexo para pagar.', 'Fattura scaduta: scarica il PDF allegato per pagare.', 'Facture en retard : téléchargez le PDF joint pour payer.')),
+  ];
 }

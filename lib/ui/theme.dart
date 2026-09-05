@@ -1,30 +1,34 @@
-/// Tema Material 3 — identidad NEXORA: dorado + azul + rojo sobre fondo oscuro.
+/// Tema Material 3 — identidad NEXORA aplicada a la paleta "apagada":
+/// negro, azul oscuro, azul grisáceo, gris, rojo vino y dorado MUY sutil.
+/// Los acentos existen pero ya no gritan: superficies mates, bordes vinosos
+/// y dorado reservado para lo premium y la información clave.
 library;
 
 import 'package:flutter/material.dart';
 
 import '../core/models.dart';
 
-/// Colores oficiales NEXORA.
-const nexoraGold = Color(0xFFC9A24B); // NEXORA BRAIN, información importante
-const nexoraGoldLight = Color(0xFFE8C675);
-const nexoraBlue = Color(0xFF3A6EA5); // Tecnología, IA, protección, sistema
-const nexoraRed = Color(0xFFC0392B); // Peligro, estafa, alerta
-const nexoraBackground = Color(0xFF0A0F24); // fondo azul muy oscuro/negro
-const nexoraSurface = Color(0xFF12224A);
+/// Colores oficiales NEXORA (gama apagada del ecosistema).
+const nexoraGold = Color(0xFFA98F53); // dorado sutil: premium e información clave
+const nexoraGoldLight = Color(0xFFC9B98C);
+const nexoraBlue = Color(0xFF5A6B82); // azul grisáceo: tecnología e IA
+const nexoraRed = Color(0xFFA63D34); // rojo vino apagado: peligro, alerta
+const nexoraBackground = Color(0xFF070A11); // negro con un leve azul profundo
+const nexoraSurface = Color(0xFF12161F); // gris azulado muy oscuro
 
 // Tokens auxiliares usados por las pantallas de la shell NEXORA
 // (dashboard/bot/perfil): superficie elevada, borde sutil y acento vino.
-const nexoraSurfaceRaised = Color(0xFF1A2C57);
-const nexoraBorder = Color(0xFF2B3F6F);
-const nexoraWine = Color(0xFF6E2142);
+const nexoraSurfaceRaised = Color(0xFF1B212C);
+const nexoraBorder = Color(0xFF2C3440);
+const nexoraWine = Color(0xFF6E2B45);
 
-// Naranja: nivel "sospechoso" (entre atención-dorado y crítico-rojo).
-const nexoraOrange = Color(0xFFE67E22);
+// Naranja: nivel "sospechoso" (entre atención-dorado y crítico-rojo),
+// también apagado para mantener la gama.
+const nexoraOrange = Color(0xFFC0743C);
 
 // Severidad de hallazgos, mapeada a la paleta NEXORA.
 // Verde solo como indicador secundario (estado "normal").
-const severityGreen = Color(0xFF2E9E5B);
+const severityGreen = Color(0xFF3A8A5C);
 const severityYellow = nexoraGold;
 const severityRed = nexoraRed;
 

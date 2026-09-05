@@ -185,4 +185,45 @@ object CollectorLogic {
         }
         return total
     }
+
+    // ── Carga de CPU real (temporizada entre capturas) ──────────────────
+
+    /** Jiffies totales e idle del agregado `cpu` de /proc/stat. */
+    data class CpuTimes(val total: Long, val idle: Long)
+
+    /**
+     * Parsea la PRIMERA línea de /proc/stat ("cpu  user nice system idle …").
+     * Devuelve null si la línea no es del agregado o no tiene los campos
+     * esperados — nunca adivina un número.
+     */
+    fun parseCpuTimes(firstLine: String?): CpuTimes? {
+        if (firstLine.isNullOrBlank()) return null
+        val parts = firstLine.trim().split(Regex("\\s+"))
+        if (parts.size < 5 || parts.first() != "cpu") return null
+        var total = 0L
+        var idle = 0L
+        for (i in 1 until parts.size) {
+            val v = parts[i].toLongOrNull() ?: return null
+            total += v
+            if (i == 4) idle = v            // idle
+            if (i == 5) idle += v           // + iowait
+        }
+        if (total <= 0) return null
+        return CpuTimes(total, idle)
+    }
+
+    /**
+     * % de carga en la ventana entre dos lecturas CONSECUTIVAS. null cuando
+     * no hay lectura previa (primera captura del proceso) o el delta es nulo
+     * (la APP recién arrancó): sin ventana real no hay porcentaje real.
+     */
+    fun cpuLoadPercent(prev: CpuTimes?, curr: CpuTimes): Int? {
+        if (prev == null) return null
+        val totalDelta = curr.total - prev.total
+        val idleDelta = curr.idle - prev.idle
+        if (totalDelta <= 0) return null
+        val busyDelta = totalDelta - idleDelta
+        val pct = (busyDelta.toDouble() * 100.0) / totalDelta.toDouble()
+        return pct.toInt().coerceIn(0, 100)
+    }
 }

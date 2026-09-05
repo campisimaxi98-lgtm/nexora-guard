@@ -35,6 +35,12 @@ import java.io.File
  */
 class AndroidCollectors(private val context: Context) {
 
+    companion object {
+        /** Última lectura de /proc/stat (jiffies + instante de reloj). */
+        @Volatile
+        var cpuPrevious: Pair<Long, CollectorLogic.CpuTimes>? = null
+    }
+
     fun collect(): Map<String, Any?> = mapOf(
         "memory" to safe { memory() },
         "storage" to safe { storage() },
@@ -431,12 +437,34 @@ class AndroidCollectors(private val context: Context) {
         "sdkInt" to Build.VERSION.SDK_INT,
         "securityPatch" to (Build.VERSION.SECURITY_PATCH ?: "?"),
         "cpuCores" to Runtime.getRuntime().availableProcessors(),
+        // Carga de CPU REAL medida entre capturas (muestreo delta de
+        // /proc/stat); null en la primera captura o si el SO no lo expone.
+        "cpuLoadPercent" to cpuLoadPercent(),
         "uptimeMillis" to SystemClock.elapsedRealtime(),
         "rootIndicators" to rootIndicators(),
         "appsAuditSupported" to true,
         "vendorSkin" to vendorSkin(),
         "usageAccessGranted" to usageAccessGranted(),
     )
+
+    /**
+     * Lectura real de la carga de CPU: muestrea el agregado `cpu` de
+     * /proc/stat y devuelve el % de uso en la ventana con la captura
+     * anterior. La PRIMERA captura del proceso devuelve null (no hay
+     * ventana): se honesta, no un 0 inventado. Ilegible = null.
+     */
+    private fun cpuLoadPercent(): Int? {
+        val now = SystemClock.elapsedRealtime()
+        val line = try {
+            File("/proc/stat").readLines().firstOrNull()
+        } catch (_: Throwable) {
+            null
+        }
+        val curr = CollectorLogic.parseCpuTimes(line) ?: return null
+        val pct = CollectorLogic.cpuLoadPercent(cpuPrevious?.second, curr)
+        cpuPrevious = Pair(now, curr)
+        return pct
+    }
 
     /**
      * Capa del fabricante (One UI, MIUI, ColorOS, EMUI, OxygenOS) leída de

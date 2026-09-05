@@ -20,8 +20,14 @@ library;
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'sha256.dart';
+
+/// Codifica bytes de imagen (PNG) como Base64 sin prefijo — mismo formato
+/// que entrega el colector nativo para los íconos de apps. Vive en el
+/// núcleo para que no haya codificadores duplicados en la UI.
+String avatarToBase64(Uint8List bytes) => base64Encode(bytes);
 
 /// Resultado de una operación de autenticación. Los ids son neutrales al
 /// idioma: la UI los traduce vía [AppStrings].
@@ -41,6 +47,9 @@ class AuthAccount {
     required this.saltHex,
     required this.hashHex,
     required this.createdAtMillis,
+    this.name = '',
+    this.username = '',
+    this.avatarBase64 = '',
   });
 
   factory AuthAccount.fromMap(Map<String, dynamic> map) => AuthAccount(
@@ -48,6 +57,9 @@ class AuthAccount {
     saltHex: map['saltHex'] as String? ?? '',
     hashHex: map['hashHex'] as String? ?? '',
     createdAtMillis: (map['createdAtMillis'] as num?)?.toInt() ?? 0,
+    name: map['name'] as String? ?? '',
+    username: map['username'] as String? ?? '',
+    avatarBase64: map['avatarBase64'] as String? ?? '',
   );
 
   final String email;
@@ -55,12 +67,36 @@ class AuthAccount {
   final String hashHex;
   final int createdAtMillis;
 
+  /// Perfil opcional del registro: nombre visible y usuario corto.
+  final String name;
+  final String username;
+
+  /// Avatar del perfil como PNG en Base64 (sin prefijo data:). Vacío = sin foto.
+  final String avatarBase64;
+
   Map<String, dynamic> toMap() => {
     'email': email,
     'saltHex': saltHex,
     'hashHex': hashHex,
     'createdAtMillis': createdAtMillis,
+    'name': name,
+    'username': username,
+    if (avatarBase64.isNotEmpty) 'avatarBase64': avatarBase64,
   };
+
+  AuthAccount copyWith({
+    String? name,
+    String? username,
+    String? avatarBase64,
+  }) => AuthAccount(
+    email: email,
+    saltHex: saltHex,
+    hashHex: hashHex,
+    createdAtMillis: createdAtMillis,
+    name: name ?? this.name,
+    username: username ?? this.username,
+    avatarBase64: avatarBase64 ?? this.avatarBase64,
+  );
 }
 
 class AuthStore {
@@ -78,6 +114,10 @@ class AuthStore {
   AuthAccount? _account;
   bool _loggedIn = false;
 
+  /// Si la sesión actual se persiste entre arranques ("Recordarme"). Sin
+  /// `load()` no tiene sentido; se deduce del archivo (sesión persistida).
+  bool _rememberMe = true;
+
   /// Cuenta registrada, si existe. Solo válida después de [load].
   AuthAccount? get account => _account;
 
@@ -89,6 +129,7 @@ class AuthStore {
   void load() {
     _account = null;
     _loggedIn = false;
+    _rememberMe = false;
     try {
       final file = File('${directory.path}/$_fileName');
       if (!file.existsSync()) return;
@@ -98,6 +139,7 @@ class AuthStore {
       if (raw is! Map<String, dynamic>) return;
       _account = AuthAccount.fromMap(raw);
       _loggedIn = decoded['loggedIn'] == true;
+      _rememberMe = _loggedIn;
     } on FileSystemException {
       // Sin acceso al archivo se opera sin cuenta (igual que la config).
     } on FormatException {
@@ -106,7 +148,17 @@ class AuthStore {
   }
 
   /// Registra la única cuenta permitida por dispositivo y abre sesión.
-  AuthResult register(String email, String password) {
+  /// Con `rememberMe` en false la sesión NO se persiste: dura solo este
+  /// arranque y el próximo abrir pedirá credenciales de nuevo (privacidad
+  /// de quien comparte el teléfono).
+  AuthResult register(
+    String email,
+    String password, {
+    String name = '',
+    String username = '',
+    String avatarBase64 = '',
+    bool rememberMe = true,
+  }) {
     final normalized = email.trim().toLowerCase();
     if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(normalized)) {
       return AuthResult.invalidEmail;
@@ -125,14 +177,22 @@ class AuthStore {
       saltHex: saltHex,
       hashHex: _stretch(password, saltHex),
       createdAtMillis: DateTime.now().millisecondsSinceEpoch,
+      name: name.trim(),
+      username: username.trim(),
+      avatarBase64: avatarBase64,
     );
-    return _persist(account, loggedIn: true)
+    return _persist(account, loggedIn: true, rememberMe: rememberMe)
         ? AuthResult.ok
         : AuthResult.storage;
   }
 
   /// Verifica credenciales contra la cuenta existente y abre sesión.
-  AuthResult login(String email, String password) {
+  /// `rememberMe` controla si la sesión sobrevive al cierre de la app.
+  AuthResult login(
+    String email,
+    String password, {
+    bool rememberMe = true,
+  }) {
     final account = _account;
     if (account == null || email.trim().toLowerCase() != account.email) {
       return AuthResult.wrongCredentials;
@@ -140,9 +200,34 @@ class AuthStore {
     if (_stretch(password, account.saltHex) != account.hashHex) {
       return AuthResult.wrongCredentials;
     }
-    return _persist(account, loggedIn: true)
+    return _persist(
+      account,
+      loggedIn: true,
+      rememberMe: rememberMe,
+    )
         ? AuthResult.ok
         : AuthResult.storage;
+  }
+
+  /// Actualiza el perfil (nombre, usuario, avatar) sin tocar credenciales.
+  /// Para de la sesión abierta. Devuelve `false` si el disco falló.
+  bool updateProfile({
+    String? name,
+    String? username,
+    String? avatarBase64,
+  }) {
+    final account = _account;
+    if (account == null) return false;
+    final updated = account.copyWith(
+      name: name,
+      username: username,
+      avatarBase64: avatarBase64,
+    );
+    return _persist(
+      updated,
+      loggedIn: _loggedIn,
+      rememberMe: _rememberMe,
+    );
   }
 
   /// Cierra la sesión conservando la cuenta (volverá a pedir credenciales).
@@ -173,19 +258,30 @@ class AuthStore {
     return digest;
   }
 
-  bool _persist(AuthAccount? account, {required bool loggedIn}) {
+  bool _persist(
+    AuthAccount? account, {
+    required bool loggedIn,
+    bool rememberMe = true,
+  }) {
     try {
       final file = File('${directory.path}/$_fileName');
       if (account == null) {
         if (file.existsSync()) file.deleteSync();
       } else {
+        // "Recordarme": el flag de sesión se escribe SOLO si el usuario lo
+        // pidió; en memoria la sesión queda igual para este arranque.
+        final persistedLoggedIn = loggedIn && rememberMe;
         file.writeAsStringSync(
-          jsonEncode({'account': account.toMap(), 'loggedIn': loggedIn}),
+          jsonEncode({
+            'account': account.toMap(),
+            'loggedIn': persistedLoggedIn,
+          }),
           flush: true,
         );
       }
       _account = account ?? _account;
       _loggedIn = loggedIn && account != null;
+      _rememberMe = loggedIn && rememberMe;
       return true;
     } on FileSystemException {
       return false;

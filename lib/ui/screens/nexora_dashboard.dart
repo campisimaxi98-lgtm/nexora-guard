@@ -91,6 +91,46 @@ class NexoraDashboardScreen extends StatelessWidget {
     final netDown = net.downstreamKbps / downCap;
     final netUp = net.upstreamKbps / upCap;
 
+    // Dona interactiva: segmentos con datos reales que abren pantallas reales.
+    final totalApps = snapshot.apps.length;
+    final appsAtRisk = snapshot.apps
+        .where((a) => classifyAppRisk(a) != AppRiskLevel.safe)
+        .length;
+    final donutSegments = <NxDonutSegment>[
+      NxDonutSegment(
+        id: 'apps',
+        label: strings.donutLegendApps,
+        color: nexoraOrange,
+        ratio: totalApps > 0 ? appsAtRisk / totalApps : 0,
+        subtitle: '$appsAtRisk/$totalApps',
+        onTap: () => _open('apps'),
+      ),
+      NxDonutSegment(
+        id: 'network',
+        label: strings.donutLegendNetwork,
+        color: nexoraBlue,
+        ratio: net.connected ? 1 : 0.08,
+        subtitle: net.connected ? strings.dashNetworkOn : strings.donutNetworkOff,
+        onTap: () => _open('network'),
+      ),
+      NxDonutSegment(
+        id: 'battery',
+        label: strings.donutLegendBattery,
+        color: nexoraGold,
+        ratio: bat.levelPercent / 100,
+        subtitle: '${bat.levelPercent}%',
+        onTap: () => _open('device'),
+      ),
+      NxDonutSegment(
+        id: 'storage',
+        label: strings.donutLegendStorage,
+        color: severityGreen,
+        ratio: st.freeRatio.clamp(0.0, 1.0),
+        subtitle: '${(st.freeRatio * 100).round()}%',
+        onTap: () => _open('device'),
+      ),
+    ];
+
     final content = NexoraMaxWidth(
       child: ListView(
         padding: const EdgeInsets.fromLTRB(ntPad, 10, ntPad, 28),
@@ -188,6 +228,32 @@ class NexoraDashboardScreen extends StatelessWidget {
           ),
           const SizedBox(height: ntGap),
 
+          // ── Gráfica interactiva de tendencia (FASE 4) ──
+          NexoraCard(
+            child: Padding(
+              padding: const EdgeInsets.all(ntPad),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SectionHeaderRow(
+                    icon: Icons.show_chart,
+                    title: strings.chartTrendTitle,
+                  ),
+                  const SizedBox(height: ntGapSmall),
+                  NexoraInteractiveChart(rows: history, strings: strings),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: ntGap),
+
+          // ── Dona interactiva: estado por área, segmentos que navegan ──
+          NexoraDonut(
+            segments: donutSegments,
+            strings: strings,
+          ),
+          const SizedBox(height: ntGap),
+
           // ── Accesos rápidos a pantallas reales ──
           GridView.count(
             crossAxisCount: 2,
@@ -273,13 +339,29 @@ class NexoraDashboardScreen extends StatelessWidget {
                   color: severityGreen,
                 ),
                 const Divider(height: ntGap + 8, color: nexoraBorder),
-                // CPU: la plataforma no expone la carga — se muestra la
-                // verdad en vez de un porcentaje inventado.
+                // CPU: la carga es REAL (muestreo delta del nativo) cuando la
+                // plataforma la entrega; si no, se muestra la verdad.
                 ValueRow(
                   icon: Icons.settings_input_component,
                   label: strings.dashCpuCores,
                   value: '${snapshot.device.cpuCores}',
                   color: nexoraBlue,
+                ),
+                const SizedBox(height: ntGapSmall),
+                ValueRow(
+                  icon: Icons.speed,
+                  label: strings.dashCpuLoad,
+                  value: snapshot.device.cpuLoadAvailable
+                      ? '${snapshot.device.cpuLoadPercent}%'
+                      : strings.notAvailableOnPlatform,
+                  barValue: snapshot.device.cpuLoadAvailable
+                      ? (snapshot.device.cpuLoadPercent / 100).clamp(0.0, 1.0)
+                      : 0,
+                  color: snapshot.device.cpuLoadAvailable
+                      ? (snapshot.device.cpuLoadPercent >= 80
+                            ? nexoraRed
+                            : nexoraBlue)
+                      : nexoraBlue,
                 ),
                 const SizedBox(height: ntGapSmall),
                 if (net.connected)

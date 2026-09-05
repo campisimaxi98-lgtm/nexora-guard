@@ -4,4 +4,7 @@ library;
 
 export 'components/nexora_cards.dart';
 export 'components/nexora_chrome.dart';
+export 'components/nexora_interactive_chart.dart';
+export 'components/nexora_interactive_donut.dart';
+export 'components/nexora_planet.dart';
 export 'components/nexora_tokens.dart';
