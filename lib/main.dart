@@ -132,7 +132,9 @@ class NexoraApp extends StatelessWidget {
   Widget build(BuildContext context) => MaterialApp(
     title: Meta.productName,
     debugShowCheckedModeBanner: false,
-    theme: nexoraLightTheme(),
+    // Identidad v2: oscura por defecto (las pantallas nuevas usan glass
+    // oscuro). El tema claro queda definido en theme.dart como respaldo.
+    theme: nexoraDarkTheme(),
     darkTheme: nexoraDarkTheme(),
     home: AuthGate(store: authStore, child: const InspectorHome()),
   );
@@ -581,6 +583,23 @@ class _InspectorHomeState extends State<InspectorHome> {
     if (mounted) setState(() => _crashLog = null);
   }
 
+  void _jumpToTab(
+    BuildContext context,
+    List<_TabSpec> visible,
+    String id,
+  ) {
+    // Si la pestaña pedida no existe en este modo de visualización (p. ej.
+    // "apps" en modo simple), se cae a las Señaladas, que es donde vive el
+    // análisis — nunca a un índice fuera de rango.
+    const fallback = {'apps': 'flagged', 'network': 'flagged', 'device': 'flagged'};
+    var target = id;
+    if (visible.every((t) => t.id != target)) {
+      target = fallback[id] ?? 'summary';
+    }
+    final index = visible.indexWhere((t) => t.id == target);
+    if (index >= 0) DefaultTabController.of(context).animateTo(index);
+  }
+
   /// Pestañas visibles según el modo de visualización (simple/normal/avanzado).
   /// Simple deja solo lo esencial para alguien no técnico; avanzado muestra
   /// todo, incluida la Cercanía Bluetooth.
@@ -613,23 +632,22 @@ class _InspectorHomeState extends State<InspectorHome> {
   }
 
   Widget _tabView(
+    BuildContext context,
+    List<_TabSpec> visible,
     String id,
     Snapshot snapshot,
     Verdict verdict,
     AppStrings strings,
   ) => switch (id) {
-    'summary' => SummaryScreen(
+    'summary' => NexoraDashboardScreen(
       snapshot: snapshot,
       verdict: verdict,
+      history: _history,
       strings: strings,
-      riskyApps: snapshot.apps
-          .where(
-            (a) => a.riskScore >= _config.thresholds.riskyAppScoreThreshold,
-          )
-          .length,
-      onOpenSystemScreen: _openSystemScreen,
+      onRefresh: _refresh,
+      onOpenTab: (tabId) => _jumpToTab(context, visible, tabId),
     ),
-    'apps' => AppsScreen(
+    'apps' => NexoraAppsScreen(
       apps: snapshot.apps,
       auditSupported: snapshot.device.appsAuditSupported,
       usageAccessGranted: snapshot.device.usageAccessGranted,
@@ -746,7 +764,7 @@ class _InspectorHomeState extends State<InspectorHome> {
             : TabBarView(
                 children: [
                   for (final t in visible)
-                    _tabView(t.id, snapshot, verdict, strings),
+                    _tabView(context, visible, t.id, snapshot, verdict, strings),
                 ],
               ),
       ),

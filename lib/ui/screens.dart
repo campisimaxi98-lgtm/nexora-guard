@@ -19,6 +19,8 @@ export 'screens/device.dart';
 export 'screens/history.dart';
 export 'screens/nearby.dart';
 export 'screens/network.dart';
+export 'screens/nexora_dashboard.dart';
+export 'screens/nexora_apps.dart';
 export 'screens/onboarding.dart';
 export 'screens/settings.dart';
 export 'screens/storage.dart';

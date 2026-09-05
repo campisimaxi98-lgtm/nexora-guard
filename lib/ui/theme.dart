@@ -19,6 +19,9 @@ const nexoraSurfaceRaised = Color(0xFF1A2C57);
 const nexoraBorder = Color(0xFF2B3F6F);
 const nexoraWine = Color(0xFF6E2142);
 
+// Naranja: nivel "sospechoso" (entre atención-dorado y crítico-rojo).
+const nexoraOrange = Color(0xFFE67E22);
+
 // Severidad de hallazgos, mapeada a la paleta NEXORA.
 // Verde solo como indicador secundario (estado "normal").
 const severityGreen = Color(0xFF2E9E5B);

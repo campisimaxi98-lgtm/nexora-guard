@@ -12,6 +12,7 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../core/history_store.dart';
 import '../../core/models.dart';
 import '../strings.dart';
 import '../theme.dart';
@@ -90,10 +91,10 @@ class _NexoraShellState extends State<NexoraShell> {
       NexoraDashboardScreen(
         snapshot: snapshot,
         verdict: verdict,
-        history: widget.history,
-        loading: widget.loading,
+        history: widget.history.map((h) => h as HistoryRow).toList(),
+        strings: widget.strings,
         onRefresh: widget.onRefresh,
-        onOpenTab: (i) => setState(() => _index = i),
+        onOpenTab: (_) => setState(() => _index = 0),
       ),
       NexoraQuickScanScreen(
         snapshot: snapshot,

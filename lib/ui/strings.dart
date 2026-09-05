@@ -1416,5 +1416,727 @@ class AppStrings {
   String get createdBy =>
       _pick('Creado por', 'Created by', 'Criado por', 'Creato da', 'Créé par');
 
+  // ── Shell nueva (bottom nav + top bar) ─────────────────────────────────
+  String get tabHome =>
+      _pick('Inicio', 'Home', 'Início', 'Home', 'Accueil');
+  String get tabAnalyze => _pick(
+    'Análisis',
+    'Analyze',
+    'Análise',
+    'Analisi',
+    'Analyse',
+  );
+  String get tabSignals => _pick(
+    'Señales',
+    'Signals',
+    'Sinais',
+    'Segnali',
+    'Signaux',
+  );
+  String get tabProfile => _pick(
+    'Perfil',
+    'Profile',
+    'Perfil',
+    'Profilo',
+    'Profil',
+  );
+  String get topAlerts =>
+      _pick('Alertas', 'Alerts', 'Alertas', 'Notifiche', 'Alertes');
+  String get topSettings =>
+      _pick('Configuración', 'Settings', 'Configurações', 'Impostazioni', 'Réglages');
+
+  // ── Niveles de riesgo (4 niveles; el color NUNCA viaja solo) ───────────
+  String get riskLevelTitle => _pick(
+    'Nivel de riesgo',
+    'Risk level',
+    'Nível de risco',
+    'Livello di rischio',
+    'Niveau de risque',
+  );
+  String get riskSafe =>
+      _pick('Seguro', 'Safe', 'Seguro', 'Sicuro', 'Sûr');
+  String get riskAttention => _pick(
+    'Atención',
+    'Attention',
+    'Atenção',
+    'Attenzione',
+    'À surveiller',
+  );
+  String get riskSuspicious => _pick(
+    'Sospechoso',
+    'Suspicious',
+    'Suspeito',
+    'Sospetto',
+    'Suspect',
+  );
+  String get riskCritical => _pick(
+    'Crítico',
+    'Critical',
+    'Crítico',
+    'Critico',
+    'Critique',
+  );
+
+  // ── Sistema de planes Básico/Premium ───────────────────────────────────
+  String get premiumTitle =>
+      _pick('NEXORA PREMIUM', 'NEXORA PREMIUM', 'NEXORA PREMIUM', 'NEXORA PREMIUM', 'NEXORA PREMIUM');
+  String get premiumTagline => _pick(
+    'Protección más inteligente.',
+    'Smarter protection.',
+    'Proteção mais inteligente.',
+    'Protezione più intelligente.',
+    'Une protection plus intelligente.',
+  );
+  String get planBasic =>
+      _pick('BÁSICO', 'BASIC', 'BÁSICO', 'BASE', 'BASIQUE');
+  String get planPremium =>
+      _pick('PREMIUM', 'PREMIUM', 'PREMIUM', 'PREMIUM', 'PREMIUM');
+  String get premiumPerMonth => _pick(
+    '/ mes',
+    '/ month',
+    '/ mês',
+    '/ mese',
+    '/ mois',
+  );
+  String get premiumPriceArs => _pick(
+    '\$10.000 ARS',
+    'ARS \$10,000',
+    '\$10.000 ARS',
+    '10.000 ARS',
+    '10 000 ARS',
+  );
+  String get premiumCtaStart => _pick(
+    'COMENZAR PREMIUM',
+    'START PREMIUM',
+    'COMEÇAR PREMIUM',
+    'AVVIA PREMIUM',
+    'COMMENCER PREMIUM',
+  );
+  String get premiumRestore => _pick(
+    'Restaurar compra',
+    'Restore purchase',
+    'Restaurar compra',
+    'Ripristina acquisto',
+    'Restaurer l’achat',
+  );
+  String get premiumLockedTitle => _pick(
+    'Función Premium',
+    'Premium feature',
+    'Recurso Premium',
+    'Funzione Premium',
+    'Fonction Premium',
+  );
+  String get premiumLockedDesc => _pick(
+    'Disponible con Nexora Premium.',
+    'Available with Nexora Premium.',
+    'Disponível com o Nexora Premium.',
+    'Disponibile con Nexora Premium.',
+    'Disponible avec Nexora Premium.',
+  );
+  String get premiumSee => _pick(
+    'Ver Premium',
+    'View Premium',
+    'Ver Premium',
+    'Vedi Premium',
+    'Voir Premium',
+  );
+  String get premiumUnavailable => _pick(
+    'Los pagos reales se habilitarán cuando conectes tu proveedor de pagos.',
+    'Real payments will be enabled once you connect your payments provider.',
+    'Os pagamentos reais serão habilitados quando você conectar seu provedor de pagamentos.',
+    'I pagamenti reali verranno attivati quando colleghi il tuo provider di pagamenti.',
+    'Les paiements réels seront activés dès que vous connecterez votre prestataire de paiements.',
+  );
+
+  // ── Nexora AI (chat local contextual) ──────────────────────────────────
+  String get aiTitle =>
+      _pick('NEXORA AI', 'NEXORA AI', 'NEXORA AI', 'NEXORA AI', 'NEXORA AI');
+  String get aiGreeting => _pick(
+    '¿En qué puedo ayudarte?',
+    'How can I help you?',
+    'Como posso ajudar você?',
+    'Come posso aiutarti?',
+    'Comment puis-je vous aider ?',
+  );
+  String get aiTypeMessage => _pick(
+    'Escribí tu pregunta…',
+    'Type your question…',
+    'Escreva sua pergunta…',
+    'Scrivi la tua domanda…',
+    'Écrivez votre question…',
+  );
+  String get aiThinking =>
+      _pick('Analizando…', 'Thinking…', 'Analisando…', 'Analizzo…', 'Analyse…');
+  String get aiQuickDevice => _pick(
+    '¿Mi teléfono está seguro?',
+    'Is my phone secure?',
+    'Meu celular está seguro?',
+    'Il mio telefono è sicuro?',
+    'Mon téléphone est-il sûr ?',
+  );
+  String get aiQuickAlert => _pick(
+    '¿Qué significa esta alerta?',
+    'What does this alert mean?',
+    'O que este alerta significa?',
+    'Cosa significa questo avviso?',
+    'Que signifie cette alerte ?',
+  );
+  String get aiQuickApp => _pick(
+    '¿Esta aplicación es peligrosa?',
+    'Is this app dangerous?',
+    'Este app é perigoso?',
+    'Questa app è pericolosa?',
+    'Cette application est-elle dangereuse ?',
+  );
+  String get aiQuickPermission => _pick(
+    '¿Qué es este permiso?',
+    'What is this permission?',
+    'O que é essa permissão?',
+    'Cos’è questo permesso?',
+    'Qu’est-ce que cette autorisation ?',
+  );
+  String get aiQuickProtect => _pick(
+    '¿Cómo protejo mi teléfono?',
+    'How do I protect my phone?',
+    'Como proteger meu celular?',
+    'Come proteggo il mio telefono?',
+    'Comment protéger mon téléphone ?',
+  );
+  String get aiIntro => _pick(
+    'Soy Nexora AI, tu asistente local de seguridad. Analizo los datos de tu dispositivo sin que nada salga del teléfono.',
+    'I am Nexora AI, your local security assistant. I analyze your device data without anything leaving the phone.',
+    'Sou a Nexora AI, seu assistente local de segurança. Analiso os dados do seu dispositivo sem que nada saia do telefone.',
+    'Sono Nexora AI, il tuo assistente di sicurezza locale. Analizzo i dati del dispositivo senza che nulla esca dal telefono.',
+    'Je suis Nexora AI, votre assistant de sécurité local. J’analyse les données de votre appareil sans que rien ne quitte le téléphone.',
+  );
+  String get aiHonestNote => _pick(
+    'Basado solo en señales locales. No soy un veredicto definitivo: revisá la evidencia antes de actuar.',
+    'Based only on local signals. I am not a final verdict: review the evidence before acting.',
+    'Baseado apenas em sinais locais. Não sou um veredicto definitivo: revise a evidência antes de agir.',
+    'Basato solo su segnali locali. Non sono un verdetto definitivo: rivedi le prove prima di agire.',
+    'Basé uniquement sur les signaux locaux. Je ne suis pas un verdict définitif : examinez les preuves avant d’agir.',
+  );
+  String get aiNoData => _pick(
+    'No tengo datos para responder eso en este momento.',
+    'I have no data to answer that right now.',
+    'Não tenho dados para responder isso agora.',
+    'Non ho dati per rispondere a questo adesso.',
+    'Je n’ai pas de données pour répondre à cela pour le moment.',
+  );
+  String get aiEvActive => _pick(
+    'Capacidad concedida y ACTIVA ahora: ',
+    'Granted capability ACTIVE right now: ',
+    'Capacidade concedida e ATIVA agora: ',
+    'Capacità concessa e ATTIVA adesso: ',
+    'Capacité accordée et ACTIVE maintenant : ',
+  );
+  String get aiEvGranted => _pick(
+    'Permisos sensibles efectivamente concedidos: ',
+    'Sensitive permissions actually granted: ',
+    'Permissões sensíveis efetivamente concedidas: ',
+    'Autorizzazioni sensibili effettivamente concesse: ',
+    'Autorisations sensibles effectivement accordées : ',
+  );
+  String get aiEvDeclared => _pick(
+    'Solo declarados en el manifiesto, sin conceder: ',
+    'Only declared in the manifest, not granted: ',
+    'Apenas declarados no manifesto, sem conceder: ',
+    'Solo dichiarati nel manifest, non concessi: ',
+    'Uniquement déclarées dans le manifeste, non accordées : ',
+  );
+  String get aiEvSideload => _pick(
+    'origen no verificado (instalada fuera de la tienda oficial)',
+    'unverified origin (installed outside the official store)',
+    'origem não verificada (instalada fora da loja oficial)',
+    'origine non verificata (installata fuori dallo store ufficiale)',
+    'origine non vérifiée (installée hors du store officiel)',
+  );
+  String aiEvAndMore(int n) => _pick(
+    ' y $n señal(es) más.',
+    ' and $n more signal(s).',
+    ' e $n sinal(is) a mais.',
+    ' e altri $n segnale(i).',
+    ' et $n signal(aux) de plus.',
+  );
+  String get aiEvSafe => _pick(
+    'Sin señales relevantes: no hay permisos sensibles concedidos ni flags activos.',
+    'No relevant signals: no sensitive permissions granted nor active flags.',
+    'Sem sinais relevantes: sem permissões sensíveis concedidas nem flags ativos.',
+    'Nessun segnale rilevante: nessuna autorizzazione sensibile concessa né flag attivi.',
+    'Aucun signal pertinent : aucune autorisation sensible accordée ni drapeau actif.',
+  );
+  String aiAlertSummary(String intro, String items, String reco) => _pick(
+    '$intro $items.\n\nRecomendación principal: $reco',
+    '$intro $items.\n\nMain recommendation: $reco',
+    '$intro $items.\n\nRecomendação principal: $reco',
+    '$intro $items.\n\nRaccomandazione principale: $reco',
+    '$intro $items.\n\nRecommandation principale : $reco',
+  );
+  String get aiAlertNone => _pick(
+    'No hay alertas activas: tu dispositivo está en orden.',
+    'No active alerts: your device is all clear.',
+    'Sem alertas ativas: seu dispositivo está em ordem.',
+    'Nessun avviso attivo: il dispositivo è a posto.',
+    'Aucune alerte active : votre appareil est en ordre.',
+  );
+  String get aiTempOk =>
+      _pick('Temperatura normal.', 'Temperature is normal.', 'Temperatura normal.', 'Temperatura normale.', 'Température normale.');
+  String get aiTempWarm => _pick(
+    'Temperatura elevada: cuidá la batería, evitá cargar y jugar a la vez.',
+    'Temperature is elevated: protect the battery — avoid charging and gaming at once.',
+    'Temperatura elevada: cuide a bateria, evite carregar e jogar ao mesmo tempo.',
+    'Temperatura elevata: proteggi la batteria, evita carica e gioco insieme.',
+    'Température élevée : protégez la batterie, évitez de charger et jouer en même temps.',
+  );
+  String get aiTempHot => _pick(
+    'Temperatura crítica: detené el uso intensivo y enfriá el equipo.',
+    'Critical temperature: stop heavy use and cool the device.',
+    'Temperatura crítica: pare o uso intenso e resfrie o aparelho.',
+    'Temperatura critica: ferma l’uso intensivo e raffredda il dispositivo.',
+    'Température critique : arrêtez l’utilisation intensive et refroidissez l’appareil.',
+  );
+  String get aiMemPressure => _pick(
+    'hay presión de memoria.',
+    'memory is under pressure.',
+    'há pressão de memória.',
+    'la memoria è sotto pressione.',
+    'la mémoire est sous pression.',
+  );
+  String get aiAppNoAudit => _pick(
+    'Este dispositivo no permite auditar aplicaciones instaladas.',
+    'This device does not allow auditing installed apps.',
+    'Este dispositivo não permite auditar os aplicativos instalados.',
+    'Questo dispositivo non consente di controllare le app installate.',
+    'Cet appareil ne permet pas d’auditer les applications installées.',
+  );
+  String get aiGreetReply => _pick(
+    '¡Hola! Preguntame sobre la seguridad de tu dispositivo, batería, temperatura, memoria o cualquier app instalada.',
+    'Hi! Ask me about your device security, battery, temperature, memory, or any installed app.',
+    'Olá! Pergunte sobre a segurança do dispositivo, bateria, temperatura, memória ou qualquer app instalada.',
+    'Ciao! Chiedimi della sicurezza del dispositivo, batteria, temperatura, memoria o di qualsiasi app installata.',
+    'Bonjour ! Interrogez-moi sur la sécurité de votre appareil, la batterie, la température, la mémoire ou une application installée.',
+  );
+  String get aiProtectTips => _pick(
+    '1) Mantené Android/iOS actualizado y el instalador solo desde las tiendas oficiales. 2) Revisá los permisos concedidos en las apps que más usás. 3) Activá la captura en segundo plano de Nexora para detectar cambios mientras dormís. 4) Desconfiá de SMS/los y links que te apuran. 5) Usá verificación en dos pasos.',
+    '1) Keep Android/iOS updated and install only from official stores. 2) Review permissions granted to the apps you use most. 3) Enable Nexora background capture to detect changes while you sleep. 4) Be wary of urgent SMS/links that pressure you. 5) Use two-factor authentication.',
+    '1) Mantenha Android/iOS atualizado e instale apenas nas lojas oficiais. 2) Revise as permissões concedidas aos apps que mais usa. 3) Ative a captura em segundo plano da Nexora para detectar mudanças enquanto dorme. 4) Desconfie de SMS/links urgentes que pressionam. 5) Use verificação em duas etapas.',
+    '1) Tieni Android/iOS aggiornati e installa solo dagli store ufficiali. 2) Rivedi le autorizzazioni concesse alle app che usi di più. 3) Attiva la cattura in background di Nexora per rilevare cambiamenti mentre dormi. 4) Attento a SMS/link urgenti che fanno pressione. 5) Usa la verifica in due passaggi.',
+    '1) Tenez Android/iOS à jour et installez uniquement depuis les stores officiels. 2) Revoyez les autorisations accordées aux applications les plus utilisées. 3) Activez la capture en arrière-plan de Nexora pour détecter les changements pendant votre sommeil. 4) Méfiez-vous des SMS/liens urgents qui font pression. 5) Utilisez la double authentification.',
+  );
+  String get aiHelp => _pick(
+    'Podés preguntarme: si tu teléfono está seguro, qué significa una alerta, si una app es peligrosa, qué es un permiso, cómo está tu batería o temperatura, o cómo proteger tu equipo.',
+    'You can ask me: whether your phone is secure, what an alert means, whether an app is dangerous, what a permission is, how your battery or temperature are, or how to protect your device.',
+    'Você pode me perguntar: se seu celular está seguro, o que um alerta significa, se um app é perigoso, o que é uma permissão, como está sua bateria ou temperatura, ou como proteger seu aparelho.',
+    'Puoi chiedermi: se il telefono è sicuro, cosa significa un avviso, se un’app è pericolosa, cos’è un permesso, come stanno batteria o temperatura, o come proteggere il dispositivo.',
+    'Vous pouvez me demander : si votre téléphone est sûr, ce que signifie une alerte, si une application est dangereuse, ce qu’est une autorisation, l’état de la batterie ou de la température, ou comment protéger votre appareil.',
+  );
+
+  String aiReplyBattery(String pct, String state, String temp) => _pick(
+    'Batería al $pct%. Estado: $state. Temperatura: $temp.',
+    'Battery at $pct%. State: $state. Temperature: $temp.',
+    'Bateria em $pct%. Estado: $state. Temperatura: $temp.',
+    'Batteria al $pct%. Stato: $state. Temperatura: $temp.',
+    'Batterie à $pct%. État : $state. Température : $temp.',
+  );
+  String aiReplyBatteryNoTemp(String pct, String state) => _pick(
+    'Batería al $pct%. Estado: $state. (La plataforma no expone la temperatura aquí.)',
+    'Battery at $pct%. State: $state. (This platform does not expose temperature here.)',
+    'Bateria em $pct%. Estado: $state. (Esta plataforma não expõe a temperatura aqui.)',
+    'Batteria al $pct%. Stato: $state. (Questa piattaforma non espone la temperatura qui.)',
+    'Batterie à $pct%. État : $state. (Cette plateforme n’expose pas la température ici.)',
+  );
+  String aiReplyTemp(double temp, String status) => _pick(
+    'La batería está a $temp°C. $status',
+    'The battery is at $temp°C. $status',
+    'A bateria está a $temp°C. $status',
+    'La batteria è a $temp°C. $status',
+    'La batterie est à $temp°C. $status',
+  );
+  String aiReplyMemory(String used, String available, int pct, String note) => _pick(
+    'RAM: $used en uso, $available libres ($pct% de presión). $note',
+    'RAM: $used in use, $available available ($pct% pressure). $note',
+    'RAM: $used em uso, $available livres ($pct% de pressão). $note',
+    'RAM: $used in uso, $available disponibili ($pct% di pressione). $note',
+    'RAM : $used utilisées, $available libres ($pct% de pression). $note',
+  );
+  String aiReplyStorage(String free, String total, int pct) => _pick(
+    'Almacenamiento: $free libres de $total ($pct% disponible).',
+    'Storage: $free free of $total ($pct% available).',
+    'Armazenamento: $free livres de $total ($pct% disponível).',
+    'Archiviazione: $free liberi su $total ($pct% disponibile).',
+    'Stockage : $free libres sur $total ($pct% disponible).',
+  );
+  String aiAppLevel(String name, String level, String evidence) => _pick(
+    '$name → NIVEL: $level. $evidence',
+    '$name → LEVEL: $level. $evidence',
+    '$name → NÍVEL: $level. $evidence',
+    '$name → LIVELLO: $level. $evidence',
+    '$name → NIVEAU : $level. $evidence',
+  );
+  String aiAppNotFound(String name) => _pick(
+    'No encuentro "$name" entre las apps que puedo ver. Revisá el nombre exacto en la lista de Apps.',
+    'I cannot find "$name" among the apps I can see. Check the exact name in the Apps list.',
+    'Não encontro "$name" entre os apps que posso ver. Verifique o nome exato na lista de Apps.',
+    'Non trovo "$name" tra le app che posso vedere. Controlla il nome esatto nell’elenco delle app.',
+    'Je ne trouve pas « $name » parmi les applications que je peux voir. Vérifiez le nom exact dans la liste des applications.',
+  );
+  String aiReplyOverall(String level, int score, int warnings, int criticals) =>
+      _pick(
+        'Tu dispositivo está en nivel $level (puntaje $score). Alerta(s) para revisar: $warnings · Críticas: $criticals.',
+        'Your device is at $level level (score $score). Alerts to review: $warnings · Critical: $criticals.',
+        'Seu dispositivo está no nível $level (pontuação $score). Alertas para revisar: $warnings · Críticas: $criticals.',
+        'Il tuo dispositivo è a livello $level (punteggio $score). Avvisi da rivedere: $warnings · Critici: $criticals.',
+        'Votre appareil est au niveau $level (score $score). Alertes à revoir : $warnings · Critiques : $criticals.',
+      );
+  String aiTopRisky(String items) => _pick(
+    'Las apps con más señales de riesgo ahora: $items.',
+    'The apps with the most risk signals right now: $items.',
+    'Os apps com mais sinais de risco agora: $items.',
+    'Le app con più segnali di rischio adesso: $items.',
+    'Les applications avec le plus de signaux de risque : $items.',
+  );
+  String get aiTopRiskyNone => _pick(
+    'No hay apps con señales de riesgo destacadas ahora.',
+    'No apps with notable risk signals right now.',
+    'Não há apps com sinais de risco relevantes agora.',
+    'Nessuna app con segnali di rischio rilevanti adesso.',
+    'Aucune application avec des signaux de risque notables.',
+  );
+  String aiPermissionExplain(String id) => switch (id) {
+    'CAMERA' => _pick(
+      'El permiso de Cámara permite a la app tomar fotos y video. Preguntate: ¿esta app necesita cámara para lo que hace? Si no, podés revocarlo desde su ficha en Configuración del sistema.',
+      'The Camera permission lets the app take photos and video. Ask yourself: does this app need a camera for what it does? If not, revoke it from its system settings page.',
+      'A permissão de Câmera permite ao app tirar fotos e vídeos. Pergunte-se: este app precisa de câmera para o que faz? Se não, revogue na página de sistema.',
+      'Il permesso Camera consente all’app di scattare foto e video. Chiediti: questa app ha bisogno della fotocamera per ciò che fa? Se no, revocalo dalla pagina di sistema.',
+      'L’autorisation Appareil photo permet à l’application de prendre des photos et vidéos. Demandez-vous : cette app a-t-elle besoin de la caméra pour ce qu’elle fait ? Sinon, révoquez-la depuis sa fiche système.',
+    ),
+    'RECORD_AUDIO' => _pick(
+      'Micrófono: la app puede grabar audio. Es sensible porque puede captar conversaciones; revocá si no lo precisa.',
+      'Microphone: the app can record audio. Sensitive because it can capture conversations; revoke if not needed.',
+      'Microfone: o app pode gravar áudio. É sensível porque pode captar conversas; revogue se não precisar.',
+      'Microfono: l’app può registrare audio. Sensibile perché può catturare conversazioni; revoca se non serve.',
+      'Microphone : l’application peut enregistrer l’audio. Sensible car il peut capter des conversations ; révoquez s’il n’est pas nécessaire.',
+    ),
+    'ACCESS_FINE_LOCATION' => _pick(
+      'Ubicación precisa: la app ve tu posición GPS. Preguntate si necesita ubicación exacta o si le alcanza con la aproximada.',
+      'Precise location: the app sees your GPS position. Ask whether it needs exact location or approximate is enough.',
+      'Localização precisa: o app vê sua posição GPS. Pergunte se ele precisa de localização exata ou a aproximada basta.',
+      'Posizione precisa: l’app vede la tua posizione GPS. Chiediti se serve la posizione esatta o basta quella approssimata.',
+      'Localisation précise : l’application voit votre position GPS. Demandez-vous si elle a besoin de la position exacte ou si l’approximative suffit.',
+    ),
+    'ACCESS_BACKGROUND_LOCATION' => _pick(
+      'Ubicación en segundo plano: la app te sigue ubicando aunque esté cerrada. Es un permiso fuerte: revocado salvo que tengas un motivo claro.',
+      'Background location: the app keeps tracking you even when closed. A strong permission: revoke unless you have a clear reason.',
+      'Localização em segundo plano: o app continua te localizando mesmo fechado. Permissão forte: revogue a menos que haja motivo claro.',
+      'Posizione in background: l’app continua a tracciarti anche da chiusa. Permesso forte: revoca a meno che non ci sia un chiaro motivo.',
+      'Localisation en arrière-plan : l’application continue de vous localiser même fermée. Autorisation forte : révoquez sauf motif clair.',
+    ),
+    'READ_CONTACTS' => _pick(
+      'Contactos: la app puede leer tu agenda. Es útil para apps de mensajería, pero no para un juego o una lámpara.',
+      'Contacts: the app can read your address book. Useful for messaging apps, not for a game or a flashlight.',
+      'Contatos: o app pode ler sua agenda. Útil para apps de mensagem, não para um jogo ou lanterna.',
+      'Contatti: l’app può leggere la tua rubrica. Utile per la messaggistica, non per un gioco o una torcia.',
+      'Contacts : l’application peut lire votre répertoire. Utile pour la messagerie, pas pour un jeu ni une lampe.',
+    ),
+    'READ_SMS' => _pick(
+      'SMS: la app puede leer tus mensajes de texto, incluidos códigos de verificación. Poco permiso legítimo en apps modernas; revisalo de cerca.',
+      'SMS: the app can read your text messages, including verification codes. Rarely legitimate in modern apps; review closely.',
+      'SMS: o app pode ler seus mensagens de texto, incluindo códigos de verificação. Raro de ser legítimo em apps modernos; revise de perto.',
+      'SMS: l’app può leggere i tuoi messaggi, inclusi i codici di verifica. Raramente legittimo nelle app moderne; verifica bene.',
+      'SMS : l’application peut lire vos messages, y compris les codes de vérification. Rarement légitime dans les apps modernes ; à examiner de près.',
+    ),
+    _ => _pick(
+      'Este permiso permite a la app acceder a un dato sensible tuyo. Si no entendés por qué lo necesita, revocalo desde la ficha de la app en Configuración del sistema.',
+      'This permission lets the app access sensitive data of yours. If you do not understand why it needs it, revoke it from the app’s system settings page.',
+      'Esta permissão permite ao app acessar um dado sensível seu. Se você não entende por que ele precisa, revogue na página do app nas Configurações do sistema.',
+      'Questo permesso consente all’app di accedere a un dato sensibile. Se non capisci perché serve, revocalo dalla pagina dell’app nelle impostazioni di sistema.',
+      'Cette autorisation permet à l’application d’accéder à une donnée sensible. Si vous ne comprenez pas pourquoi, révoquez-la depuis la fiche de l’application dans les réglages du système.',
+    ),
+  };
+
   // Hallazgos (ids estables → texto localizado)
+
+  // ── Dashboard (Inicio) ────────────────────────────────────────────────
+  String get dashProtectionTitle => _pick(
+    'Nivel de protección',
+    'Protection level',
+    'Nível de proteção',
+    'Livello di protezione',
+    'Niveau de protection',
+  );
+  String get dashStatusNormal => _pick(
+    'BIEN PROTEGIDO',
+    'WELL PROTECTED',
+    'BEM PROTEGIDO',
+    'BENE PROTETTO',
+    'BIEN PROTÉGÉ',
+  );
+  String get dashStatusWarning => _pick(
+    'PRECAUCIÓN',
+    'CAUTION',
+    'CUIDADO',
+    'ATTENZIONE',
+    'PRUDENCE',
+  );
+  String get dashStatusCritical => _pick(
+    'EN RIESGO',
+    'AT RISK',
+    'EM RISCO',
+    'A RISCHIO',
+    'EN DANGER',
+  );
+  String get dashHello => _pick(
+    'Hola de nuevo',
+    'Welcome back',
+    'Bem-vindo de volta',
+    'Bentornato',
+    'Bon retour',
+  );
+  String get dashAllGood => _pick(
+    'Todo está bajo control',
+    'Everything is under control',
+    'Está tudo sob controle',
+    'Tutto sotto controllo',
+    'Tout est sous contrôle',
+  );
+  String dashFindings(int n) => _pick(
+    '$n hallazgo(s)',
+    '$n finding(s)',
+    '$n achado(s)',
+    '$n rilevazione(i)',
+    '$n constatation(s)',
+  );
+  String get dashResourceTitle => _pick(
+    'Recursos en vivo',
+    'Live resources',
+    'Recursos ao vivo',
+    'Risorse in tempo reale',
+    'Ressources en direct',
+  );
+  String get dashCpuCores => _pick(
+    'Núcleos',
+    'Cores',
+    'Núcleos',
+    'Core',
+    'Cœurs',
+  );
+  String get dashCpuUnavailable => _pick(
+    'El sistema no expone la carga de CPU en este momento',
+    'The system does not expose CPU load right now',
+    'O sistema não expõe a carga da CPU neste momento',
+    'Il sistema non espone il carico della CPU al momento',
+    'Le système n’expose pas la charge du CPU pour le moment',
+  );
+  String get dashNetworkDown => _pick(
+    'Descarga',
+    'Download',
+    'Download',
+    'Download',
+    'Réception',
+  );
+  String get dashNetworkUp => _pick(
+    'Subida',
+    'Upload',
+    'Upload',
+    'Upload',
+    'Envoi',
+  );
+  String get dashNetworkOff => _pick(
+    'Sin conexión',
+    'Offline',
+    'Sem conexão',
+    'Nessuna connessione',
+    'Hors ligne',
+  );
+  String get dashNetworkNote => _pick(
+    'Velocidad medida en vivo',
+    'Live measured speed',
+    'Velocidade medida ao vivo',
+    'Velocità misurata in tempo reale',
+    'Vitesse mesurée en direct',
+  );
+  String get dashVpnActive => _pick(
+    'VPN activa',
+    'VPN active',
+    'VPN ativa',
+    'VPN attiva',
+    'VPN active',
+  );
+  String get dashAppsTitle => _pick(
+    'Aplicaciones',
+    'Applications',
+    'Aplicativos',
+    'Applicazioni',
+    'Applications',
+  );
+  String get dashAppsSub => _pick(
+    'Revisar aplicaciones',
+    'Review apps',
+    'Revisar aplicativos',
+    'Rivedi le app',
+    'Examiner les apps',
+  );
+  String get dashSignalsTitle => _pick(
+    'Señales',
+    'Signals',
+    'Sinais',
+    'Segnali',
+    'Signaux',
+  );
+  String get dashSignalsSub => _pick(
+    'Ver hallazgos',
+    'View findings',
+    'Ver achados',
+    'Vedi rilevazioni',
+    'Voir constatations',
+  );
+  String get dashNetworkKebab => _pick(
+    'Red',
+    'Network',
+    'Rede',
+    'Rete',
+    'Réseau',
+  );
+  String get dashViewAll => _pick(
+    'Ver todas',
+    'View all',
+    'Ver todas',
+    'Vedi tutte',
+    'Tout voir',
+  );
+  String get dashViewAnalysis => _pick(
+    'VER ANÁLISIS',
+    'VIEW ANALYSIS',
+    'VER ANÁLISE',
+    'VEDI ANALISI',
+    'VOIR ANALYSE',
+  );
+  String get dashRecentTitle => _pick(
+    'Actividad reciente',
+    'Recent activity',
+    'Atividade recente',
+    'Attività recente',
+    'Activité récente',
+  );
+  String get dashHistEmpty => _pick(
+    'Todavía no hay capturas. Tirá hacia abajo para analizar por primera vez.',
+    'No captures yet. Pull down to analyze for the first time.',
+    'Ainda não há capturas. Puxe para baixo para analisar pela primeira vez.',
+    'Ancora nessuna acquisizione. Trascina verso il basso per la prima analisi.',
+    'Aucune capture pour l’instant. Tirez vers le bas pour analyser la première fois.',
+  );
+  String get dashHistNormal => _pick(
+    'Análisis completado',
+    'Analysis completed',
+    'Análise concluída',
+    'Analisi completata',
+    'Analyse terminée',
+  );
+  String get dashHistWarning => _pick(
+    'Se detectaron precauciones',
+    'Caution items detected',
+    'Foram detectadas precauções',
+    'Rilevate raccomandazioni',
+    'Des précautions détectées',
+  );
+  String get dashHistCritical => _pick(
+    'Riesgo alto detectado',
+    'High risk detected',
+    'Risco alto detectado',
+    'Rischio alto rilevato',
+    'Risque élevé détecté',
+  );
+  String dashRiskScore(int s) => _pick(
+    'riesgo $s',
+    'risk $s',
+    'risco $s',
+    'rischio $s',
+    'risque $s',
+  );
+  String get dashNoRiskyApps => _pick(
+    'Sin apps con señales destacadas',
+    'No apps with notable signals',
+    'Sem apps com sinais relevantes',
+    'Nessuna app con segnali rilevanti',
+    'Aucune application avec des signaux notables',
+  );
+
+  // ── Apps (FASE 5: lista 4 niveles + detalle con permisos) ──────────────
+  String get appSearch => _pick(
+    'Buscar app…',
+    'Search apps…',
+    'Buscar app…',
+    'Cerca app…',
+    'Rechercher une app…',
+  );
+  String get appDetailVersion => _pick(
+    'Versión',
+    'Version',
+    'Versão',
+    'Versione',
+    'Version',
+  );
+  String get appDetailSideload => _pick(
+    'Instalada fuera de la tienda oficial',
+    'Installed outside the official store',
+    'Instalada fora da loja oficial',
+    'Installata fuori dallo store ufficiale',
+    'Installée hors du store officiel',
+  );
+  String get appDetailPermsGranted => _pick(
+    'Permisos concedidos hoy',
+    'Permissions granted today',
+    'Permissões concedidas hoje',
+    'Autorizzazioni concesse oggi',
+    'Autorisations accordées aujourd’hui',
+  );
+  String get appDetailPermsRequested => _pick(
+    'Permisos solicitados, no concedidos',
+    'Permissions requested, not granted',
+    'Permissões solicitadas, não concedidas',
+    'Autorizzazioni richieste, non concesse',
+    'Autorisations demandées, non accordées',
+  );
+  String get appPermExplainTitle => _pick(
+    '¿Qué significa este permiso?',
+    'What does this permission mean?',
+    'O que esta permissão significa?',
+    'Cosa significa questa autorizzazione?',
+    'Que signifie cette autorisation ?',
+  );
+  String get appDetailOpenSettings => _pick(
+    'Abrir ajustes del sistema',
+    'Open system settings',
+    'Abrir configurações do sistema',
+    'Apri impostazioni di sistema',
+    'Ouvrir les réglages système',
+  );
+  String get appDetailOpenApp => _pick(
+    'Abrir ficha del sistema',
+    'Open system app page',
+    'Abrir página do app no sistema',
+    'Apri la scheda dell’app',
+    'Ouvrir la fiche système de l’app',
+  );
+  String get appDetailHonest => _pick(
+    'NEXORA no revoca permisos por vos ni simula hacerlo: la ficha abre los Ajustes reales del sistema, donde sí podés gestionarlos.',
+    'NEXORA does not revoke permissions for you nor fakes it: the page opens the real system settings, where you can manage them.',
+    'A NEXORA não revoga permissões por você nem simula: a página abre as Configurações reais do sistema, onde você pode gerenciá-las.',
+    'NEXORA non revoca le autorizzazioni per te né lo simula: la scheda apre le reali impostazioni di sistema, dove puoi gestirle.',
+    'NEXORA ne révoque pas les autorisations à votre place et ne le simule pas : la fiche ouvre les vrais réglages système, où vous pouvez les gérer.',
+  );
+  String get appDetailNoPerms => _pick(
+    'Esta app no solicita permisos sensibles.',
+    'This app requests no sensitive permissions.',
+    'Este app não solicita permissões sensíveis.',
+    'Questa app non richiede autorizzazioni sensibili.',
+    'Cette application ne demande aucune autorisation sensible.',
+  );
+  String get appSearchNone => _pick(
+    'No hay apps para esa búsqueda.',
+    'No apps match that search.',
+    'Não há apps para essa busca.',
+    'Nessuna app per quella ricerca.',
+    'Aucune application pour cette recherche.',
+  );
 }
