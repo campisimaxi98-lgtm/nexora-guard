@@ -5,6 +5,8 @@
 /// del nativo degrada a un snapshot vacío y seguro — nunca crash.
 library;
 
+import 'dart:convert';
+
 import 'package:flutter/services.dart';
 
 import '../core/models.dart';
@@ -166,6 +168,23 @@ class PlatformCollectors {
     } on PlatformException {
       return null;
     } on MissingPluginException {
+      return null;
+    }
+  }
+
+  /// Abre el selector de imágenes del sistema y devuelve los bytes del
+  /// archivo elegido (máx. 20 MB). `null` si se cancela o no está
+  /// soportado. Solo vive en memoria: no se sube ni se persiste.
+  Future<Uint8List?> pickImageBytes() async {
+    try {
+      final encoded = await _channel.invokeMethod<String>('pickImageBytes');
+      if (encoded == null) return null;
+      return base64Decode(encoded);
+    } on PlatformException {
+      return null;
+    } on MissingPluginException {
+      return null;
+    } on FormatException {
       return null;
     }
   }

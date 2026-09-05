@@ -1,15 +1,17 @@
-/// Nexora — asistente de preguntas frecuentes sobre seguridad digital.
+/// Nexora AI — chat local contextual (FASE 9).
 ///
-/// Nota honesta: esto NO es un modelo de IA conectado a un servidor (la app
-/// no tiene backend ni hace requests de red — ver `check-no-internet.sh` en
-/// `scripts/`). Es un asistente local de reglas: reconoce palabras clave y
-/// devuelve contenido educativo pre-escrito. Si el mensaje no matchea
-/// ninguna regla, ofrece las mismas preguntas rápidas como alternativa.
+/// Conecta la pantalla al [NexoraAIEngine]: respuestas basadas en datos
+/// REALES del snapshot y del veredicto (batería, temperatura, memoria,
+/// almacenamiento, nivel por app, alertas). Sigue siendo 100% local y sin
+/// red; cuando el motor no tiene el dato lo dice con honestidad.
 library;
 
 import 'package:flutter/material.dart';
 
+import '../../core/models.dart';
+import '../nexora_ai.dart';
 import '../nexora_logo.dart';
+import '../strings.dart';
 import '../theme.dart';
 
 class _BotMessage {
@@ -18,85 +20,44 @@ class _BotMessage {
   final bool fromBot;
 }
 
-const _quickReplies = [
-  '¿Cómo funciona la protección?',
-  '¿Qué es el phishing?',
-  'Revisar mi dispositivo',
-  'Reportar un problema',
-];
-
-String _answerFor(String question) {
-  final q = question.toLowerCase();
-  if (q.contains('phishing')) {
-    return 'El phishing es un tipo de engaño donde alguien se hace pasar '
-        'por una entidad confiable (tu banco, una app, un contacto) para '
-        'que compartas contraseñas, códigos o datos de tarjetas. '
-        'Desconfiá de mensajes urgentes que piden datos sensibles o que '
-        'te llevan a un enlace para "verificar" tu cuenta.';
-  }
-  if (q.contains('funciona') || q.contains('protección')) {
-    return 'NEXORA analiza el dispositivo en busca de apps con permisos '
-        'riesgosos, cambios anómalos de red/almacenamiento y patrones '
-        'conocidos de amenaza. Todo el análisis ocurre en tu propio '
-        'teléfono — no se envían tus datos a ningún servidor.';
-  }
-  if (q.contains('revisar') ||
-      q.contains('dispositivo') ||
-      q.contains('escan')) {
-    return 'Para revisar tu dispositivo ahora mismo, andá a la pestaña '
-        '"Análisis" y tocá "Iniciar análisis". Te va a mostrar el estado '
-        'de apps, red y almacenamiento en tiempo real.';
-  }
-  if (q.contains('reportar') || q.contains('problema')) {
-    return 'Si encontraste algo sospechoso, andá a "Perfil → Acerca de" '
-        'y usá la opción para compartir el registro de diagnóstico. '
-        'Queda guardado localmente y podés compartirlo vos mismo, nunca '
-        'se envía automáticamente.';
-  }
-  if (q.contains('hola') || q.contains('buenas')) {
-    return '¡Hola! Preguntame sobre phishing, cómo funciona la protección, '
-        'o pedime que te ayude a revisar el dispositivo.';
-  }
-  return 'Por ahora puedo ayudarte con preguntas sobre phishing, cómo '
-      'funciona la protección de NEXORA, o guiarte para revisar tu '
-      'dispositivo. Probá una de las preguntas rápidas de abajo.';
-}
-
 class NexoraBotScreen extends StatefulWidget {
-  const NexoraBotScreen({super.key});
+  const NexoraBotScreen({
+    super.key,
+    required this.strings,
+    this.snapshot,
+    this.verdict,
+  });
+
+  final AppStrings strings;
+  final Snapshot? snapshot;
+  final Verdict? verdict;
 
   @override
   State<NexoraBotScreen> createState() => _NexoraBotScreenState();
 }
 
 class _NexoraBotScreenState extends State<NexoraBotScreen> {
+  late final NexoraAIEngine _engine;
   final _controller = TextEditingController();
   final _scroll = ScrollController();
-  final List<_BotMessage> _messages = [
-    const _BotMessage(
-      '¡Hola! Soy Nexora 🤖\nEstoy acá para ayudarte con seguridad '
-      'digital. Esto es un asistente local con respuestas predefinidas, '
-      'no una IA conectada a internet.',
-      true,
-    ),
-  ];
+  final List<_BotMessage> _messages = [];
+  bool _thinking = false;
 
-  void _send(String text) {
-    if (text.trim().isEmpty) return;
-    setState(() {
-      _messages.add(_BotMessage(text.trim(), false));
-      _messages.add(_BotMessage(_answerFor(text), true));
-    });
-    _controller.clear();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scroll.hasClients) {
-        _scroll.animateTo(
-          _scroll.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 250),
-          curve: Curves.easeOut,
-        );
-      }
-    });
+  @override
+  void initState() {
+    super.initState();
+    _engine = NexoraAIEngine(
+      strings: widget.strings,
+      snapshot: widget.snapshot,
+      verdict: widget.verdict,
+    );
+    _messages.add(_BotMessage(widget.strings.aiGreeting, true));
+    final note = widget.strings.aiHonestNote;
+    if (note.isNotEmpty) {
+      _messages.add(_BotMessage('$note\n\n${widget.strings.aiIntro}', true));
+    } else {
+      _messages.add(_BotMessage(widget.strings.aiIntro, true));
+    }
   }
 
   @override
@@ -106,28 +67,70 @@ class _NexoraBotScreenState extends State<NexoraBotScreen> {
     super.dispose();
   }
 
+  Future<void> _send(String text) async {
+    final trimmed = text.trim();
+    if (trimmed.isEmpty || _thinking) return;
+    setState(() {
+      _messages.add(_BotMessage(trimmed, false));
+      _thinking = true;
+    });
+    _controller.clear();
+    _scrollDown();
+    await Future<void>.delayed(const Duration(milliseconds: 280));
+    if (!mounted) return;
+    setState(() {
+      _messages.add(_BotMessage(_engine.answer(trimmed), true));
+      _thinking = false;
+    });
+    _scrollDown();
+  }
+
+  void _scrollDown() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scroll.hasClients) {
+        _scroll.animateTo(
+          _scroll.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 240),
+          curve: Curves.easeOut,
+        );
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) => Scaffold(
     backgroundColor: nexoraBackground,
     appBar: AppBar(
-      backgroundColor: nexoraBackground,
+      backgroundColor: nexoraSurface,
+      elevation: 0,
+      leading: IconButton(
+        icon: const Icon(Icons.close),
+        onPressed: () => Navigator.of(context).maybePop(),
+      ),
       title: Row(
         children: [
           const NexoraLogo(size: 30, showRing: false),
           const SizedBox(width: 10),
-          const Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'Nexora',
-                style: TextStyle(fontSize: 15, color: Colors.white),
-              ),
-              Text(
-                'Asistente local · sin conexión',
-                style: TextStyle(fontSize: 10.5, color: Colors.white38),
-              ),
-            ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  widget.strings.aiTitle,
+                  style: const TextStyle(fontSize: 15),
+                ),
+                Text(
+                  widget.strings.aiHonestNote,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 10.5,
+                    color: Theme.of(context).disabledColor,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -139,29 +142,32 @@ class _NexoraBotScreenState extends State<NexoraBotScreen> {
             child: ListView.builder(
               controller: _scroll,
               padding: const EdgeInsets.all(14),
-              itemCount: _messages.length,
-              itemBuilder: (context, i) => _Bubble(message: _messages[i]),
+              itemCount: _messages.length + (_thinking ? 1 : 0),
+              itemBuilder: (context, i) {
+                if (_thinking && i == _messages.length) {
+                  return const _ThinkingBubble();
+                }
+                return _Bubble(message: _messages[i]);
+              },
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                for (final q in _quickReplies)
-                  OutlinedButton(
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: nexoraGoldLight,
+          if (_engine.quickPrompts.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final q in _engine.quickPrompts)
+                    ActionChip(
+                      onPressed: _thinking ? null : () => _send(q),
+                      label: Text(q, style: const TextStyle(fontSize: 12)),
+                      backgroundColor: nexoraSurfaceRaised,
                       side: const BorderSide(color: nexoraBorder),
-                      backgroundColor: nexoraSurface,
                     ),
-                    onPressed: () => _send(q),
-                    child: Text(q, style: const TextStyle(fontSize: 12)),
-                  ),
-              ],
+                ],
+              ),
             ),
-          ),
           const SizedBox(height: 10),
           Padding(
             padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
@@ -172,8 +178,10 @@ class _NexoraBotScreenState extends State<NexoraBotScreen> {
                     controller: _controller,
                     style: const TextStyle(color: Colors.white),
                     decoration: InputDecoration(
-                      hintText: 'Escribe tu mensaje…',
-                      hintStyle: const TextStyle(color: Colors.white38),
+                      hintText: widget.strings.aiTypeMessage,
+                      hintStyle: TextStyle(
+                        color: Theme.of(context).disabledColor,
+                      ),
                       filled: true,
                       fillColor: nexoraSurface,
                       contentPadding: const EdgeInsets.symmetric(
@@ -190,10 +198,14 @@ class _NexoraBotScreenState extends State<NexoraBotScreen> {
                 ),
                 const SizedBox(width: 8),
                 CircleAvatar(
-                  backgroundColor: nexoraWine,
+                  backgroundColor: nexoraGold,
                   child: IconButton(
-                    icon: const Icon(Icons.send, color: Colors.white, size: 18),
-                    onPressed: () => _send(_controller.text),
+                    icon: Icon(
+                      Icons.send,
+                      color: nexoraBackground,
+                      size: 18,
+                    ),
+                    onPressed: _thinking ? null : () => _send(_controller.text),
                   ),
                 ),
               ],
@@ -214,9 +226,9 @@ class _Bubble extends StatelessWidget {
   Widget build(BuildContext context) => Align(
     alignment: message.fromBot ? Alignment.centerLeft : Alignment.centerRight,
     child: Container(
-      margin: const EdgeInsets.symmetric(vertical: 6),
+      margin: const EdgeInsets.symmetric(vertical: 5),
       padding: const EdgeInsets.all(12),
-      constraints: const BoxConstraints(maxWidth: 280),
+      constraints: const BoxConstraints(maxWidth: 300),
       decoration: BoxDecoration(
         color: message.fromBot ? nexoraSurfaceRaised : nexoraGold,
         borderRadius: BorderRadius.circular(14),
@@ -228,6 +240,35 @@ class _Bubble extends StatelessWidget {
           fontSize: 13.5,
           height: 1.35,
         ),
+      ),
+    ),
+  );
+}
+
+class _ThinkingBubble extends StatelessWidget {
+  const _ThinkingBubble();
+
+  @override
+  Widget build(BuildContext context) => Align(
+    alignment: Alignment.centerLeft,
+    child: Container(
+      margin: const EdgeInsets.symmetric(vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: nexoraSurfaceRaised,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: const [
+          SizedBox(
+            width: 14,
+            height: 14,
+            child: CircularProgressIndicator(strokeWidth: 2, color: nexoraGold),
+          ),
+          SizedBox(width: 10),
+          Text('…', style: TextStyle(color: Colors.white70)),
+        ],
       ),
     ),
   );

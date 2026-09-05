@@ -3,6 +3,7 @@ package com.nexora.guard
 import android.Manifest
 import android.content.Intent
 import android.os.Build
+import android.util.Base64
 import androidx.core.app.ActivityCompat
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -18,9 +19,11 @@ class MainActivity : FlutterActivity() {
     private var pendingBleResult: MethodChannel.Result? = null
     private var pendingNotifResult: MethodChannel.Result? = null
     private var pendingPickResult: MethodChannel.Result? = null
+    private var pendingImageResult: MethodChannel.Result? = null
 
     private companion object {
         const val PICK_FILE_REQUEST = 7404
+        const val PICK_IMAGE_REQUEST = 7405
         const val PICK_MAX_BYTES = 20L * 1024 * 1024
     }
 
@@ -65,12 +68,34 @@ class MainActivity : FlutterActivity() {
                     pendingPickResult = null
                 }
             },
+            onPickImage = { result ->
+                pendingImageResult?.success(null)
+                pendingImageResult = result
+                try {
+                    startActivityForResult(
+                        Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                            addCategory(Intent.CATEGORY_OPENABLE)
+                            type = "image/*"
+                        },
+                        PICK_IMAGE_REQUEST,
+                    )
+                } catch (_: Throwable) {
+                    pendingImageResult?.success(null)
+                    pendingImageResult = null
+                }
+            },
         )
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode != PICK_FILE_REQUEST) return
+        when (requestCode) {
+            PICK_FILE_REQUEST -> handlePickFile(resultCode, data)
+            PICK_IMAGE_REQUEST -> handlePickImage(resultCode, data)
+        }
+    }
+
+    private fun handlePickFile(resultCode: Int, data: Intent?) {
         val result = pendingPickResult ?: return
         pendingPickResult = null
         val uri = data?.data
@@ -88,6 +113,27 @@ class MainActivity : FlutterActivity() {
                 null
             }
             runOnUiThread { result.success(content) }
+        }.start()
+    }
+
+    private fun handlePickImage(resultCode: Int, data: Intent?) {
+        val result = pendingImageResult ?: return
+        pendingImageResult = null
+        val uri = data?.data
+        if (resultCode != RESULT_OK || uri == null) {
+            result.success(null)
+            return
+        }
+        Thread {
+            val encoded = try {
+                contentResolver.openInputStream(uri)?.use { stream ->
+                    val bytes = stream.readBytes()
+                    if (bytes.size > PICK_MAX_BYTES) null else Base64.encodeToString(bytes, Base64.NO_WRAP)
+                }
+            } catch (_: Throwable) {
+                null
+            }
+            runOnUiThread { result.success(encoded) }
         }.start()
     }
 

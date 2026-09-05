@@ -48,9 +48,9 @@ class _NexoraAlertsScreenState extends State<NexoraAlertsScreen> {
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
             child: Row(
               children: [
-                const Text(
-                  'Alertas',
-                  style: TextStyle(
+                Text(
+                  widget.strings.topAlerts,
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
                     color: Colors.white,
@@ -84,19 +84,19 @@ class _NexoraAlertsScreenState extends State<NexoraAlertsScreen> {
             child: Row(
               children: [
                 _FilterChip(
-                  label: 'Todas',
+                  label: widget.strings.alertsFilterAll,
                   selected: _filter == _Filter.all,
                   onTap: () => setState(() => _filter = _Filter.all),
                 ),
                 const SizedBox(width: 8),
                 _FilterChip(
-                  label: 'Críticas',
+                  label: widget.strings.alertsFilterCritical,
                   selected: _filter == _Filter.critical,
                   onTap: () => setState(() => _filter = _Filter.critical),
                 ),
                 const SizedBox(width: 8),
                 _FilterChip(
-                  label: 'Advertencias',
+                  label: widget.strings.alertsFilterWarning,
                   selected: _filter == _Filter.warning,
                   onTap: () => setState(() => _filter = _Filter.warning),
                 ),
@@ -120,8 +120,8 @@ class _NexoraAlertsScreenState extends State<NexoraAlertsScreen> {
                           const SizedBox(height: 10),
                           Text(
                             findings.isEmpty
-                                ? 'Sin alertas activas. Todo tranquilo.'
-                                : 'No hay alertas en esta categoría.',
+                                ? widget.strings.alertsEmptyActive
+                                : widget.strings.alertsEmptyFilter,
                             textAlign: TextAlign.center,
                             style: const TextStyle(color: Colors.white38),
                           ),

@@ -489,6 +489,534 @@ class AppStrings {
     'Signalée ne veut pas dire malveillante : elle demande plus que d’habitude ou ne vient pas du magasin officiel. À vous de vérifier et de décider.',
   );
 
+  // Pestaña "Señales" (hallazgos del motor de reglas filtrables, FASE 6)
+  String get sigFilterAll => _pick(
+    'Todas',
+    'All',
+    'Todas',
+    'Tutte',
+    'Toutes',
+  );
+  String get sigFilterNetwork => _pick(
+    'Red',
+    'Network',
+    'Rede',
+    'Rete',
+    'Réseau',
+  );
+  String get sigFilterPermissions => _pick(
+    'Permisos',
+    'Permissions',
+    'Permissões',
+    'Permessi',
+    'Permissions',
+  );
+  String get sigFilterBattery => _pick(
+    'Batería',
+    'Battery',
+    'Bateria',
+    'Batteria',
+    'Batterie',
+  );
+  String get sigFilterCpu => _pick(
+    'CPU',
+    'CPU',
+    'CPU',
+    'CPU',
+    'CPU',
+  );
+  String get sigFilterRam => _pick(
+    'RAM',
+    'RAM',
+    'RAM',
+    'RAM',
+    'RAM',
+  );
+  String get sigFilterActivity => _pick(
+    'Actividad',
+    'Activity',
+    'Atividade',
+    'Attività',
+    'Activité',
+  );
+  String get sigFilterRisk => _pick(
+    'Riesgo',
+    'Risk',
+    'Risco',
+    'Rischio',
+    'Risque',
+  );
+  String get sigFilterStorage => _pick(
+    'Almacenamiento',
+    'Storage',
+    'Armazenamento',
+    'Archiviazione',
+    'Stockage',
+  );
+  String get sigOnlyActive => _pick(
+    'Solo activas',
+    'Active only',
+    'Somente ativas',
+    'Solo attive',
+    'Actives uniquement',
+  );
+  String get sigShowAll => _pick(
+    'MOSTRAR TODAS',
+    'SHOW ALL',
+    'MOSTRAR TODAS',
+    'MOSTRA TUTTE',
+    'TOUT AFFICHER',
+  );
+  String sigHidden(int count) => _pick(
+    '+$count inactivas ocultas',
+    '+$count inactive hidden',
+    '+$count inativas ocultas',
+    '+$count inattive nascoste',
+    '+$count inactives masquées',
+  );
+  String get sigNoFindings => _pick(
+    'Sin señales activas: el motor no encontró nada fuera de lo habitual en la última captura. Buena señal.',
+    'No active signals: the engine found nothing out of the ordinary in the last snapshot. Good sign.',
+    'Sem sinais ativas: o mecanismo não encontrou nada fora do comum na última captura. Bom sinal.',
+    'Nessun segnale attivo: il motore non ha trovato nulla di anomalo nell’ultima acquisizione. Buon segno.',
+    'Aucun signal actif : le moteur n’a rien trouvé d’anormal lors de la dernière capture. Bon signe.',
+  );
+  String get sigNoMatches => _pick(
+    'No hay señales en esta categoría en la última captura.',
+    'No signals in this category on the last snapshot.',
+    'Não há sinais nesta categoria na última captura.',
+    'Nessun segnale in questa categoria nell’ultima acquisizione.',
+    'Aucun signal dans cette catégorie sur la dernière capture.',
+  );
+
+  // ── Gráficas (FASE 7) ──────────────────────────────────────────────────
+  String get chartTitle => _pick(
+    'Gráficas',
+    'Charts',
+    'Gráficos',
+    'Grafici',
+    'Graphiques',
+  );
+  String get chartRefresh => _pick(
+    'Actualizar',
+    'Refresh',
+    'Atualizar',
+    'Aggiorna',
+    'Actualiser',
+  );
+  String get chartBatteryTemp => _pick(
+    'Temperatura de batería',
+    'Battery temperature',
+    'Temperatura da bateria',
+    'Temperatura della batteria',
+    'Température de la batterie',
+  );
+  String get chartMemory => _pick(
+    'Memoria disponible',
+    'Available memory',
+    'Memória disponível',
+    'Memoria disponibile',
+    'Mémoire disponible',
+  );
+  String get chartStorage => _pick(
+    'Almacenamiento libre',
+    'Free storage',
+    'Armazenamento livre',
+    'Archiviazione libera',
+    'Stockage libre',
+  );
+  String get chartScore => _pick(
+    'Puntaje del veredicto',
+    'Verdict score',
+    'Pontuação do veredicto',
+    'Punteggio del verdetto',
+    'Score du verdict',
+  );
+  String get chartNoHistory => _pick(
+    'Todavía no hay historial: tomá algunas capturas y la evolución aparece acá.',
+    'No history yet: take a few snapshots and the trend will appear here.',
+    'Ainda não há histórico: faça algumas capturas e a evolução aparece aqui.',
+    'Nessuna cronologia ancora: fai qualche acquisizione e la tendenza apparirà qui.',
+    'Pas encore d’historique : effectuez quelques captures et la tendance apparaîtra ici.',
+  );
+  String get chartStorageNow => _pick(
+    'Almacenamiento ahora',
+    'Storage right now',
+    'Armazenamento agora',
+    'Archiviazione adesso',
+    'Stockage maintenant',
+  );
+  String get chartStorageFree => _pick(
+    'libre',
+    'free',
+    'livre',
+    'libero',
+    'libre',
+  );
+  String get chartStorageCache => _pick(
+    'en caché (apps)',
+    'in cache (apps)',
+    'em cache (apps)',
+    'in cache (app)',
+    'en cache (apps)',
+  );
+  String get chartUsageTitle => _pick(
+    'Consumo por app (últimas 24 h)',
+    'Per-app usage (last 24 h)',
+    'Consumo por app (últimas 24 h)',
+    'Consumo per app (ultime 24 h)',
+    'Consommation par app (24 dernières h)',
+  );
+  String get chartUsageEmpty => _pick(
+    'Sin detalles de uso por app (necesita acceso de uso o datos de red).',
+    'No per-app usage details (needs usage access or network data).',
+    'Sem detalhes de uso por app (precisa de acesso de uso ou dados de rede).',
+    'Nessun dettaglio d’uso per app (serve l’accesso all’uso o i dati di rete).',
+    'Aucun détail d’usage par app (accès à l’utilisation ou données réseau requis).',
+  );
+  String get chartUsageDownload => _pick(
+    'bajado',
+    'downloaded',
+    'baixado',
+    'scaricato',
+    'téléchargé',
+  );
+  String get chartUsageUpload => _pick(
+    'subido',
+    'uploaded',
+    'enviado',
+    'caricato',
+    'envoyé',
+  );
+  String get chartUsageScreen => _pick(
+    'en pantalla',
+    'on screen',
+    'na tela',
+    'a schermo',
+    'à l’écran',
+  );
+  String get chartUnitCelsius => _pick(
+    '°C',
+    '°C',
+    '°C',
+    '°C',
+    '°C',
+  );
+  String chartLastSeconds(int seconds) => _pick(
+    'últimas $seconds capturas',
+    'last $seconds snapshots',
+    'últimas $seconds capturas',
+    'ultime $seconds acquisizioni',
+    'dernières $seconds captures',
+  );
+
+  // ── Perfil (FASE 8) ────────────────────────────────────────────────────
+  String get profileTitle => _pick(
+    'Mi Perfil',
+    'My Profile',
+    'Meu Perfil',
+    'Il Mio Profilo',
+    'Mon Profil',
+  );
+  String get profileName => _pick(
+    'Nombre',
+    'Name',
+    'Nome',
+    'Nome',
+    'Nom',
+  );
+  String get profileUsername => _pick(
+    'Usuario',
+    'Username',
+    'Usuário',
+    'Nome utente',
+    'Nom d’utilisateur',
+  );
+  String get profileNameHint => _pick(
+    'Cómo querés que te llamemos',
+    'What you want to be called',
+    'Como você quer ser chamado',
+    'Come vuoi essere chiamato',
+    'Comment vous voulez être appelé',
+  );
+  String get profileUsernameHint => _pick(
+    'Solo letras, números, punto y guion (3-20)',
+    'Only letters, numbers, dot and dash (3-20)',
+    'Apenas letras, números, ponto e hífen (3-20)',
+    'Solo lettere, numeri, punto e trattino (3-20)',
+    'Lettres, chiffres, point et tiret uniquement (3-20)',
+  );
+  String get profileSave => _pick(
+    'GUARDAR',
+    'SAVE',
+    'SALVAR',
+    'SALVA',
+    'ENREGISTRER',
+  );
+  String get profilePlanLabel => _pick(
+    'Plan',
+    'Plan',
+    'Plano',
+    'Piano',
+    'Offre',
+  );
+  String get profileStatsTitle => _pick(
+    'Estadísticas de esta sesión',
+    'Session stats',
+    'Estatísticas da sessão',
+    'Statistiche della sessione',
+    'Statistiques de la session',
+  );
+  String get profileStatsApps => _pick(
+    'apps analizadas',
+    'apps analyzed',
+    'apps analisados',
+    'app analizzate',
+    'apps analysées',
+  );
+  String get profileStatsSignals => _pick(
+    'señales activas',
+    'active signals',
+    'sinais ativos',
+    'segnali attivi',
+    'signaux actifs',
+  );
+  String get profileStatsLastSnapshot => _pick(
+    'última captura',
+    'last snapshot',
+    'última captura',
+    'ultima acquisizione',
+    'dernière capture',
+  );
+  String get profilePhotoHint => _pick(
+    'Agregá una foto de perfil',
+    'Add a profile picture',
+    'Adicione uma foto de perfil',
+    'Aggiungi una foto profilo',
+    'Ajoutez une photo de profil',
+  );
+  String get profilePhotoPick => _pick(
+    'Elegir foto',
+    'Choose photo',
+    'Escolher foto',
+    'Scegli foto',
+    'Choisir une photo',
+  );
+  String get profilePhotoRemove => _pick(
+    'Quitar foto',
+    'Remove photo',
+    'Remover foto',
+    'Rimuovi foto',
+    'Retirer la photo',
+  );
+  String get profileNameValidation => _pick(
+    'El nombre no puede quedar vacío.',
+    'Name cannot be empty.',
+    'O nome não pode ficar vazio.',
+    'Il nome non può essere vuoto.',
+    'Le nom ne peut pas être vide.',
+  );
+  String get profileUsernameValidation => _pick(
+    'Usuario inválido: 3-20 caracteres, solo letras, números, punto o guion.',
+    'Invalid username: 3-20 chars, only letters, numbers, dot or dash.',
+    'Usuário inválido: 3-20 caracteres, apenas letras, números, ponto ou hífen.',
+    'Nome utente non valido: 3-20 caratteri, solo lettere, numeri, punto o trattino.',
+    'Nom d’utilisateur invalide : 3-20 caractères, lettres, chiffres, point ou tiret.',
+  );
+  String get profilePhotoKeep => _pick(
+    'Foto elegida esta sesión (queda guardada en memoria).',
+    'Photo chosen this session (kept in memory).',
+    'Foto escolhida nesta sessão (mantida em memória).',
+    'Foto scelta in questa sessione (mantenuta in memoria).',
+    'Photo choisie cette session (conservée en mémoire).',
+  );
+  String get profileBackHome => _pick(
+    'VOLVER AL INICIO',
+    'BACK TO HOME',
+    'VOLTAR AO INÍCIO',
+    'TORNA ALLA HOME',
+    'RETOUR À L’ACCUEIL',
+  );
+
+  // ── Premium (FASE 10) ──────────────────────────────────────────────────
+  String get premiumFeaturesTitle => _pick(
+    'Incluye',
+    'Includes',
+    'Inclui',
+    'Include',
+    'Comprend',
+  );
+  String get premiumFeature1 => _pick(
+    'Historial y tendencias en profundidad',
+    'Deep history and trends',
+    'Histórico e tendências em profundidade',
+    'Cronologia e tendenze in profondità',
+    'Historique et tendances en profondeur',
+  );
+  String get premiumFeature2 => _pick(
+    'Análisis IA prioritario con contexto completo',
+    'Priority AI analysis with full context',
+    'Análise de IA prioritária com contexto completo',
+    'Analisi IA prioritaria con contesto completo',
+    'Analyse IA prioritaire avec contexte complet',
+  );
+  String get premiumFeature3 => _pick(
+    'Comparativas entre capturas y reportes avanzados',
+    'Snapshot comparisons and advanced reports',
+    'Comparativos entre capturas e relatórios avançados',
+    'Confronti tra acquisizioni e report avanzati',
+    'Comparaisons entre captures et rapports avancés',
+  );
+  String get premiumFeature4 => _pick(
+    'Alerta temprana de instalaciones extrañas',
+    'Early warning on strange installs',
+    'Alerta precoce de instalações estranhas',
+    'Avviso precoce di installazioni strane',
+    'Alerte précoce des installations étranges',
+  );
+  String get premiumAlready => _pick(
+    'Ya tenés NEXORA PREMIUM activo.',
+    'You already have NEXORA PREMIUM active.',
+    'Você já tem o NEXORA PREMIUM ativo.',
+    'Hai già NEXORA PREMIUM attivo.',
+    'Vous avez déjà NEXORA PREMIUM actif.',
+  );
+  String get premiumComingSoon => _pick(
+    'Próximamente',
+    'Coming soon',
+    'Em breve',
+    'Prossimamente',
+    'Bientôt',
+  );
+  String premiumRestoredOk(String provider) => _pick(
+    'Compra restaurada por $provider.',
+    'Purchase restored via $provider.',
+    'Compra restaurada por $provider.',
+    'Acquisto ripristinato tramite $provider.',
+    'Achat restauré via $provider.',
+  );
+  String get premiumNotPurchased => _pick(
+    'No se encontró ninguna compra previa de Premium.',
+    'No previous Premium purchase found.',
+    'Nenhuma compra anterior do Premium encontrada.',
+    'Nessun acquisto Premium precedente trovato.',
+    'Aucun achat Premium antérieur trouvé.',
+  );
+
+  // ── Alertas y Protección (FASE 11) ────────────────────────────────────
+  String get alertsFilterAll => _pick(
+    'Todas',
+    'All',
+    'Todas',
+    'Tutte',
+    'Toutes',
+  );
+  String get alertsFilterCritical => _pick(
+    'Críticas',
+    'Critical',
+    'Críticas',
+    'Critiche',
+    'Critiques',
+  );
+  String get alertsFilterWarning => _pick(
+    'Advertencias',
+    'Warnings',
+    'Advertências',
+    'Avvisi',
+    'Avertissements',
+  );
+  String get alertsEmptyActive => _pick(
+    'Sin alertas activas. Todo tranquilo.',
+    'No active alerts. All quiet.',
+    'Sem alertas ativas. Tudo tranquilo.',
+    'Nessun avviso attivo. Tutto tranquillo.',
+    'Aucune alerte active. Tout est calme.',
+  );
+  String get alertsEmptyFilter => _pick(
+    'No hay alertas en esta categoría.',
+    'No alerts in this category.',
+    'Não há alertas nesta categoria.',
+    'Nessun avviso in questa categoria.',
+    'Aucune alerte dans cette catégorie.',
+  );
+  String get protectionTitle => _pick(
+    'Protección Web',
+    'Web Protection',
+    'Proteção Web',
+    'Protezione Web',
+    'Protection Web',
+  );
+  String get protectionNoData => _pick(
+    'Sin datos todavía',
+    'No data yet',
+    'Sem dados ainda',
+    'Ancora nessun dato',
+    'Pas encore de données',
+  );
+  String protectionConnected(String transport) => _pick(
+    'Conectado · $transport',
+    'Connected · $transport',
+    'Conectado · $transport',
+    'Connesso · $transport',
+    'Connecté · $transport',
+  );
+  String get protectionDisconnected => _pick(
+    'Sin conexión',
+    'Disconnected',
+    'Sem conexão',
+    'Disconnesso',
+    'Déconnecté',
+  );
+  String get protectionVpnActive => _pick(
+    'VPN detectada en el sistema',
+    'VPN detected on the system',
+    'VPN detectada no sistema',
+    'VPN rilevata nel sistema',
+    'VPN détectée sur le système',
+  );
+  String get protectionVpnNone => _pick(
+    'Sin VPN activa en el sistema',
+    'No VPN active on the system',
+    'Sem VPN ativa no sistema',
+    'Nessuna VPN attiva nel sistema',
+    'Aucune VPN active sur le système',
+  );
+  String get protectionDown => _pick(
+    'Bajada',
+    'Download',
+    'Download',
+    'Download',
+    'Téléchargement',
+  );
+  String get protectionUp => _pick(
+    'Subida',
+    'Upload',
+    'Upload',
+    'Upload',
+    'Envoi',
+  );
+  String get protectionMetered => _pick(
+    'Medida',
+    'Metered',
+    'Medido',
+    'Tariffata',
+    'Compté',
+  );
+  String get protectionFindingsTitle => _pick(
+    'Hallazgos de red',
+    'Network findings',
+    'Achados de rede',
+    'Riscontri di rete',
+    'Constatations réseau',
+  );
+  String get protectionFindingsNone => _pick(
+    'No hay hallazgos de red en el último análisis.',
+    'No network findings on the latest analysis.',
+    'Não há achados de rede na última análise.',
+    'Nessun riscontro di rete nell’ultima analisi.',
+    'Aucune constatation réseau sur la dernière analyse.',
+  );
+
   // Dispositivo
   String get deviceTitle =>
       _pick('Dispositivo', 'Device', 'Dispositivo', 'Dispositivo', 'Appareil');
@@ -1439,6 +1967,13 @@ class AppStrings {
     'Perfil',
     'Profilo',
     'Profil',
+  );
+  String get tabProtection => _pick(
+    'Protección',
+    'Protection',
+    'Proteção',
+    'Protezione',
+    'Protection',
   );
   String get topAlerts =>
       _pick('Alertas', 'Alerts', 'Alertas', 'Notifiche', 'Alertes');

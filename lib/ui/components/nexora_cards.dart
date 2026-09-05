@@ -54,13 +54,18 @@ class NexoraCard extends StatelessWidget {
       tint: color,
       glow: glow,
     );
+    // Material+Ink SIEMPRE (también sin onTap): un ListTile dentro de la
+    // tarjeta necesita un Material sobre el que pintar tinta y colores, o
+    // Flutter lo reclama en debug/tests.
     final content = AnimatedSize(
       duration: const Duration(milliseconds: 220),
       curve: Curves.easeOut,
-      child: Container(
-        decoration: onTap == null ? decoration : null,
-        padding: padding,
-        child: child,
+      child: Material(
+        color: Colors.transparent,
+        child: Ink(
+          decoration: decoration,
+          child: Padding(padding: padding, child: child),
+        ),
       ),
     );
     if (onTap == null) return content;

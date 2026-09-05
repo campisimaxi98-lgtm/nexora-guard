@@ -29,12 +29,12 @@ corregir → verificar que lo anterior sigue verde.
 | 3 | Sistema de diseño: tokens de superficie, `NexoraCard`, `SectionHeaderRow`, `ValueRow`, `LevelBadge`, `PremiumLockedCard`, `NexoraMaxWidth`, `NexoraTopBar`, `FloatingAIButton` | ✅ |
 | 4 | Dashboard futurista: escudo de seguridad, batería/temperatura, barras RAM/red reales (CPU dice la verdad), señales, apps, VER ANÁLISIS | ✅ |
 | 5 | Apps: clasificación 4 niveles, tarjetas compactas agrupadas + búsqueda, detalle con permisos interactivos + deep links reales a Ajustes | ✅ |
-| 6 | Señales: filtros TODAS/RED/PERMISOS/BATERÍA/CPU/RAM/ACTIVIDAD/RIESGO, ocultar inactivas, MOSTRAR TODAS | ⏳ |
-| 7 | Gráficas: historial batería/temperatura, consumo honesto por app, dona de almacenamiento real | ⏳ |
-| 8 | Perfil: foto real (selector nativo), nombre/usuario editables y validados, plan, estadísticas de protección | ⏳ |
-| 9 | Nexora AI: chatbot flotante conectado al motor contextual local | ⏳ |
-| 10 | Premium: pantalla de suscripción, gating, restauración, proveedor de pagos enchufable (sin pagos falsos) | ⏳ |
-| 11 | Navegación: bottom nav 5 pestañas + TopBar (campana/engranaje), Configuración como pantalla | ⏳ |
+| 6 | Señales: filtros TODAS/RED/PERMISOS/BATERÍA/CPU/RAM/ACTIVIDAD/RIESGO/ALMACENAMIENTO, ocultar inactivas, MOSTRAR TODAS | ✅ |
+| 7 | Gráficas: historial batería/temperatura, consumo honesto por app, dona de almacenamiento real | ✅ |
+| 8 | Perfil: foto real (selector nativo), nombre/usuario editables y validados, plan, estadísticas de protección | ✅ |
+| 9 | Nexora AI: chatbot flotante conectado al motor contextual local | ✅ |
+| 10 | Premium: pantalla de suscripción, gating, restauración, proveedor de pagos enchufable (sin pagos falsos) | ✅ |
+| 11 | Navegación: bottom nav 5 pestañas + TopBar (campana/engranaje), Configuración como pantalla | ✅ |
 | 12 | Rendimiento: RepaintBoundary, const, evitar rebuilds | ⏳ |
 | 13 | Estados UI: loading / empty / error / offline / sin-permisos / premium-locked | ⏳ |
 | 14 | Responsive (teléfonos y tablets) + accesibilidad (label+color, contraste, tamaño táctil) | ⏳ |

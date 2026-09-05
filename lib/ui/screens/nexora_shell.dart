@@ -1,27 +1,31 @@
-/// Shell de navegación con barra inferior (Inicio · Análisis · Protección
-/// · Alertas · Perfil), igual al mockup de referencia. Reemplaza la
-/// `TabBar` superior que tenía la app; toda la lógica de captura/config
-/// sigue viviendo en `main.dart` — este widget solo la presenta distinto.
+/// Shell de navegación v2 (FASE 11) — barra inferior con 5 pestañas
+/// (Inicio · Análisis · Protección · Alertas · Perfil) y chrome superior
+/// [NexoraTopBar] (campana con badge + engranaje + refresh).
 ///
-/// Las pantallas "avanzadas" que no entran en la barra de 5 ítems (apps,
-/// red, historial técnico, almacenamiento, dispositivo, cercanía,
-/// configuración, acerca de) siguen existiendo tal cual estaban: se
-/// alcanzan empujándolas por encima con [legacyTab], que en `main.dart`
-/// apunta al mismo `_tabView` de siempre. No se perdió ninguna pantalla.
+/// Sustituye la `TabBar` superior que tenía la app. Toda la lógica de
+/// captura/config sigue viviendo en `main.dart`; este widget solo la
+/// presenta distinto. Las pantallas técnicas que no entran en la barra
+/// (apps, red, almacenamiento, dispositivo, cercanía, configuración, acerca)
+/// se alcanzan por encima vía [legacyTab] — nada se pierde.
 library;
+
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
 import '../../core/history_store.dart';
 import '../../core/models.dart';
+import '../../core/subscription.dart';
+import '../components.dart';
 import '../strings.dart';
 import '../theme.dart';
 import 'nexora_alerts.dart';
-import 'nexora_apps_analysis.dart';
+import 'nexora_bot.dart';
+import 'nexora_charts.dart';
 import 'nexora_dashboard.dart';
+import 'nexora_premium.dart';
 import 'nexora_profile.dart';
 import 'nexora_protection.dart';
-import 'nexora_quickscan.dart';
 import 'nexora_splash.dart';
 
 class NexoraShell extends StatefulWidget {
@@ -35,11 +39,14 @@ class NexoraShell extends StatefulWidget {
     required this.onRefresh,
     required this.onOpenApp,
     required this.legacyTab,
+    required this.subscription,
+    this.pickImage,
+    this.onExport,
   });
 
   final Snapshot? snapshot;
   final Verdict? verdict;
-  final List<dynamic> history; // List<HistoryRow>
+  final List<HistoryRow> history;
   final AppStrings strings;
   final bool loading;
   final Future<void> Function() onRefresh;
@@ -48,6 +55,14 @@ class NexoraShell extends StatefulWidget {
   /// Construye una pantalla "legada" por id: 'apps' | 'network' | 'history'
   /// | 'device' | 'storage' | 'nearby' | 'settings' | 'about'.
   final Widget Function(String id) legacyTab;
+
+  final NexoraSubscriptionService subscription;
+
+  /// Selector de imagen nativo para el perfil (bytes en memoria).
+  final Future<Uint8List?> Function()? pickImage;
+
+  /// Comparte/exporta el snapshot en JSON (botón en el análisis).
+  final VoidCallback? onExport;
 
   @override
   State<NexoraShell> createState() => _NexoraShellState();
@@ -69,6 +84,49 @@ class _NexoraShellState extends State<NexoraShell> {
     );
   }
 
+  void _openBot(Snapshot snapshot, Verdict verdict) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => NexoraBotScreen(
+          strings: widget.strings,
+          snapshot: snapshot,
+          verdict: verdict,
+        ),
+      ),
+    );
+  }
+
+  void _openPremium() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => NexoraPremiumScreen(
+          strings: widget.strings,
+          subscription: widget.subscription,
+        ),
+      ),
+    );
+  }
+
+  /// Que el Dashboard salte a donde toca dentro de la shell.
+  void _openTab(String destination) {
+    switch (destination) {
+      case 'apps':
+        _openLegacy('apps', widget.strings.tabApps);
+        break;
+      case 'network':
+        _openLegacy('network', widget.strings.tabNetwork);
+        break;
+      case 'device':
+        _openLegacy('device', widget.strings.tabDevice);
+        break;
+      case 'flagged':
+        setState(() => _index = 3);
+        break;
+      default:
+        setState(() => _index = 0);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_showSplash) {
@@ -79,11 +137,24 @@ class _NexoraShellState extends State<NexoraShell> {
 
     final snapshot = widget.snapshot;
     final verdict = widget.verdict;
+    final strings = widget.strings;
 
     if (snapshot == null || verdict == null) {
-      return const Scaffold(
+      return Scaffold(
         backgroundColor: nexoraBackground,
-        body: Center(child: CircularProgressIndicator(color: nexoraGold)),
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const CircularProgressIndicator(color: nexoraGold),
+              const SizedBox(height: 14),
+              Text(
+                strings.loading,
+                style: TextStyle(color: Theme.of(context).disabledColor),
+              ),
+            ],
+          ),
+        ),
       );
     }
 
@@ -91,59 +162,61 @@ class _NexoraShellState extends State<NexoraShell> {
       NexoraDashboardScreen(
         snapshot: snapshot,
         verdict: verdict,
-        history: widget.history.map((h) => h as HistoryRow).toList(),
-        strings: widget.strings,
+        history: widget.history,
+        strings: strings,
         onRefresh: widget.onRefresh,
-        onOpenTab: (_) => setState(() => _index = 0),
+        onOpenTab: _openTab,
       ),
-      NexoraQuickScanScreen(
+      NexoraChartsScreen(
         snapshot: snapshot,
-        verdict: verdict,
-        loading: widget.loading,
+        history: widget.history,
+        strings: strings,
         onRefresh: widget.onRefresh,
+        extraTrailing: widget.onExport == null
+            ? null
+            : IconButton(
+                onPressed: widget.onExport,
+                icon: const Icon(Icons.ios_share, size: 20),
+                tooltip: strings.actionExport,
+              ),
       ),
       NexoraProtectionScreen(
         snapshot: snapshot,
         verdict: verdict,
-        strings: widget.strings,
+        strings: strings,
       ),
-      NexoraAlertsScreen(verdict: verdict, strings: widget.strings),
+      NexoraAlertsScreen(verdict: verdict, strings: strings),
       NexoraProfileScreen(
+        strings: strings,
+        subscription: widget.subscription,
         onOpenLegacy: _openLegacy,
         onRestart: () => setState(() => _showSplash = true),
+        snapshot: snapshot,
+        verdict: verdict,
+        pickImage: widget.pickImage,
+        onOpenPremium: _openPremium,
       ),
     ];
 
-    // La pestaña de Análisis de Apps vive fuera de la lista fija de arriba
-    // porque necesita `onOpenApp`; se muestra empujada desde el acceso
-    // rápido del Dashboard/las Alertas en vez de ocupar un 6º ítem de la
-    // barra (el diseño de referencia usa 5).
     return Scaffold(
       backgroundColor: nexoraBackground,
-      body: IndexedStack(index: _index, children: pages),
-      floatingActionButton: _index == 0
-          ? null
-          : FloatingActionButton.small(
-              backgroundColor: nexoraGold,
-              foregroundColor: nexoraBackground,
-              tooltip: 'Análisis de Apps',
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => Scaffold(
-                    backgroundColor: nexoraBackground,
-                    appBar: AppBar(
-                      backgroundColor: nexoraBackground,
-                      title: const Text('Análisis de Apps'),
-                    ),
-                    body: NexoraAppsAnalysisScreen(
-                      snapshot: snapshot,
-                      onOpenApp: widget.onOpenApp,
-                    ),
-                  ),
-                ),
-              ),
-              child: const Icon(Icons.apps),
-            ),
+      body: Column(
+        children: [
+          NexoraTopBar(
+            alertCount: verdict.findings.length,
+            onOpenAlerts: () => setState(() => _index = 3),
+            onOpenSettings: () =>
+                _openLegacy('settings', strings.topSettings),
+            onRefresh: widget.onRefresh,
+            refreshEnabled: !widget.loading,
+          ),
+          Expanded(child: IndexedStack(index: _index, children: pages)),
+        ],
+      ),
+      floatingActionButton: FloatingAIButton(
+        onTap: () => _openBot(snapshot, verdict),
+        tooltip: strings.aiTitle,
+      ),
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
           color: nexoraSurface,
@@ -154,34 +227,32 @@ class _NexoraShellState extends State<NexoraShell> {
             children: [
               _NavItem(
                 icon: Icons.home_filled,
-                label: 'Inicio',
+                label: strings.tabHome,
                 selected: _index == 0,
                 onTap: () => setState(() => _index = 0),
               ),
               _NavItem(
                 icon: Icons.bolt,
-                label: 'Análisis',
+                label: strings.tabAnalyze,
                 selected: _index == 1,
                 onTap: () => setState(() => _index = 1),
               ),
               _NavItem(
                 icon: Icons.shield_outlined,
-                label: 'Protección',
+                label: strings.tabProtection,
                 selected: _index == 2,
                 onTap: () => setState(() => _index = 2),
               ),
               _NavItem(
                 icon: Icons.notifications_none,
-                label: 'Alertas',
+                label: strings.topAlerts,
                 selected: _index == 3,
-                badge: verdict.findings.isEmpty
-                    ? null
-                    : verdict.findings.length,
+                badge: verdict.findings.isEmpty ? null : verdict.findings.length,
                 onTap: () => setState(() => _index = 3),
               ),
               _NavItem(
                 icon: Icons.person_outline,
-                label: 'Perfil',
+                label: strings.tabProfile,
                 selected: _index == 4,
                 onTap: () => setState(() => _index = 4),
               ),

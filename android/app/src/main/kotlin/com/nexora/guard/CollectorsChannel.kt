@@ -40,6 +40,7 @@ object CollectorsChannel {
         onRequestBlePermissions: ((MethodChannel.Result) -> Unit)? = null,
         onRequestNotificationPermissions: ((MethodChannel.Result) -> Unit)? = null,
         onPickFile: ((MethodChannel.Result) -> Unit)? = null,
+        onPickImage: ((MethodChannel.Result) -> Unit)? = null,
     ) {
         val mainHandler = Handler(Looper.getMainLooper())
         MethodChannel(messenger, NAME).setMethodCallHandler { call, result ->
@@ -117,6 +118,11 @@ object CollectorsChannel {
 
                 "pickAndReadFile" -> when {
                     onPickFile != null -> onPickFile(result)
+                    else -> result.success(null)
+                }
+
+                "pickImageBytes" -> when {
+                    onPickImage != null -> onPickImage(result)
                     else -> result.success(null)
                 }
 

@@ -19,6 +19,7 @@ import 'core/nearby.dart';
 import 'core/nearby_store.dart';
 import 'core/rule_engine.dart';
 import 'core/snapshot_json.dart';
+import 'core/subscription.dart';
 import 'meta.dart';
 import 'platform/capture_service.dart';
 import 'platform/collectors.dart';
@@ -284,6 +285,10 @@ class _InspectorHomeState extends State<InspectorHome> {
   final NearbySession _nearby = NearbySession();
   NearbyStatus _nearbyStatus = NearbyStatus.idle;
   String? _crashLog;
+  NexoraSubscriptionService? _subscriptionService;
+
+  NexoraSubscriptionService get _subscription => _subscriptionService ??
+      (NexoraSubscriptionService(directoryPath: _dataDir));
 
   @override
   void initState() {
@@ -393,9 +398,6 @@ class _InspectorHomeState extends State<InspectorHome> {
       });
     }
   }
-
-  Future<void> _setLanguage(String code) =>
-      _updateConfig(_config.copyWith(languageCode: code));
 
   Future<void> _export(AppStrings strings) async {
     final snapshot = _snapshot;
@@ -610,7 +612,7 @@ class _InspectorHomeState extends State<InspectorHome> {
     final all = [
       _TabSpec('summary', Icons.speed, strings.tabSummary, simple),
       _TabSpec('apps', Icons.apps, strings.tabApps, notSimple),
-      _TabSpec('flagged', Icons.flag, strings.tabFlagged, simple),
+      _TabSpec('flagged', Icons.flag, strings.tabSignals, simple),
       _TabSpec('network', Icons.wifi, strings.tabNetwork, notSimple),
       _TabSpec('storage', Icons.storage, strings.tabStorage, notSimple),
       _TabSpec('device', Icons.phone_android, strings.tabDevice, notSimple),
@@ -655,7 +657,8 @@ class _InspectorHomeState extends State<InspectorHome> {
       onOpenApp: (pkg) => _openSystemScreen('app-details', packageName: pkg),
       onGrantUsageAccess: () => _openSystemScreen('usage-access'),
     ),
-    'flagged' => FlaggedAppsScreen(
+    'flagged' => NexoraSignalsScreen(
+      verdict: verdict,
       apps: snapshot.apps,
       auditSupported: snapshot.device.appsAuditSupported,
       strings: strings,
@@ -703,71 +706,34 @@ class _InspectorHomeState extends State<InspectorHome> {
   @override
   Widget build(BuildContext context) {
     final strings = _resolveStrings(_config);
-    final snapshot = _snapshot;
-    final verdict = _verdict;
-    final visible = _visibleTabs(strings);
 
     // Introducción de primera vez: se muestra una sola vez, antes que nada.
-    if (!_loading && !_config.onboardingSeen) {
+    // Sin directorio de datos no hay dónde persistir el visto — degrader a
+    // la app directo (misma política de elegancia que AuthGate).
+    if (!_loading && !_config.onboardingSeen && _dataDir != null) {
       return OnboardingScreen(strings: strings, onDone: _finishOnboarding);
     }
 
-    return DefaultTabController(
-      // La key fuerza un controlador nuevo cuando cambia el número de
-      // pestañas (al cambiar de modo), evitando índices fuera de rango.
-      key: ValueKey(visible.length),
-      length: visible.length,
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Nexora'),
-          actions: [
-            PopupMenuButton<String>(
-              icon: const Icon(Icons.translate),
-              tooltip: strings.actionLanguage,
-              onSelected: _setLanguage,
-              itemBuilder: (context) => [
-                // '' = automático (seguir el idioma del equipo).
-                CheckedPopupMenuItem(
-                  value: '',
-                  checked: _config.languageCode.isEmpty,
-                  child: Text(strings.settingsLanguageAuto),
-                ),
-                for (final lang in AppLang.values)
-                  CheckedPopupMenuItem(
-                    value: languageCodeOf(lang),
-                    checked: _config.languageCode == languageCodeOf(lang),
-                    child: Text(languageNativeName(lang)),
-                  ),
-              ],
-            ),
-            IconButton(
-              icon: const Icon(Icons.refresh),
-              tooltip: strings.actionRefresh,
-              onPressed: _loading ? null : _refresh,
-            ),
-            IconButton(
-              icon: const Icon(Icons.ios_share),
-              tooltip: strings.actionExport,
-              onPressed: snapshot == null ? null : () => _export(strings),
-            ),
-          ],
-          bottom: TabBar(
-            isScrollable: true,
-            tabs: [
-              for (final t in visible) Tab(icon: Icon(t.icon), text: t.label),
-            ],
-          ),
-        ),
-        body: snapshot == null || verdict == null
-            // Radar animado de captura: marca viva en vez de spinner genérico.
-            ? RadarScan(strings: strings)
-            : TabBarView(
-                children: [
-                  for (final t in visible)
-                    _tabView(context, visible, t.id, snapshot, verdict, strings),
-                ],
-              ),
-      ),
+    final visible = _visibleTabs(strings);
+    return NexoraShell(
+      snapshot: _snapshot,
+      verdict: _verdict,
+      history: _history,
+      strings: strings,
+      loading: _loading,
+      onRefresh: _refresh,
+      onOpenApp: (pkg) => _openSystemScreen('app-details', packageName: pkg),
+      legacyTab: (id) {
+        final snapshot = _snapshot;
+        final verdict = _verdict;
+        if (snapshot == null || verdict == null) {
+          return const SizedBox.shrink();
+        }
+        return _tabView(context, visible, id, snapshot, verdict, strings);
+      },
+      subscription: _subscription,
+      pickImage: () => _collectors.pickImageBytes(),
+      onExport: () => _export(strings),
     );
   }
 }

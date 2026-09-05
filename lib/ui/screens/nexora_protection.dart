@@ -37,15 +37,23 @@ class NexoraProtectionScreen extends StatelessWidget {
       child: ListView(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
         children: [
-          const Text(
-            'Protección Web',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: Colors.white,
+          Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Row(
+              children: [
+                const Icon(Icons.shield_outlined, color: nexoraGoldLight, size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  strings.protectionTitle,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 16),
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(20),
@@ -70,10 +78,10 @@ class NexoraProtectionScreen extends StatelessWidget {
                 const SizedBox(height: 10),
                 Text(
                   network == null
-                      ? 'Sin datos todavía'
+                      ? strings.protectionNoData
                       : network.connected
-                      ? 'Conectado · ${network.transport}'
-                      : 'Sin conexión',
+                      ? strings.protectionConnected(network.transport)
+                      : strings.protectionDisconnected,
                   style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w700,
@@ -83,8 +91,8 @@ class NexoraProtectionScreen extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   network?.vpnActive == true
-                      ? 'VPN detectada en el sistema'
-                      : 'Sin VPN activa en el sistema',
+                      ? strings.protectionVpnActive
+                      : strings.protectionVpnNone,
                   style: TextStyle(
                     color: network?.vpnActive == true
                         ? severityColor(Severity.normal)
@@ -100,7 +108,7 @@ class NexoraProtectionScreen extends StatelessWidget {
             children: [
               Expanded(
                 child: _NetStat(
-                  label: 'Bajada',
+                  label: strings.protectionDown,
                   value: network == null
                       ? '—'
                       : '${network.downstreamKbps} kbps',
@@ -109,25 +117,25 @@ class NexoraProtectionScreen extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: _NetStat(
-                  label: 'Subida',
+                  label: strings.protectionUp,
                   value: network == null ? '—' : '${network.upstreamKbps} kbps',
                 ),
               ),
               const SizedBox(width: 10),
               Expanded(
                 child: _NetStat(
-                  label: 'Medida',
+                  label: strings.protectionMetered,
                   value: network == null
                       ? '—'
-                      : (network.metered ? 'Sí' : 'No'),
+                      : (network.metered ? strings.yes : strings.no),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 20),
-          const Text(
-            'Hallazgos de red',
-            style: TextStyle(
+          Text(
+            strings.protectionFindingsTitle,
+            style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.w700,
               fontSize: 15,
@@ -142,9 +150,9 @@ class NexoraProtectionScreen extends StatelessWidget {
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(color: nexoraBorder),
               ),
-              child: const Text(
-                'No hay hallazgos de red en el último análisis.',
-                style: TextStyle(color: Colors.white54, fontSize: 13),
+              child: Text(
+                strings.protectionFindingsNone,
+                style: const TextStyle(color: Colors.white54, fontSize: 13),
               ),
             )
           else
