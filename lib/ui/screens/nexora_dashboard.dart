@@ -128,6 +128,63 @@ class NexoraDashboardScreen extends StatelessWidget {
     if (onOpenTab != null) onOpenTab(tabId);
   }
 
+  /// Color del porcentaje central por nivel de salud (FASE 8): verde
+  /// óptimo, ámbar atención, naranja sospechoso, rojo crítico.
+  Color _healthColor(int health) {
+    if (health >= 80) return severityGreen;
+    if (health >= 60) return severityYellow;
+    if (health >= 40) return nexoraOrange;
+    return nexoraRed;
+  }
+
+  /// Explica la escala de colores de la esfera al tocarla (FASE 8).
+  void _showHealthScale(
+    BuildContext context,
+    int health,
+    int activeSensors,
+  ) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: nexoraSurfaceRaised,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+      ),
+      builder: (sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(ntPad + 4),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SectionHeaderRow(
+                icon: Icons.donut_large,
+                title: strings.donutScaleTitle,
+              ),
+              const SizedBox(height: ntGapSmall),
+              Text(
+                '${strings.donutScaleIntro} ${strings.donutScaleSensors(activeSensors)}',
+                style: const TextStyle(fontSize: 13, height: 1.5),
+              ),
+              const SizedBox(height: ntGap),
+              _ScaleRow(color: severityGreen, text: strings.donutScaleGood),
+              _ScaleRow(color: severityYellow, text: strings.donutScaleFair),
+              _ScaleRow(color: nexoraOrange, text: strings.donutScaleWarn),
+              _ScaleRow(color: nexoraRed, text: strings.donutScaleBad),
+              const SizedBox(height: ntGapSmall),
+              Text(
+                '${strings.donutCenterHint} Estado actual: $health%.',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Theme.of(context).disabledColor,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final mem = snapshot.memory;
@@ -313,7 +370,9 @@ class NexoraDashboardScreen extends StatelessWidget {
             segments: donutSegments,
             strings: strings,
             centerPercent: healthPercent.toDouble(),
-            centerSubtitle: strings.donutCenterHealth(activeSensors),
+            centerColor: _healthColor(healthPercent),
+            onCenterTap: () =>
+                _showHealthScale(context, healthPercent, activeSensors),
           ),
           const SizedBox(height: ntGap),
 
@@ -370,6 +429,7 @@ class NexoraDashboardScreen extends StatelessWidget {
                   value: '${formatBytes(mem.usedBytes)} / ${formatBytes(mem.totalBytes)}',
                   barValue: 1.0 - mem.availableRatio,
                   color: nexoraBlue,
+                  onTap: () => _open('device'),
                 ),
                 const SizedBox(height: ntGapSmall),
                 ValueRow(
@@ -378,6 +438,7 @@ class NexoraDashboardScreen extends StatelessWidget {
                   value: '${bat.levelPercent}%',
                   barValue: bat.levelPercent / 100,
                   color: nexoraGold,
+                  onTap: () => _open('device'),
                 ),
                 const SizedBox(height: ntGapSmall),
                 ValueRow(
@@ -392,6 +453,7 @@ class NexoraDashboardScreen extends StatelessWidget {
                   color: bat.temperatureAvailable
                       ? _tempColor(bat.temperatureCelsius)
                       : nexoraBlue,
+                  onTap: () => _open('device'),
                 ),
                 const SizedBox(height: ntGapSmall),
                 ValueRow(
@@ -400,6 +462,7 @@ class NexoraDashboardScreen extends StatelessWidget {
                   value: '${formatBytes(st.freeBytes)} / ${formatBytes(st.totalBytes)}',
                   barValue: st.freeRatio,
                   color: severityGreen,
+                  onTap: () => _open('storage'),
                 ),
                 const Divider(height: ntGap + 8, color: nexoraBorder),
                 // CPU: la carga es REAL (muestreo delta del nativo) cuando la
@@ -409,6 +472,7 @@ class NexoraDashboardScreen extends StatelessWidget {
                   label: strings.dashCpuCores,
                   value: '${snapshot.device.cpuCores}',
                   color: nexoraBlue,
+                  onTap: () => _open('device'),
                 ),
                 const SizedBox(height: ntGapSmall),
                 ValueRow(
@@ -425,6 +489,7 @@ class NexoraDashboardScreen extends StatelessWidget {
                             ? nexoraRed
                             : nexoraBlue)
                       : nexoraBlue,
+                  onTap: () => _open('device'),
                 ),
                 const SizedBox(height: ntGapSmall),
                 if (net.connected)
@@ -434,6 +499,7 @@ class NexoraDashboardScreen extends StatelessWidget {
                     value: '${net.downstreamKbps} kbps',
                     barValue: netDown,
                     color: nexoraBlue,
+                    onTap: () => _open('network'),
                   )
                 else
                   ValueRow(
@@ -442,6 +508,7 @@ class NexoraDashboardScreen extends StatelessWidget {
                     value: strings.dashNetworkOff,
                     barValue: 0,
                     color: nexoraBlue,
+                    onTap: () => _open('network'),
                   ),
                 const SizedBox(height: ntGapSmall),
                 if (net.connected)
@@ -451,6 +518,7 @@ class NexoraDashboardScreen extends StatelessWidget {
                     value: '${net.upstreamKbps} kbps',
                     barValue: netUp,
                     color: nexoraBlue,
+                    onTap: () => _open('network'),
                   )
                 else
                   ValueRow(
@@ -459,6 +527,7 @@ class NexoraDashboardScreen extends StatelessWidget {
                     value: strings.dashNetworkOff,
                     barValue: 0,
                     color: nexoraBlue,
+                    onTap: () => _open('network'),
                   ),
               ],
             ),
@@ -692,4 +761,34 @@ class _ActivityRow extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Fila de la escala de colores: círculo + explicación (nunca color solo).
+class _ScaleRow extends StatelessWidget {
+  const _ScaleRow({required this.color, required this.text});
+
+  final Color color;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 5),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Container(
+            width: 12,
+            height: 12,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Text(text, style: const TextStyle(fontSize: 13, height: 1.4)),
+        ),
+      ],
+    ),
+  );
 }

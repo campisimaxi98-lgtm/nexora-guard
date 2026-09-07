@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:nexora_guard/core/auth_store.dart';
 import 'package:nexora_guard/main.dart';
+import 'package:nexora_guard/ui/screens/nexora_settings.dart';
 import 'package:nexora_guard/ui/screens/settings.dart';
 
 /// Crea un AuthStore con sesión ya abierta sobre un directorio temporal.
@@ -13,7 +14,7 @@ AuthStore loggedInStore() {
   final dir = Directory.systemTemp.createTempSync('nexora-widget-auth');
   final store = AuthStore(dir)
     ..load()
-    ..register('tester@nexora.dev', 'secreta1');
+    ..register('tester@nexora.dev', 'Secret1@2026');
   addTearDown(() {
     if (dir.existsSync()) dir.deleteSync(recursive: true);
   });
@@ -214,13 +215,32 @@ void main() {
     expect(find.text('Home'), findsOneWidget);
     expect(find.text('Inicio'), findsNothing);
 
-    // El cambio de idioma vive en Configuración (pantalla legada accesible
-    // con el engranaje de la barra superior). La sección de idioma puede
-    // estar bajo el pliegue de la lista: se baja hasta ella.
+    // El cambio de idioma vive en Configuración: el engranaje abre el
+    // Ajustes organizado por grupos (Cuenta/Seguridad/Aplicación) y
+    // 'Preferences' conduce a la pantalla técnica con el selector.
     await tester.tap(find.byIcon(Icons.settings_outlined));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 200));
+    expect(find.byType(NexoraSettingsScreen), findsOneWidget);
 
+    // La fila 'Preferences' está bajo el pliegue del Ajustes por grupos:
+    // se baja hasta ella antes de tocar.
+    final settingsScrollable = find.descendant(
+      of: find.byType(NexoraSettingsScreen),
+      matching: find.byType(Scrollable),
+    );
+    expect(settingsScrollable, findsWidgets);
+    await tester.scrollUntilVisible(
+      find.text('Preferences'),
+      200,
+      scrollable: settingsScrollable.first,
+    );
+    await tester.pump(const Duration(milliseconds: 100));
+    await tester.tap(find.text('Preferences'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 200));
+
+    // La sección de idioma puede estar bajo el pliegue: se baja hasta ella.
     final scrollable = find.descendant(
       of: find.byType(SettingsScreen),
       matching: find.byType(Scrollable),
@@ -239,10 +259,15 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 200));
 
-    // Volver al Inicio: ahora la pestaña Inicio está en español.
-    await tester.pageBack();
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 200));
+    // Volver al Inicio: se retrocede cada pantalla intermedia (Configuración
+    // técnica y Ajustes) hasta que no queden rutas por deshacer.
+    for (var i = 0; i < 6; i++) {
+      final back = find.byTooltip('Back');
+      if (back.evaluate().isEmpty) break;
+      await tester.tap(back.first, warnIfMissed: false);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 200));
+    }
     expect(find.text('Inicio'), findsWidgets);
     expect(find.text('Home'), findsNothing);
   });
@@ -288,16 +313,23 @@ void main() {
     );
     await tester.enterText(
       find.widgetWithText(TextFormField, 'Password').first,
-      'secreta1',
+      'Secret1@2026',
     );
     await tester.enterText(
       find.widgetWithText(TextFormField, 'Repeat password').first,
-      'secreta1',
+      'Secret1@2026',
     );
     final termsCheckbox = find.byType(Checkbox).first;
     await tester.ensureVisible(termsCheckbox);
     await tester.pump();
     await tester.tap(termsCheckbox, warnIfMissed: false);
+    await tester.pump();
+    // FASE 8: la verificación humana es obligatoria de verdad para crear la
+    // cuenta (el segundo checkbox del formulario de registro).
+    final humanCheckbox = find.byType(Checkbox).last;
+    await tester.ensureVisible(humanCheckbox);
+    await tester.pump();
+    await tester.tap(humanCheckbox, warnIfMissed: false);
     await tester.pump();
     final createButton = find.widgetWithText(FilledButton, 'Create my account');
     await tester.ensureVisible(createButton);
@@ -339,7 +371,7 @@ void main() {
       );
       await tester.enterText(
         find.widgetWithText(TextFormField, 'Password').first,
-        'secreta1',
+        'Secret1@2026',
       );
       final enterButton = find.widgetWithText(FilledButton, 'Enter');
       await tester.ensureVisible(enterButton);

@@ -130,7 +130,7 @@ class _NexoraPremiumScreenState extends State<NexoraPremiumScreen> {
                   const NexoraLogo(size: 54, showRing: false),
                   const SizedBox(height: ntGapSmall),
                   Text(
-                    active ? strings.planPremium : strings.premiumTagline,
+                    active ? strings.planProfessional : strings.premiumTagline,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 15,
@@ -164,7 +164,7 @@ class _NexoraPremiumScreenState extends State<NexoraPremiumScreen> {
                   ),
                   const SizedBox(height: ntGapSmall),
                   _PlanBadge2(
-                    label: active ? strings.planPremium : strings.planBasic,
+                    label: active ? strings.planProfessional : strings.planBasic,
                     active: active,
                   ),
                 ],

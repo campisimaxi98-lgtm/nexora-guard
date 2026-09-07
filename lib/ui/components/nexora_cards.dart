@@ -140,6 +140,7 @@ class ValueRow extends StatelessWidget {
     this.barValue,
     this.color = nexoraGold,
     this.semanticsText,
+    this.onTap,
   });
 
   final IconData icon;
@@ -148,6 +149,9 @@ class ValueRow extends StatelessWidget {
   final double? barValue;
   final Color color;
   final String? semanticsText;
+
+  /// Toque opcional: abre la pantalla real de la métrica (FASE 8).
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -172,24 +176,44 @@ class ValueRow extends StatelessWidget {
         ],
       ),
     );
-    if (barValue == null) return row;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        row,
-        const SizedBox(height: 6),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(ntRadiusPill),
-          child: LinearProgressIndicator(
-            value: bar,
-            minHeight: 5,
-            backgroundColor: nexoraBorder.withValues(alpha: 0.5),
-            valueColor: AlwaysStoppedAnimation<Color>(color),
-          ),
-        ),
-      ],
+    final vertical = barValue == null ? null : _RowBlock(row: row, bar: bar, color: color);
+    final content = vertical ?? row;
+    if (onTap == null) return content;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(ntRadiusSmall),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2),
+        child: content,
+      ),
     );
   }
+}
+
+class _RowBlock extends StatelessWidget {
+  const _RowBlock({required this.row, required this.bar, required this.color});
+
+  final Widget row;
+  final double bar;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      row,
+      const SizedBox(height: 6),
+      ClipRRect(
+        borderRadius: BorderRadius.circular(ntRadiusPill),
+        child: LinearProgressIndicator(
+          value: bar,
+          minHeight: 5,
+          backgroundColor: nexoraBorder.withValues(alpha: 0.5),
+          valueColor: AlwaysStoppedAnimation<Color>(color),
+        ),
+      ),
+    ],
+  );
 }
 
 /// Píldora de nivel de riesgo: ícono + etiqueta + color, SIEMPRE con texto

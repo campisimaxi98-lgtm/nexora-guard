@@ -25,7 +25,7 @@ void main() {
 
   AuthStore storeWithAccount() {
     final store = AuthStore(dir)..load();
-    store.register('cuenta@nexora.dev', 'secreta1', name: 'María', username: 'maria_g');
+    store.register('cuenta@nexora.dev', 'Secret1@2026', name: 'María', username: 'maria_g');
     return store;
   }
 
@@ -63,11 +63,11 @@ void main() {
     await tester.pumpAndSettle();
     await tester.enterText(
       find.widgetWithText(TextFormField, 'Nueva contraseña'),
-      'nueva-123',
+      'Nueva123Zeta',
     );
     await tester.enterText(
       find.widgetWithText(TextFormField, 'Confirmar nueva contraseña'),
-      'nueva-123',
+      'Nueva123Zeta',
     );
     await tester.tap(find.widgetWithText(FilledButton, 'Guardar nueva contraseña'));
     await tester.pumpAndSettle();
@@ -76,8 +76,8 @@ void main() {
     expect(find.text('¡Listo!'), findsOneWidget);
 
     // La contraseña restablecida abre sesión de verdad.
-    expect(store.login('cuenta@nexora.dev', 'nueva-123'), AuthResult.ok);
-    expect(store.login('cuenta@nexora.dev', 'secreta1'), AuthResult.wrongCredentials);
+    expect(store.login('cuenta@nexora.dev', 'Nueva123Zeta'), AuthResult.ok);
+    expect(store.login('cuenta@nexora.dev', 'Secret1@2026'), AuthResult.wrongCredentials);
   });
 
   testWidgets('RecoveryScreen rechaza un código inválido con honestidad', (
@@ -123,11 +123,11 @@ void main() {
     );
     await tester.enterText(
       find.widgetWithText(TextFormField, 'Nueva contraseña'),
-      'nueva-123',
+      'Nueva123Zeta',
     );
     await tester.enterText(
       find.widgetWithText(TextFormField, 'Confirmar nueva contraseña'),
-      'nueva-123',
+      'Nueva123Zeta',
     );
     await tester.tap(find.widgetWithText(FilledButton, 'Guardar contraseña'));
     await tester.pump();
@@ -150,11 +150,11 @@ void main() {
 
     await tester.enterText(
       find.widgetWithText(TextFormField, 'Contraseña actual'),
-      'secreta1',
+      'Secret1@2026',
     );
     await tester.enterText(
       find.widgetWithText(TextFormField, 'Nueva contraseña'),
-      'nueva-123',
+      'Nueva123Zeta',
     );
     await tester.enterText(
       find.widgetWithText(TextFormField, 'Confirmar nueva contraseña'),
@@ -164,6 +164,6 @@ void main() {
     await tester.pump();
     expect(find.text('Las contraseñas no coinciden'), findsOneWidget);
     // No se cambió nada: la actual sigue sirviendo.
-    expect(store.login('cuenta@nexora.dev', 'secreta1'), AuthResult.ok);
+    expect(store.login('cuenta@nexora.dev', 'Secret1@2026'), AuthResult.ok);
   });
 }

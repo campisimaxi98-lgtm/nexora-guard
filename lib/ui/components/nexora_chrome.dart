@@ -18,6 +18,7 @@ class NexoraTopBar extends StatelessWidget {
     required this.onOpenSettings,
     this.onRefresh,
     this.refreshEnabled = true,
+    this.refreshing = false,
   });
 
   final int alertCount;
@@ -25,6 +26,10 @@ class NexoraTopBar extends StatelessWidget {
   final VoidCallback onOpenSettings;
   final VoidCallback? onRefresh;
   final bool refreshEnabled;
+
+  /// Captura en curso: el botón muestra un spinner en lugar del ícono
+  /// (FASE 8, animación visible de recarga).
+  final bool refreshing;
 
   @override
   Widget build(BuildContext context) => Padding(
@@ -46,7 +51,16 @@ class NexoraTopBar extends StatelessWidget {
         if (onRefresh != null)
           IconButton(
             onPressed: refreshEnabled ? onRefresh : null,
-            icon: const Icon(Icons.refresh),
+            icon: refreshing
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation(nexoraGoldLight),
+                    ),
+                  )
+                : const Icon(Icons.refresh),
             tooltip: 'Refresh',
           ),
         IconButton(

@@ -59,6 +59,35 @@ enum PasswordChangeResult {
   storage,
 }
 
+/// Cumplimiento de las reglas de contraseña fuerte (FASE 8): 8+ caracteres,
+/// una mayúscula, una minúscula y un número. La UI pinta su checklist a
+/// partir de esta misma estructura — una sola fuente de verdad.
+class PasswordShape {
+  const PasswordShape({
+    required this.length,
+    required this.upper,
+    required this.lower,
+    required this.digit,
+  });
+
+  final bool length;
+  final bool upper;
+  final bool lower;
+  final bool digit;
+
+  /// Todos los requisitos cumplidos → contraseña aceptable.
+  bool get isStrong => length && upper && lower && digit;
+}
+
+/// Regla compartida de contraseña fuerte: el almacén y la pantalla de cuenta
+/// la usan igual, así no pueden discrepar.
+PasswordShape passwordShape(String password) => PasswordShape(
+  length: password.length >= 8,
+  upper: password.contains(RegExp(r'[A-Z]')),
+  lower: password.contains(RegExp(r'[a-z]')),
+  digit: password.contains(RegExp(r'[0-9]')),
+);
+
 /// Cuenta registrada en este dispositivo.
 class AuthAccount {
   const AuthAccount({
@@ -182,7 +211,7 @@ class AuthStore {
     if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(normalized)) {
       return AuthResult.invalidEmail;
     }
-    if (password.length < 6) return AuthResult.weakPassword;
+    if (!passwordShape(password).isStrong) return AuthResult.weakPassword;
     if (_account != null) return AuthResult.emailTaken;
 
     final random = Random.secure();
@@ -239,7 +268,9 @@ class AuthStore {
     if (_stretch(currentPassword, account.saltHex) != account.hashHex) {
       return PasswordChangeResult.wrongCurrent;
     }
-    if (newPassword.length < 6) return PasswordChangeResult.weakPassword;
+    if (!passwordShape(newPassword.trim()).isStrong) {
+      return PasswordChangeResult.weakPassword;
+    }
     final (newSalt, newHash) = _newSaltAndHash(newPassword.trim());
     final updated = AuthAccount(
       email: account.email,
@@ -260,7 +291,9 @@ class AuthStore {
   AuthResult resetPassword(String newPassword) {
     final account = _account;
     if (account == null) return AuthResult.storage;
-    if (newPassword.length < 6) return AuthResult.weakPassword;
+    if (!passwordShape(newPassword.trim()).isStrong) {
+      return AuthResult.weakPassword;
+    }
     final (newSalt, newHash) = _newSaltAndHash(newPassword.trim());
     final updated = AuthAccount(
       email: account.email,

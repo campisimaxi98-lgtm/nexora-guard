@@ -17,6 +17,7 @@ import 'core/history_store.dart';
 import 'core/models.dart';
 import 'core/nearby.dart';
 import 'core/nearby_store.dart';
+import 'core/notification_feed_store.dart';
 import 'core/rule_engine.dart';
 import 'core/snapshot_json.dart';
 import 'core/subscription.dart';
@@ -165,6 +166,10 @@ class _AuthGateState extends State<AuthGate> {
   /// Modo elegido en la portada (iniciar sesión / crear cuenta).
   AuthMode? _pendingMode;
 
+  /// El permiso de notificaciones de sistema se pide UNA vez al primer
+  /// acceso (Android 13+); si se niega la app sigue completa.
+  bool _notifRequested = false;
+
   /// Reserva para el caso degenerado sin directorio de datos: se crea UNA
   /// vez y se reusa entre rebuilds (no un temporal por cada build).
   AuthStore? _fallbackStore;
@@ -217,6 +222,12 @@ class _AuthGateState extends State<AuthGate> {
   }
 
   void _onAuthenticated() {
+    if (!_notifRequested) {
+      _notifRequested = true;
+      // FASE 8: pedir el permiso al primer acceso. El canal es seguro y
+      // degrada a `false` en tests/plataformas sin soporte.
+      unawaited(const PlatformCollectors().requestNotificationPermissions());
+    }
     if (mounted) setState(() {});
   }
 
@@ -299,6 +310,7 @@ class _InspectorHomeState extends State<InspectorHome> {
   NearbyStatus _nearbyStatus = NearbyStatus.idle;
   String? _crashLog;
   NexoraSubscriptionService? _subscriptionService;
+  NotificationFeedStore? _feedStore;
 
   NexoraSubscriptionService get _subscription => _subscriptionService ??
       (NexoraSubscriptionService(directoryPath: _dataDir));
@@ -321,6 +333,7 @@ class _InspectorHomeState extends State<InspectorHome> {
       if (dir != null) {
         _dataDir = dir;
         _configStore = ConfigStore(dir);
+        _feedStore = NotificationFeedStore(Directory(dir))..load();
         final config = await _configStore!.load();
         final crash = await CrashLog(dir).read();
         if (mounted) {
@@ -362,6 +375,22 @@ class _InspectorHomeState extends State<InspectorHome> {
       _history = outcome.history;
       _loading = false;
     });
+    // FASE 8: cada análisis terminado queda registrado en el centro de
+    // notificaciones (local y persistente) con los valores reales de la
+    // captura: severidad, cantidad de hallazgos y puntaje.
+    _feedStore?.add(
+      FeedEntry(
+        id: '${DateTime.now().millisecondsSinceEpoch}',
+        timestampMillis: outcome.snapshot.timestampMillis,
+        severityKey: switch (outcome.verdict.severity) {
+          Severity.critical => 'critical',
+          Severity.warning => 'warning',
+          Severity.normal => 'normal',
+        },
+        findings: outcome.verdict.findings.length,
+        score: outcome.verdict.score,
+      ),
+    );
     // El widget de pantalla de inicio refleja la captura recién tomada.
     await _collectors.refreshWidget();
   }
@@ -748,6 +777,8 @@ class _InspectorHomeState extends State<InspectorHome> {
       pickImage: () => _collectors.pickImageBytes(),
       onExport: () => _export(strings),
       authStore: widget.authStore,
+      feed: _feedStore,
+      onLogout: widget.onLogout,
     );
   }
 }

@@ -7,6 +7,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../core/auth_store.dart';
 import '../core/models.dart';
 import 'nexora_logo.dart';
 import 'strings.dart';
@@ -391,6 +392,7 @@ class FindingCard extends StatelessWidget {
     required this.strings,
     this.actionLabel,
     this.onAction,
+    this.onTap,
   });
 
   final Finding finding;
@@ -401,54 +403,164 @@ class FindingCard extends StatelessWidget {
   final String? actionLabel;
   final VoidCallback? onAction;
 
+  /// Tap opcional: abre el detalle completo de la alerta (FASE 8).
+  final VoidCallback? onTap;
+
   @override
   Widget build(BuildContext context) {
     final reco = strings.findingReco(finding);
+    final content = Padding(
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              SeverityDot(severity: finding.severity),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  strings.findingTitle(finding),
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(strings.findingDetail(finding)),
+          if (reco.isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(
+              strings.recommendation(reco),
+              style: TextStyle(
+                fontSize: 12,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+          ],
+          if (actionLabel != null && onAction != null)
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton.icon(
+                icon: const Icon(Icons.open_in_new, size: 16),
+                label: Text(actionLabel!),
+                onPressed: onAction,
+              ),
+            ),
+        ],
+      ),
+    );
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
+      child: onTap == null
+          ? content
+          : InkWell(
+              onTap: onTap,
+              borderRadius: BorderRadius.circular(12),
+              child: content,
+            ),
+    );
+  }
+}
+
+/// Detalle completo de un hallazgo (FASE 8): nivel, qué ocurrió, qué
+/// significa y qué podés hacer — toda la información en una sola vista.
+void showFindingDetail(BuildContext context, AppStrings strings, Finding finding) {
+  final reco = strings.findingReco(finding);
+  showModalBottomSheet<void>(
+    context: context,
+    backgroundColor: nexoraSurfaceRaised,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+    ),
+    builder: (sheetContext) => SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
                 SeverityDot(severity: finding.severity),
-                const SizedBox(width: 8),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     strings.findingTitle(finding),
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 4),
-            Text(strings.findingDetail(finding)),
-            if (reco.isNotEmpty) ...[
-              const SizedBox(height: 4),
-              Text(
-                strings.recommendation(reco),
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-              ),
-            ],
-            if (actionLabel != null && onAction != null)
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton.icon(
-                  icon: const Icon(Icons.open_in_new, size: 16),
-                  label: Text(actionLabel!),
-                  onPressed: onAction,
-                ),
+            const SizedBox(height: 12),
+            _DetailSection(
+              icon: Icons.speed,
+              label: strings.alertDetailLevel,
+              text: _severityLabel(strings, finding.severity),
+            ),
+            _DetailSection(
+              icon: Icons.info_outline,
+              label: strings.alertDetailWhat,
+              text: strings.findingDetail(finding),
+            ),
+            if (reco.isNotEmpty)
+              _DetailSection(
+                icon: Icons.bolt,
+                label: strings.alertDetailDo,
+                text: strings.recommendation(reco),
               ),
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
+
+String _severityLabel(AppStrings strings, Severity s) => switch (s) {
+  Severity.normal => strings.severityNormal,
+  Severity.warning => strings.severityWarning,
+  Severity.critical => strings.severityCritical,
+};
+
+class _DetailSection extends StatelessWidget {
+  const _DetailSection({
+    required this.icon,
+    required this.label,
+    required this.text,
+  });
+
+  final IconData icon;
+  final String label;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.only(top: 14),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(icon, size: 16, color: nexoraGoldLight),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 0.4,
+                color: nexoraGoldLight,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(text, style: const TextStyle(fontSize: 13, height: 1.5)),
+      ],
+    ),
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -1297,4 +1409,79 @@ class _RadarPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _RadarPainter oldDelegate) => oldDelegate.t != t;
+}
+
+/// Checklist en vivo de los requisitos de contraseña (FASE 8): cada línea se
+/// marca en verde cuando la contraseña actual ya cumple ese requisito. Se
+/// usa en el registro, el cambio y el restablecimiento — una sola regla.
+class PasswordRequirementsList extends StatelessWidget {
+  const PasswordRequirementsList({
+    super.key,
+    required this.shape,
+    required this.strings,
+  });
+
+  final PasswordShape shape;
+  final AppStrings strings;
+
+  @override
+  Widget build(BuildContext context) {
+    final s = strings;
+    final rows = [
+      (shape.length, s.pwdReqLength),
+      (shape.upper, s.pwdReqUpper),
+      (shape.lower, s.pwdReqLower),
+      (shape.digit, s.pwdReqDigit),
+    ];
+    return Container(
+      margin: const EdgeInsets.only(top: 10),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: nexoraSurface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: nexoraBorder),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            s.authPwdReqTitle,
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 0.6,
+              color: nexoraGoldLight,
+            ),
+          ),
+          const SizedBox(height: 6),
+          for (final (ok, label) in rows)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 2),
+              child: Row(
+                children: [
+                  Icon(
+                    ok ? Icons.check_circle : Icons.radio_button_unchecked,
+                    size: 15,
+                    color: ok ? severityGreen : Colors.white30,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      label,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: ok ? Colors.white70 : Colors.white38,
+                        decoration:
+                            ok ? TextDecoration.lineThrough : null,
+                        decorationColor: Colors.white24,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
 }

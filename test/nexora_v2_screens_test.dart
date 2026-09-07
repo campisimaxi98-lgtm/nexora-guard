@@ -49,7 +49,7 @@ void main() {
         findsOneWidget,
       );
       // La dona usa el almacenamiento REAL del snapshot (50 % libre).
-      expect(find.textContaining('libre'), findsWidgets);
+      expect(find.text('Libre'), findsWidgets);
     });
 
     testWidgets('con historial grafica la serie y nombra las últimas capturas', (
@@ -111,7 +111,7 @@ void main() {
       await tester.pumpWidget(host());
 
       expect(find.text('Mi Perfil'), findsOneWidget);
-      expect(find.text('BÁSICO'), findsOneWidget);
+      expect(find.text('BASIC'), findsOneWidget);
 
       // El perfil precarga una identidad real: primero se vacía el campo.
       await tester.enterText(find.widgetWithText(TextField, 'Nombre'), '');
@@ -161,12 +161,12 @@ void main() {
       await tester.pumpWidget(host(NexoraSubscriptionService()));
 
       expect(find.text('\$10.000 ARS'), findsOneWidget);
-      expect(find.text('BÁSICO'), findsOneWidget);
+      expect(find.text('BASIC'), findsOneWidget);
       expect(find.text('Incluye'), findsOneWidget);
 
       // Comprar con el proveedor por defecto (sin configurar) abre el
       // diálogo honesto de "próximamente".
-      final cta = find.widgetWithText(FilledButton, 'COMENZAR PREMIUM');
+      final cta = find.widgetWithText(FilledButton, 'PASSAR A PROFESSIONAL');
       await tester.ensureVisible(cta);
       await tester.pump();
       await tester.tap(cta);
@@ -195,9 +195,9 @@ void main() {
       expect(service.isPremium, isTrue);
 
       await tester.pumpWidget(host(service));
-      expect(find.text('PREMIUM'), findsWidgets);
+      expect(find.text('PROFESSIONAL'), findsWidgets);
       expect(
-        find.textContaining('Ya tenés NEXORA PREMIUM activo'),
+        find.textContaining('Ya tenés NEXORA PROFESSIONAL activo'),
         findsOneWidget,
       );
       expect(find.text('Próximamente'), findsNothing);

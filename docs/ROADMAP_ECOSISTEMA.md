@@ -99,6 +99,28 @@
 - Traducciones completas de lo nuevo; `NexoraMaxWidth` en pantallas nuevas;
   animaciones con `RepaintBoundary` y sin alocaciones por frame.
 
+### FASE 8 spec 2.2.0 (modificación 2026-09)
+- Splash → puerta de cuentas: el botón COMENZAR lleva a AuthScreen cuando
+  no hay sesión (el AuthGate primario queda como respaldo).
+- Contraseñas fuertes de verdad: política única (8+ con mayúscula, minúscula
+  y número) en registro, cambio y recupero, con checklist en vivo recalculado
+  al escribir y verificación humana obligatoria para crear la cuenta.
+- Dona de salud: centro = % real tappable que abre la escala de colores; el
+  centro NO roba los toques del anillo (los arcos siguen navegando).
+- Ajustes por grupos (Cuenta/Seguridad/Aplicación) desde el engranaje, con
+  acceso a cambio de contraseña, notificaciones, permisos de apps,
+  protección, plan BASIC/PROFESSIONAL, preferencias y acerca de.
+- Centro de notificaciones in-app persistente (`nexora-feed.json`):
+  feed con severidad real, lectura, badge de no leídas, "marcar todas leídas"
+  y TopBar con indicador de recarga animado en SafeArea.
+- Sección APLICACIONES dentro de Protección (nivel de riesgo + estado de
+  permisos reales) y detalle de alertas con explicación honesta.
+- Renombre de plan a BASIC/PROFESSIONAL en toda la app y en pruebas (BÁSICO,
+  PREMIUM y COMENZAR PREMIUM quedan obsoletos).
+- Primer inicio de sesión: se pide permiso de notificaciones una sola vez.
+- QA: 270 tests verdes, `flutter analyze` limpio (1 info preexistente de
+  v2.1.0), APK release firmado `2.2.0+16`.
+
 ### FASE 10 — QA, versión y entrega
 - Suite completa verde, `flutter analyze` sin errores, APK firmado nuevo,
   tag + release en GitHub.

@@ -946,11 +946,11 @@ class AppStrings {
     'Alerte précoce des installations étranges',
   );
   String get premiumAlready => _pick(
-    'Ya tenés NEXORA PREMIUM activo.',
-    'You already have NEXORA PREMIUM active.',
-    'Você já tem o NEXORA PREMIUM ativo.',
-    'Hai già NEXORA PREMIUM attivo.',
-    'Vous avez déjà NEXORA PREMIUM actif.',
+    'Ya tenés NEXORA PROFESSIONAL activo.',
+    'You already have NEXORA PROFESSIONAL active.',
+    'Você já tem o NEXORA PROFESSIONAL ativo.',
+    'Hai già NEXORA PROFESSIONAL attivo.',
+    'Vous avez déjà NEXORA PROFESSIONNEL actif.',
   );
   String get premiumComingSoon => _pick(
     'Próximamente',
@@ -2270,6 +2270,20 @@ class AppStrings {
     'Il nome utente richiede almeno 3 caratteri e senza spazi',
     'Le nom d''utilisateur doit avoir au moins 3 caractères sans espaces',
   );
+  String get authErrEmptyPassword => _pick(
+    'Escribí tu contraseña',
+    'Type your password',
+    'Digite sua senha',
+    'Scrivi la tua password',
+    'Saisissez votre mot de passe',
+  );
+  String get authPwdHint => _pick(
+    '8+ caracteres, mayúscula, minúscula y número',
+    '8+ characters, uppercase, lowercase and a number',
+    '8+ caracteres, maiúscula, minúscula e número',
+    '8+ caratteri, maiuscola, minuscola e numero',
+    '8+ caractères, majuscule, minuscule et chiffre',
+  );
 
   // Panel interactivo (dona de riesgo y métricas animadas)
   String get donutTitle => _pick(
@@ -2373,20 +2387,19 @@ class AppStrings {
     'Critique',
   );
 
-  // ── Sistema de planes Básico/Premium ───────────────────────────────────
-  String get premiumTitle =>
-      _pick('NEXORA PREMIUM', 'NEXORA PREMIUM', 'NEXORA PREMIUM', 'NEXORA PREMIUM', 'NEXORA PREMIUM');
+  // ── Sistema de planes Basic/Professional ──────────────────────────────
+  String get premiumTitle => _pick('NEXORA PROFESSIONAL', 'NEXORA PROFESSIONAL', 'NEXORA PROFESSIONAL', 'NEXORA PROFESSIONAL', 'NEXORA PROFESSIONAL');
   String get premiumTagline => _pick(
-    'Protección más inteligente.',
-    'Smarter protection.',
-    'Proteção mais inteligente.',
-    'Protezione più intelligente.',
-    'Une protection plus intelligente.',
+    'Modo Professional: funciones avanzadas, una sola suscripción.',
+    'Professional mode: advanced features, one subscription.',
+    'Modo Professional: recursos avançados, uma única assinatura.',
+    'Modalità Professional: funzioni avanzate, un solo abbonamento.',
+    'Mode Professional : des fonctions avancées, un seul abonnement.',
   );
   String get planBasic =>
-      _pick('BÁSICO', 'BASIC', 'BÁSICO', 'BASE', 'BASIQUE');
-  String get planPremium =>
-      _pick('PREMIUM', 'PREMIUM', 'PREMIUM', 'PREMIUM', 'PREMIUM');
+      _pick('BASIC', 'BASIC', 'BASIC', 'BASE', 'BASE');
+  String get planProfessional =>
+      _pick('PROFESSIONAL', 'PROFESSIONAL', 'PROFESSIONAL', 'PROFESSIONAL', 'PROFESSIONNEL');
   String get premiumPerMonth => _pick(
     '/ mes',
     '/ month',
@@ -2402,11 +2415,11 @@ class AppStrings {
     '10 000 ARS',
   );
   String get premiumCtaStart => _pick(
-    'COMENZAR PREMIUM',
-    'START PREMIUM',
-    'COMEÇAR PREMIUM',
-    'AVVIA PREMIUM',
-    'COMMENCER PREMIUM',
+    'PASSAR A PROFESSIONAL',
+    'GO PROFESSIONAL',
+    'COMEÇAR O PROFESSIONAL',
+    'PASSA A PROFESSIONAL',
+    'PASSER EN PROFESSIONNEL',
   );
   String get premiumRestore => _pick(
     'Restaurar compra',
@@ -2416,25 +2429,25 @@ class AppStrings {
     'Restaurer l’achat',
   );
   String get premiumLockedTitle => _pick(
-    'Función Premium',
-    'Premium feature',
-    'Recurso Premium',
-    'Funzione Premium',
-    'Fonction Premium',
+    'Función PROFESSIONAL',
+    'PROFESSIONAL feature',
+    'Recurso PROFESSIONAL',
+    'Funzione PROFESSIONAL',
+    'Fonction PROFESSIONNEL',
   );
   String get premiumLockedDesc => _pick(
-    'Disponible con Nexora Premium.',
-    'Available with Nexora Premium.',
-    'Disponível com o Nexora Premium.',
-    'Disponibile con Nexora Premium.',
-    'Disponible avec Nexora Premium.',
+    'Disponible con el plan NEXORA PROFESSIONAL.',
+    'Available with the NEXORA PROFESSIONAL plan.',
+    'Disponível com o plano NEXORA PROFESSIONAL.',
+    'Disponibile con il piano NEXORA PROFESSIONAL.',
+    'Disponible avec le forfait NEXORA PROFESSIONNEL.',
   );
   String get premiumSee => _pick(
-    'Ver Premium',
-    'View Premium',
-    'Ver Premium',
-    'Vedi Premium',
-    'Voir Premium',
+    'Ver Professional',
+    'View Professional',
+    'Ver Professional',
+    'Vedi Professional',
+    'Voir Professionnel',
   );
   String get premiumUnavailable => _pick(
     'Los pagos reales se habilitarán cuando conectes tu proveedor de pagos.',
@@ -2442,6 +2455,13 @@ class AppStrings {
     'Os pagamentos reais serão habilitados quando você conectar seu provedor de pagamentos.',
     'I pagamenti reali verranno attivati quando colleghi il tuo provider di pagamenti.',
     'Les paiements réels seront activés dès que vous connecterez votre prestataire de paiements.',
+  );
+  String get premiumActiveMsg => _pick(
+    'Ya tenés NEXORA PROFESSIONAL activo',
+    'NEXORA PROFESSIONAL is already active',
+    'NEXORA PROFESSIONAL já está ativo',
+    'NEXORA PROFESSIONAL è già attivo',
+    'NEXORA PROFESSIONNEL est déjà actif',
   );
 
   // ── Nexora AI (chat local contextual) ──────────────────────────────────
@@ -3695,4 +3715,469 @@ class AppStrings {
     (5, _pick('CineCity', 'CineCity', 'CineCity', 'CineCity', 'CineCity'), _pick('Tus entradas están listas: revisá el código QR del mensaje.', 'Your tickets are ready: check the QR code in the message.', 'Seus ingressos estão prontos: confira o QR code da mensagem.', 'I tuoi biglietti sono pronti: controlla il QR code del messaggio.', 'Vos billets sont prêts : vérifiez le QR code du message.')),
     (6, _pick('FacturaRed', 'InvoiceNet', 'FaturaNet', 'FatturaNet', 'FactureNet'), _pick('Factura vencida: descargá el PDF adjunto para pagar.', 'Overdue invoice: download the attached PDF to pay.', 'Fatura vencida: baixe o PDF anexo para pagar.', 'Fattura scaduta: scarica il PDF allegato per pagare.', 'Facture en retard : téléchargez le PDF joint pour payer.')),
   ];
+
+  // ── FASE 8: contraseñas fuertes y verificación humana ────────────────
+  String get authPwdReqTitle => _pick(
+    'Requisitos de la contraseña',
+    'Password requirements',
+    'Requisitos da senha',
+    'Requisiti della password',
+    'Exigences du mot de passe',
+  );
+  String get pwdReqLength => _pick(
+    '8 caracteres o más',
+    '8 characters or more',
+    '8 caracteres ou mais',
+    '8 caratteri o più',
+    '8 caractères ou plus',
+  );
+  String get pwdReqUpper => _pick(
+    'Al menos una mayúscula',
+    'At least one uppercase letter',
+    'Pelo menos uma maiúscula',
+    'Almeno una maiuscola',
+    'Au moins une majuscule',
+  );
+  String get pwdReqLower => _pick(
+    'Al menos una minúscula',
+    'At least one lowercase letter',
+    'Pelo menos uma minúscula',
+    'Almeno una minuscola',
+    'Au moins une minuscule',
+  );
+  String get pwdReqDigit => _pick(
+    'Al menos un número',
+    'At least one number',
+    'Pelo menos um número',
+    'Almeno un numero',
+    'Au moins un chiffre',
+  );
+  String get authHumanTitle => _pick(
+    'Verificación humana',
+    'Human verification',
+    'Verificação humana',
+    'Verifica umana',
+    'Vérification humaine',
+  );
+  String get authHumanDesc => _pick(
+    'Confirmá que sos una persona para continuar.',
+    'Confirm you are a person to continue.',
+    'Confirme que você é uma pessoa para continuar.',
+    'Conferma di essere una persona per continuare.',
+    'Confirmez que vous êtes une personne pour continuer.',
+  );
+  String get authHumanCheckbox => _pick(
+    'No soy un robot',
+    'I am not a robot',
+    'Não sou um robô',
+    'Non sono un robot',
+    'Je ne suis pas un robot',
+  );
+  String get authHumanVerified => _pick(
+    'Verificado',
+    'Verified',
+    'Verificado',
+    'Verificato',
+    'Vérifié',
+  );
+  String get authHumanError => _pick(
+    'Completá la verificación humana para continuar.',
+    'Complete the human verification to continue.',
+    'Complete a verificação humana para continuar.',
+    'Completa la verifica umana per continuare.',
+    'Terminez la vérification humaine pour continuer.',
+  );
+
+  // ── FASE 8: escala de colores de la esfera ───────────────────────────
+  String get donutScaleTitle => _pick(
+    'Qué significa el color',
+    'What the color means',
+    'O que a cor significa',
+    'Cosa significa il colore',
+    'Ce que signifie la couleur',
+  );
+  String get donutScaleIntro => _pick(
+    'El color del círculo central indica la salud agregada de este equipo.',
+    'The center circle color shows the overall health of this device.',
+    'A cor do círculo central indica a saúde geral deste dispositivo.',
+    'Il colore del cerchio centrale indica la salute complessiva del dispositivo.',
+    'La couleur du cercle central indique la santé globale de l’appareil.',
+  );
+  String get donutScaleGood => _pick(
+    'Verde — estado óptimo (80 % o más).',
+    'Green — optimal state (80 % or more).',
+    'Verde — estado ótimo (80 % ou mais).',
+    'Verde — stato ottimale (80 % o più).',
+    'Vert — état optimal (80 % ou plus).',
+  );
+  String get donutScaleFair => _pick(
+    'Ámbar — atención (60 % a 79 %).',
+    'Amber — attention (60 % to 79 %).',
+    'Âmbar — atenção (60 % a 79 %).',
+    'Ambra — attenzione (dal 60 % al 79 %).',
+    'Ambre — à surveiller (60 % à 79 %).',
+  );
+  String get donutScaleWarn => _pick(
+    'Naranja — sospechoso (40 % a 59 %).',
+    'Orange — suspicious (40 % to 59 %).',
+    'Laranja — suspeito (40 % a 59 %).',
+    'Arancione — sospetto (dal 40 % al 59 %).',
+    'Orange — suspect (40 % à 59 %).',
+  );
+  String get donutScaleBad => _pick(
+    'Rojo — crítico (menos del 40 %).',
+    'Red — critical (below 40 %).',
+    'Vermelho — crítico (menos de 40 %).',
+    'Rosso — critico (sotto il 40 %).',
+    'Rouge — critique (moins de 40 %).',
+  );
+  String get donutCenterHint => _pick(
+    'Tocá el círculo para ver esta escala.',
+    'Tap the circle to see this scale.',
+    'Toque o círculo para ver esta escala.',
+    'Tocca il cerchio per vedere questa scala.',
+    'Touchez le cercle pour voir cette échelle.',
+  );
+  String donutScaleSensors(int active) => _pick(
+    'Basado en $active de 5 sensores.',
+    'Based on $active of 5 sensors.',
+    'Com base em $active de 5 sensores.',
+    'Basato su $active di 5 sensori.',
+    'Basé sur $active des 5 capteurs.',
+  );
+
+  // ── FASE 8: almacenamiento interactivo ───────────────────────────────
+  String get storageCriticalTitle => _pick(
+    'ALMACENAMIENTO CRÍTICO',
+    'CRITICAL STORAGE',
+    'ARMAZENAMENTO CRÍTICO',
+    'ARCHIVIAZIONE CRITICA',
+    'STOCKAGE CRITIQUE',
+  );
+  String get storageCriticalBody => _pick(
+    'Queda menos del 10 % de espacio libre: revisá tus archivos y videos y liberá espacio.',
+    'Less than 10 % free space left: review your files and videos and free up space.',
+    'Menos de 10 % de espaço livre: revise seus arquivos e vídeos e libere espaço.',
+    'Meno del 10 % di spazio libero: controlla file e video e libera spazio.',
+    'Moins de 10 % d’espace libre : vérifiez vos fichiers et vidéos et libérez de l’espace.',
+  );
+  String get storageFreeDesc => _pick(
+    'Espacio disponible en este dispositivo.',
+    'Space available on this device.',
+    'Espaço disponível neste dispositivo.',
+    'Spazio disponibile sul dispositivo.',
+    'Espace disponible sur l’appareil.',
+  );
+  String get storageUsedDesc => _pick(
+    'Espacio ocupado por apps, fotos, música y documentos.',
+    'Space used by apps, photos, music and documents.',
+    'Espaço ocupado por apps, fotos, músicas e documentos.',
+    'Spazio occupato da app, foto, musica e documenti.',
+    'Espace occupé par les apps, photos, musique et documents.',
+  );
+  String get storageCacheDesc => _pick(
+    'Caché propia de NEXORA GUARD. Android e iOS no permiten leer la caché de otras apps.',
+    'NEXORA GUARD’s own cache. Android and iOS do not allow reading other apps’ caches.',
+    'Cache próprio do NEXORA GUARD. Android e iOS não permitem ler o cache de outros apps.',
+    'Cache di NEXORA GUARD. Android e iOS non permettono di leggere la cache di altre app.',
+    'Cache propre de NEXORA GUARD. Android et iOS n’autorisent pas la lecture du cache des autres apps.',
+  );
+  String get storageTapHint => _pick(
+    'Tocá un segmento para ver su detalle.',
+    'Tap a segment to see its detail.',
+    'Toque um segmento para ver o detalhe.',
+    'Tocca un segmento per vedere il dettaglio.',
+    'Touchez un segment pour voir son détail.',
+  );
+
+  // ── FASE 8: detalle de alertas ───────────────────────────────────────
+  String get alertDetailTitle => _pick(
+    'Detalle de la alerta',
+    'Alert detail',
+    'Detalhe da alerta',
+    'Dettaglio dell’avviso',
+    'Détail de l’alerte',
+  );
+  String get alertDetailLevel => _pick(
+    'Nivel',
+    'Level',
+    'Nível',
+    'Livello',
+    'Niveau',
+  );
+  String get alertDetailWhat => _pick(
+    '¿Qué ocurrió?',
+    'What happened?',
+    'O que aconteceu?',
+    'Cosa è successo?',
+    'Que s’est-il passé ?',
+  );
+  String get alertDetailMeans => _pick(
+    '¿Qué significa?',
+    'What does it mean?',
+    'O que isso significa?',
+    'Cosa significa?',
+    'Qu’est-ce que cela signifie ?',
+  );
+  String get alertDetailDo => _pick(
+    '¿Qué podés hacer?',
+    'What can you do?',
+    'O que você pode fazer?',
+    'Cosa puoi fare?',
+    'Que pouvez-vous faire ?',
+  );
+  String get alertDetailHint => _pick(
+    'Tocá cada hallazgo para verlo completo.',
+    'Tap any finding to see it in full.',
+    'Toque cada achado para vê-lo completo.',
+    'Tocca ogni avviso per vederlo per intero.',
+    'Touchez chaque signalement pour le voir en entier.',
+  );
+
+  // ── FASE 8: Aplicaciones en Protección ───────────────────────────────
+  String get protectionAppsTitle => _pick(
+    'Aplicaciones',
+    'Applications',
+    'Aplicativos',
+    'Applicazioni',
+    'Applications',
+  );
+  String get protectionAppsHint => _pick(
+    'Permisos y riesgo de cada app instalada. Tocá una para ver el detalle y abrir su configuración real.',
+    'Permissions and risk for every installed app. Tap one to see the detail and open its real settings.',
+    'Permissões e risco de cada app instalada. Toque uma para ver o detalhe e abrir suas configurações reais.',
+    'Permessi e rischio di ogni app installata. Tocca una per vedere il dettaglio e aprire le sue impostazioni reali.',
+    'Autorisations et risque de chaque app installée. Touchez-en une pour voir le détail et ouvrir ses réglages réels.',
+  );
+  String get protectionAppsNone => _pick(
+    'Todavía no hay datos de aplicaciones: analizá el equipo.',
+    'No app data yet: run a scan.',
+    'Ainda não há dados de aplicativos: faça uma análise.',
+    'Ancora nessun dato sulle app: esegui un’analisi.',
+    'Aucune donnée d’app pour l’instant : lancez une analyse.',
+  );
+
+  // ── FASE 8: Ajustes ──────────────────────────────────────────────────
+  String get settingsAccount => _pick(
+    'Cuenta',
+    'Account',
+    'Conta',
+    'Account',
+    'Compte',
+  );
+  String get settingsSecurity => _pick(
+    'Seguridad',
+    'Security',
+    'Segurança',
+    'Sicurezza',
+    'Sécurité',
+  );
+  String get settingsAppGroup => _pick(
+    'Aplicación',
+    'Application',
+    'Aplicativo',
+    'Applicazione',
+    'Application',
+  );
+  String get settingsAccountEmail => _pick(
+    'Correo de la cuenta local',
+    'Local account email',
+    'E-mail da conta local',
+    'Email dell’account locale',
+    'E-mail du compte local',
+  );
+  String get settingsChangePassword => _pick(
+    'Cambiar contraseña',
+    'Change password',
+    'Alterar senha',
+    'Cambia password',
+    'Changer le mot de passe',
+  );
+  String get settingsLogout => _pick(
+    'Cerrar sesión',
+    'Sign out',
+    'Sair',
+    'Esci',
+    'Se déconnecter',
+  );
+  String get settingsNotifications => _pick(
+    'Notificaciones',
+    'Notifications',
+    'Notificações',
+    'Notifiche',
+    'Notifications',
+  );
+  String get settingsNotificationsDesc => _pick(
+    'Centro de avisos y permiso de sistema.',
+    'Notice center and system permission.',
+    'Central de avisos e permissão do sistema.',
+    'Centro avvisi e permesso di sistema.',
+    'Centre d’avis et permission système.',
+  );
+  String get settingsPermissionsApps => _pick(
+    'Permisos de las apps',
+    'App permissions',
+    'Permissões dos apps',
+    'Permessi delle app',
+    'Autorisations des apps',
+  );
+  String get settingsPermissionsAppsDesc => _pick(
+    'Qué solicita cada app en este equipo.',
+    'What each app asks for on this device.',
+    'O que cada app solicita neste dispositivo.',
+    'Cosa chiede ogni app su questo dispositivo.',
+    'Ce que chaque app demande sur cet appareil.',
+  );
+  String get settingsProtectionRow => _pick(
+    'Protección',
+    'Protection',
+    'Proteção',
+    'Protezione',
+    'Protection',
+  );
+  String get settingsProtectionRowDesc => _pick(
+    'Red, VPN y hallazgos actuales.',
+    'Network, VPN and current findings.',
+    'Rede, VPN e achados atuais.',
+    'Rete, VPN e avvisi attuali.',
+    'Réseau, VPN et signalements actuels.',
+  );
+  String get settingsAboutRow => _pick(
+    'Acerca de',
+    'About',
+    'Sobre',
+    'Informazioni',
+    'À propos',
+  );
+  String get settingsAboutRowDesc => _pick(
+    'Versión, autor y licencia.',
+    'Version, author and license.',
+    'Versão, autor e licença.',
+    'Versione, autore e licenza.',
+    'Version, auteur et licence.',
+  );
+  String get settingsPrefsRow => _pick(
+    'Preferencias',
+    'Preferences',
+    'Preferências',
+    'Preferenze',
+    'Préférences',
+  );
+  String get settingsPrefsRowDesc => _pick(
+    'Idioma, captura de fondo y vista.',
+    'Language, background capture and view.',
+    'Idioma, captura em segundo plano e visualização.',
+    'Lingua, acquisizione in background e vista.',
+    'Langue, capture en arrière-plan et vue.',
+  );
+  String get settingsPlanRow => _pick(
+    'Plan',
+    'Plan',
+    'Plano',
+    'Piano',
+    'Forfait',
+  );
+  String get settingsPlanRowDesc => _pick(
+    'Modo Basic o Professional.',
+    'Basic or Professional mode.',
+    'Modo Basic ou Professional.',
+    'Modalità Basic o Professional.',
+    'Mode Basic ou Professionnel.',
+  );
+
+  // ── FASE 8: centro de notificaciones ─────────────────────────────────
+  String get ncTitle => _pick(
+    'Centro de notificaciones',
+    'Notification center',
+    'Central de notificações',
+    'Centro notifiche',
+    'Centre de notifications',
+  );
+  String get ncEmptyTitle => _pick(
+    'Todavía no hay notificaciones',
+    'No notifications yet',
+    'Ainda não há notificações',
+    'Ancora nessuna notifica',
+    'Aucune notification pour l’instant',
+  );
+  String get ncEmptyBody => _pick(
+    'Cada análisis completado quedará registrado aquí.',
+    'Every completed analysis will be recorded here.',
+    'Cada análise concluída ficará registrada aqui.',
+    'Ogni analisi completata verrà registrata qui.',
+    'Chaque analyse terminée sera consignée ici.',
+  );
+  String get ncMarkAllRead => _pick(
+    'Marcar todas como leídas',
+    'Mark all as read',
+    'Marcar todas como lidas',
+    'Segna tutte come lette',
+    'Tout marquer comme lu',
+  );
+  String get ncUnreadCount => _pick(
+    'sin leer',
+    'unread',
+    'não lidas',
+    'non lette',
+    'non lues',
+  );
+  String get ncNewLabel => _pick(
+    'NUEVA',
+    'NEW',
+    'NOVA',
+    'NUOVA',
+    'NOUVELLE',
+  );
+  String get ncToday => _pick('Hoy', 'Today', 'Hoje', 'Oggi', 'Aujourd’hui');
+  String get ncYesterday => _pick(
+    'Ayer',
+    'Yesterday',
+    'Ontem',
+    'Ieri',
+    'Hier',
+  );
+  String get ncAnalysisTitle => _pick(
+    'Análisis completado',
+    'Analysis completed',
+    'Análise concluída',
+    'Analisi completata',
+    'Analyse terminée',
+  );
+  String ncAnalysisBody(int findings, int score) => _pick(
+    '$findings hallazgo(s) · puntaje $score / 100.',
+    '$findings finding(s) · score $score / 100.',
+    '$findings achado(s) · pontuação $score / 100.',
+    '$findings avviso(i) · punteggio $score / 100.',
+    '$findings signalement(s) · score $score / 100.',
+  );
+  String get ncSeveritySafe => _pick(
+    'ESTADO NORMAL',
+    'NORMAL STATE',
+    'ESTADO NORMAL',
+    'STATO NORMALE',
+    'ÉTAT NORMAL',
+  );
+  String get ncSeverityWarning => _pick(
+    'ATENCIÓN',
+    'ATTENTION',
+    'ATENÇÃO',
+    'ATTENZIONE',
+    'ATTENTION',
+  );
+  String get ncSeverityCritical => _pick(
+    'CRÍTICO',
+    'CRITICAL',
+    'CRÍTICO',
+    'CRITICO',
+    'CRITIQUE',
+  );
+
+  // ── FASE 8: planes en el perfil y paneles ────────────────────────────
+  String get profBasicLocked => _pick(
+    'Modo Basic: NEXORA GUARD protege tu equipo con todas sus funciones básicas.',
+    'Basic mode: NEXORA GUARD protects your device with all its basic features.',
+    'Modo Basic: o NEXORA GUARD protege seu dispositivo com todos os recursos básicos.',
+    'Modalità Basic: NEXORA GUARD protegge il dispositivo con tutte le funzioni base.',
+    'Mode Basic : NEXORA GUARD protège l’appareil avec toutes ses fonctions de base.',
+  );
 }

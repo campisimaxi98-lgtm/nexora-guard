@@ -23,6 +23,7 @@ import '../components.dart';
 import '../nexora_logo.dart';
 import '../strings.dart';
 import '../theme.dart';
+import '../widgets.dart';
 
 enum _AuthMode { signIn, signUp }
 
@@ -81,6 +82,10 @@ class _AuthScreenState extends State<AuthScreen>
   bool _obscure = true;
   bool _rememberMe = true;
   bool _termsAccepted = false;
+
+  /// FASE 8: verificación humana pedida en el registro (funcional de verdad;
+  /// el botón no avanza sin el visto bueno).
+  bool _humanVerified = false;
   String? _error;
 
   late final AnimationController _drift = AnimationController(
@@ -128,6 +133,10 @@ class _AuthScreenState extends State<AuthScreen>
       }
       if (!_termsAccepted) {
         setState(() => _error = s.authErrTerms);
+        return;
+      }
+      if (!_humanVerified) {
+        setState(() => _error = s.authHumanError);
         return;
       }
     }
@@ -179,8 +188,15 @@ class _AuthScreenState extends State<AuthScreen>
   String? _validateEmail(String? value) =>
       (value ?? '').trim().isEmpty ? widget.strings.authErrInvalidEmail : null;
 
-  String? _validatePassword(String? value) =>
-      (value ?? '').length < 8 ? widget.strings.authErrWeakPassword : null;
+String? _validatePassword(String? value) {
+    final v = (value ?? '').trim();
+    // En el registro se exige la forma fuerte (misma regla que AuthStore);
+    // al iniciar sesión solo interesa que haya texto (el hash lo valida).
+    if (_mode == _AuthMode.signUp) {
+      return passwordShape(v).isStrong ? null : widget.strings.authPwdHint;
+    }
+    return v.isEmpty ? widget.strings.authErrEmptyPassword : null;
+  }
 
   String? _validateUsername(String? value) {
     final v = value?.trim() ?? '';
@@ -392,6 +408,7 @@ class _AuthScreenState extends State<AuthScreen>
               obscureText: _obscure,
               validator: _validatePassword,
               autofillHints: const [AutofillHints.password],
+              onChanged: (_) => setState(() {}),
               decoration: InputDecoration(
                 labelText: s.authPassword,
                 prefixIcon: const Icon(Icons.lock_outline),
@@ -406,6 +423,16 @@ class _AuthScreenState extends State<AuthScreen>
                 ),
               ),
             ),
+            if (isSignUp)
+              AnimatedSize(
+                duration: const Duration(milliseconds: 220),
+                curve: Curves.easeOut,
+                alignment: Alignment.topCenter,
+                child: PasswordRequirementsList(
+                  shape: passwordShape(_password.text),
+                  strings: s,
+                ),
+              ),
             AnimatedSize(
               duration: const Duration(milliseconds: 220),
               curve: Curves.easeOut,
@@ -503,6 +530,7 @@ class _AuthScreenState extends State<AuthScreen>
                 ],
               ),
             ],
+            if (isSignUp) _humanCheckbox(s),
             const SizedBox(height: 18),
             FilledButton.icon(
               onPressed: _submit,
@@ -574,6 +602,80 @@ class _AuthScreenState extends State<AuthScreen>
           ),
         ),
       ],
+    );
+  }
+
+  /// Verificación humana funcional del registro (FASE 8). La marca se pide
+  Widget _humanCheckbox(AppStrings s) {
+    final done = _humanVerified;
+    return Padding(
+      padding: const EdgeInsets.only(top: 14),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: nexoraSurface,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: done ? severityGreen : nexoraBorder,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  done ? Icons.verified_user : Icons.fact_check_outlined,
+                  size: 18,
+                  color: done ? severityGreen : nexoraGoldLight,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  done ? s.authHumanVerified : s.authHumanTitle,
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w700,
+                    color: done ? severityGreen : null,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              s.authHumanDesc,
+              style: const TextStyle(fontSize: 11.5, color: Colors.white38),
+            ),
+            const SizedBox(height: 4),
+            InkWell(
+              onTap: () => setState(() => _humanVerified = !_humanVerified),
+              borderRadius: BorderRadius.circular(8),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: Checkbox(
+                      value: _humanVerified,
+                      onChanged: (v) =>
+                          setState(() => _humanVerified = v ?? false),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      s.authHumanCheckbox,
+                      style: const TextStyle(fontSize: 12.5),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -904,12 +1006,19 @@ class _RecoveryScreenState extends State<RecoveryScreen> {
         TextFormField(
           controller: _newPassword,
           obscureText: true,
-          validator: (v) => (v ?? '').length < 6 ? s.authErrWeakPassword : null,
+          onChanged: (_) => setState(() {}),
+          validator: (v) => passwordShape((v ?? '').trim()).isStrong
+              ? null
+              : s.authPwdHint,
           decoration: InputDecoration(
             labelText: s.authRecoverNewField,
             prefixIcon: const Icon(Icons.lock_outline),
             border: const OutlineInputBorder(),
           ),
+        ),
+        PasswordRequirementsList(
+          shape: passwordShape(_newPassword.text),
+          strings: s,
         ),
         const SizedBox(height: 14),
         TextFormField(

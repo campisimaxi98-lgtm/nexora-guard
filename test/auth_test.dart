@@ -32,7 +32,7 @@ void main() {
     'register crea la cuenta, abre sesión y persiste entre instancias',
     () async {
       final store = freshStore();
-      expect(store.register('Maxi@Ejemplo.com', 'secreta1'), AuthResult.ok);
+      expect(store.register('Maxi@Ejemplo.com', 'Secret1@2026'), AuthResult.ok);
       expect(store.loggedIn, isTrue);
       expect(store.account!.email, 'maxi@ejemplo.com');
 
@@ -46,7 +46,7 @@ void main() {
   test('register rechaza email inválido y contraseña débil', () async {
     final store = freshStore();
     expect(
-      store.register('no-es-un-correo', 'secreta1'),
+      store.register('no-es-un-correo', 'Secret1@2026'),
       AuthResult.invalidEmail,
     );
     expect(store.register('a@b.co', 'corta'), AuthResult.weakPassword);
@@ -55,8 +55,8 @@ void main() {
 
   test('una sola cuenta por teléfono', () async {
     final store = freshStore();
-    store.register('uno@nexora.dev', 'secreta1');
-    expect(store.register('dos@nexora.dev', 'secreta2'), AuthResult.emailTaken);
+    store.register('uno@nexora.dev', 'Secret1@2026');
+    expect(store.register('dos@nexora.dev', 'Secret2@2026'), AuthResult.emailTaken);
     // La original sigue intacta.
     final other = freshStore();
     expect(other.account!.email, 'uno@nexora.dev');
@@ -64,12 +64,12 @@ void main() {
 
   test('login valida credenciales contra el hash estirado', () async {
     final store = freshStore();
-    store.register('uno@nexora.dev', 'secreta1');
+    store.register('uno@nexora.dev', 'Secret1@2026');
     store.logout();
 
     final second = freshStore();
     expect(
-      second.login('otro@nexora.dev', 'secreta1'),
+      second.login('otro@nexora.dev', 'Secret1@2026'),
       AuthResult.wrongCredentials,
     );
     expect(
@@ -77,13 +77,13 @@ void main() {
       AuthResult.wrongCredentials,
     );
     expect(second.loggedIn, isFalse);
-    expect(second.login('UNO@Nexora.dev ', 'secreta1'), AuthResult.ok);
+    expect(second.login('UNO@Nexora.dev ', 'Secret1@2026'), AuthResult.ok);
     expect(second.loggedIn, isTrue);
   });
 
   test('logout cierra la sesión y conserva la cuenta', () async {
     final store = freshStore();
-    store.register('uno@nexora.dev', 'secreta1');
+    store.register('uno@nexora.dev', 'Secret1@2026');
 
     final other = freshStore();
     other.logout();
@@ -95,14 +95,14 @@ void main() {
 
   test('wipe deja el estado como recién instalado', () async {
     final store = freshStore();
-    store.register('uno@nexora.dev', 'secreta1');
+    store.register('uno@nexora.dev', 'Secret1@2026');
     store.wipe();
 
     final reopened = freshStore();
     expect(reopened.account, isNull);
     expect(reopened.loggedIn, isFalse);
     // Y se puede registrar de nuevo desde cero.
-    expect(reopened.register('nuevo@nexora.dev', 'secreta3'), AuthResult.ok);
+    expect(reopened.register('nuevo@nexora.dev', 'Secret3@2026'), AuthResult.ok);
   });
 
   test('archivo corrupto o ajeno degrada a sin cuenta', () async {
@@ -120,7 +120,7 @@ void main() {
   test('sin "Recordarme" la sesión dura solo este arranque', () async {
     final store = freshStore();
     expect(
-      store.register('maxi@nexora.dev', 'secreta1', rememberMe: false),
+      store.register('maxi@nexora.dev', 'Secret1@2026', rememberMe: false),
       AuthResult.ok,
     );
     // En esta instancia hay sesión…
@@ -133,7 +133,7 @@ void main() {
 
     // Con credenciales correctas entra, todavía sin persistir.
     expect(
-      reopened.login('maxi@nexora.dev', 'secreta1', rememberMe: false),
+      reopened.login('maxi@nexora.dev', 'Secret1@2026', rememberMe: false),
       AuthResult.ok,
     );
     final third = freshStore();
@@ -142,7 +142,7 @@ void main() {
 
   test('con "Recordarme" la sesión sobrevive al reinicio', () async {
     final store = freshStore();
-    store.register('maxi@nexora.dev', 'secreta1', rememberMe: true);
+    store.register('maxi@nexora.dev', 'Secret1@2026', rememberMe: true);
     final reopened = freshStore();
     expect(reopened.loggedIn, isTrue);
   });
@@ -151,7 +151,7 @@ void main() {
     final store = freshStore();
     store.register(
       'maxi@nexora.dev',
-      'secreta1',
+      'Secret1@2026',
       name: 'Maxi',
       username: 'maxi_guard',
     );
@@ -161,14 +161,14 @@ void main() {
 
     // Avatar opcional no rompe nada al persistir.
     expect(
-      freshStore().register('avatar@nexora.dev', 'secreta2'),
+      freshStore().register('avatar@nexora.dev', 'Secret2@2026'),
       AuthResult.emailTaken,
     );
   });
 
   test('updateProfile cambia el perfil sin tocar credenciales', () async {
     final store = freshStore();
-    store.register('maxi@nexora.dev', 'secreta1', username: 'antes');
+    store.register('maxi@nexora.dev', 'Secret1@2026', username: 'antes');
     store.logout();
 
     final second = freshStore();
@@ -178,7 +178,7 @@ void main() {
     expect(third.account!.name, 'Nuevo');
     expect(third.account!.username, 'despues');
     // La contraseña sigue validando contra el mismo hash.
-    expect(third.login('maxi@nexora.dev', 'secreta1'), AuthResult.ok);
+    expect(third.login('maxi@nexora.dev', 'Secret1@2026'), AuthResult.ok);
   });
 
   test('recuperación offline responde honesto: nada se envía', () async {

@@ -83,7 +83,9 @@ void main() {
       );
       final (h, active) = deviceHealth(snap, verdictOk());
       expect(find.text('$h%'), findsWidgets);
-      expect(find.text('SALUD $active/5 sensores'), findsOneWidget);
+      // El centro muestra el % real (FASE 8) y tap a tap abre la escala.
+      expect(find.byKey(const Key('nx_donut_center')), findsOneWidget);
+      expect(active, greaterThanOrEqualTo(1));
     });
   });
 

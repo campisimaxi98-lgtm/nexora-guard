@@ -1,11 +1,11 @@
 /// Pantalla de bienvenida (splash) — primer contacto visual con NEXORA.
 ///
-/// Nota honesta: NEXORA GUARD no tiene backend de cuentas ni autenticación
-/// (todo el análisis vive en el propio dispositivo, sin servidor — ver
-/// `HistoryStore`/`ConfigStore`, ambos locales). Los botones "Iniciar
-/// sesión" / "Crear cuenta" del diseño original implicaban una cuenta
-/// remota; acá ambos simplemente continúan hacia la app, porque no existe
-/// (ni se simula) un sistema de login real.
+/// Ahora ES la puerta de entrada real: `COMENZAR` abre la autenticación
+/// local si la sesión está cerrada, o entra directo si la sesión ya está
+/// activa (FASE 8). La cuenta vive 100 % en el dispositivo (sin servidor —
+/// ver `core/auth_store.dart`); NO se ofrece un login remoto que no existe.
+/// El flujo invite de "VER CÓMO FUNCIONA" se retiró: la app no improvisa
+/// demos, solo hay datos reales.
 library;
 
 import 'package:flutter/material.dart';
@@ -102,21 +102,6 @@ class NexoraSplashScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: OutlinedButton(
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  side: const BorderSide(color: nexoraBorder, width: 1.4),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                ),
-                onPressed: onContinue,
-                child: const Text('VER CÓMO FUNCIONA'),
-              ),
-            ),
             const SizedBox(height: 20),
             const Text(
               'Protegemos lo que más importa.',

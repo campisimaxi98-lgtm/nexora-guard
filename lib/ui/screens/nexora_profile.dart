@@ -19,6 +19,7 @@ import '../../core/subscription.dart';
 import '../components.dart';
 import '../strings.dart';
 import '../theme.dart';
+import '../widgets.dart';
 
 class NexoraProfileScreen extends StatefulWidget {
   const NexoraProfileScreen({
@@ -208,7 +209,7 @@ class _NexoraProfileScreenState extends State<NexoraProfileScreen> {
                             isPremium: premium.isPremium,
                             colors: context,
                             label: premium.isPremium
-                                ? strings.planPremium
+                                ? strings.planProfessional
                                 : strings.planBasic,
                           ),
                         ],
@@ -666,13 +667,19 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
               TextFormField(
                 controller: _next,
                 obscureText: _obscure,
-                validator: (v) =>
-                    (v ?? '').length < 6 ? s.authErrWeakPassword : null,
+                onChanged: (_) => setState(() {}),
+                validator: (v) => passwordShape((v ?? '').trim()).isStrong
+                    ? null
+                    : s.authPwdHint,
                 decoration: InputDecoration(
                   labelText: s.pwdChangeNew,
                   prefixIcon: const Icon(Icons.password),
                   border: const OutlineInputBorder(),
                 ),
+              ),
+              PasswordRequirementsList(
+                shape: passwordShape(_next.text),
+                strings: s,
               ),
               const SizedBox(height: 14),
               TextFormField(

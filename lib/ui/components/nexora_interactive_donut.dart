@@ -41,7 +41,8 @@ class NexoraDonut extends StatelessWidget {
     required this.strings,
     this.title,
     this.centerPercent,
-    this.centerSubtitle,
+    this.centerColor,
+    this.onCenterTap,
   });
 
   final List<NxDonutSegment> segments;
@@ -52,14 +53,16 @@ class NexoraDonut extends StatelessWidget {
   /// las proporciones de los segmentos (FASE 4).
   final double? centerPercent;
 
-  /// Texto central opcional (FASE 7): "sensores activos/totales" u honesto.
-  final String? centerSubtitle;
+  /// Color del porcentaje central: la salud agregada se pinta por nivel
+  /// (verde → ámbar → naranja → rojo) y el tap explica la escala (FASE 8).
+  final Color? centerColor;
+
+  /// Tap sobre el círculo central: abre la escala de colores.
+  final VoidCallback? onCenterTap;
 
   @override
   Widget build(BuildContext context) {
     final ratio = segments.fold(0.0, (a, b) => a + b.ratio);
-    final dv = Theme.of(context).textTheme.bodySmall?.color;
-    final textColor = dv?.withValues(alpha: 0.8) ?? nexoraBlue;
     final centerValue = centerPercent ??
         (ratio.clamp(0.0, 1.0) * 100).round().toDouble();
 
@@ -114,32 +117,28 @@ class NexoraDonut extends StatelessWidget {
                             painter: _DonutPainter(segments: segments),
                           ),
                         ),
-                        // El texto del centro no roba los toques sobre los arcos.
-                        IgnorePointer(
-                          child: Center(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
+                        // El centro solo muestra el porcentaje de salud
+                        // (FASE 8) y redirige su tap a la escala de colores.
+                        // Cubre únicamente el disco central (~40 px), nunca
+                        // el anillo: los arcos siguen navegando.
+                        Align(
+                          alignment: Alignment.center,
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: onCenterTap,
+                            child: SizedBox.square(
+                              dimension: 80,
+                              child: Center(
+                                child: Text(
                                   '${centerValue.round()}%',
-                                  style: const TextStyle(
+                                  key: const Key('nx_donut_center'),
+                                  style: TextStyle(
                                     fontSize: 22,
                                     fontWeight: FontWeight.w900,
-                                    color: nexoraGoldLight,
+                                    color: centerColor ?? nexoraGoldLight,
                                   ),
                                 ),
-                                Text(
-                                  centerSubtitle ?? strings.donutCenterTitle,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 8.6,
-                                    letterSpacing: 1.1,
-                                    color: textColor,
-                                  ),
-                                ),
-                              ],
+                              ),
                             ),
                           ),
                         ),

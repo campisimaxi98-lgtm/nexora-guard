@@ -9,6 +9,8 @@ library;
 
 import 'package:flutter/material.dart';
 
+import 'dart:math' as math;
+
 import '../../core/history_store.dart';
 import '../../core/models.dart';
 import '../components.dart';
@@ -329,7 +331,30 @@ class _LineChartPainter extends CustomPainter {
       old.maskNull != maskNull;
 }
 
-/// Dona del almacenamiento ACTUAL: usa los bytes reales del snapshot.
+/// Segmento de la dona de almacenamiento: datos reales + explicación.
+class _StorageSegment {
+  const _StorageSegment({
+    required this.id,
+    required this.label,
+    required this.color,
+    required this.ratio,
+    required this.detail,
+  });
+
+  final String id;
+  final String label;
+  final Color color;
+
+  /// 0..1 — fracción del anillo (libre + usado + caché = 1).
+  final double ratio;
+
+  final String detail;
+}
+
+/// Dona del almacenamiento actual — interactiva (FASE 8): tres segmentos
+/// (libre / usado / caché) construidos con los bytes reales del snapshot.
+/// Tocar un segmento (o su fila) abre su explicación; si el espacio libre
+/// cae del 10 % la dona entra en estado crítico y se avisa arriba.
 class _StorageDonutCard extends StatelessWidget {
   const _StorageDonutCard({required this.storage, required this.strings});
 
@@ -337,66 +362,223 @@ class _StorageDonutCard extends StatelessWidget {
   final AppStrings strings;
 
   @override
-  Widget build(BuildContext context) => NexoraCard(
-    glow: true,
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SectionHeaderRow(
-          icon: Icons.storage,
-          title: strings.chartStorageNow,
+  Widget build(BuildContext context) {
+    final s = strings;
+    final total = storage.totalBytes;
+    final freeRatio = total > 0 ? storage.freeRatio.clamp(0.0, 1.0) : 0.0;
+    final cacheRatio = total > 0
+        ? (storage.appCacheBytes / total).clamp(0.0, 1.0 - freeRatio)
+        : 0.0;
+    final usedRatio = (1 - freeRatio).clamp(0.0, 1.0);
+    final usedOnlyRatio = math.max(0.0, usedRatio - cacheRatio);
+    final critical = freeRatio < 0.10;
+
+    final segments = <_StorageSegment>[
+      _StorageSegment(
+        id: 'free',
+        label: s.storageFree,
+        color: severityGreen,
+        ratio: freeRatio,
+        detail: s.storageFreeDesc,
+      ),
+      _StorageSegment(
+        id: 'used',
+        label: s.storageUsed,
+        color: nexoraGold,
+        ratio: usedOnlyRatio,
+        detail: s.storageUsedDesc,
+      ),
+      _StorageSegment(
+        id: 'cache',
+        label: s.cacheTitle,
+        color: nexoraOrange,
+        ratio: cacheRatio,
+        detail: s.storageCacheDesc,
+      ),
+    ];
+
+    void explain(_StorageSegment seg) {
+      showModalBottomSheet<void>(
+        context: context,
+        backgroundColor: nexoraSurfaceRaised,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
         ),
-        const SizedBox(height: ntGapSmall),
-        Row(
-          children: [
-            SizedBox(
-              width: 110,
-              height: 110,
-              child: CustomPaint(
-                painter: _DonutPainter(
-                  usedRatio: 1 - storage.freeRatio,
-                  usedColor: nexoraGoldLight,
-                  freeColor: nexoraBorder,
+        builder: (_) => SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(ntPad + 4),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SectionHeaderRow(icon: Icons.storage, title: seg.label),
+                const SizedBox(height: ntGapSmall),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(top: 3),
+                      child: Container(
+                        width: 12,
+                        height: 12,
+                        decoration: BoxDecoration(
+                          color: seg.color,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        seg.detail,
+                        style: const TextStyle(fontSize: 13, height: 1.5),
+                      ),
+                    ),
+                  ],
                 ),
-                child: Center(
-                  child: Text(
-                    '${(storage.freeRatio * 100).round()}%',
+                if (seg.id == 'free' && critical) ...[
+                  const SizedBox(height: ntGapSmall),
+                  Text(
+                    s.storageCriticalBody,
                     style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
+                      color: nexoraRed,
+                      fontSize: 12.5,
+                      height: 1.4,
                     ),
                   ),
-                ),
-              ),
+                ],
+              ],
             ),
-            const SizedBox(width: ntPad),
-            Expanded(
-              child: Column(
+          ),
+        ),
+      );
+    }
+
+    return NexoraCard(
+      glow: true,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SectionHeaderRow(icon: Icons.storage, title: s.chartStorageNow),
+          const SizedBox(height: ntGapSmall),
+          if (critical) ...[
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: nexoraRed.withValues(alpha: 0.14),
+                borderRadius: BorderRadius.circular(ntRadiusSmall),
+                border: Border.all(color: nexoraRed.withValues(alpha: 0.5)),
+              ),
+              child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ValueRow(
-                    icon: Icons.check_circle_outline,
-                    label: strings.chartStorageFree,
-                    value: _gb(storage.freeBytes),
-                    color: severityGreen,
+                  const Icon(
+                    Icons.warning_amber_rounded,
+                    color: nexoraRed,
+                    size: 18,
                   ),
-                  const SizedBox(height: 8),
-                  ValueRow(
-                    icon: Icons.cleaning_services_outlined,
-                    label: strings.chartStorageCache,
-                    value: _gb(storage.appCacheBytes),
-                    color: nexoraOrange,
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '${s.storageCriticalTitle}. ${s.storageCriticalBody}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12.5,
+                        height: 1.4,
+                      ),
+                    ),
                   ),
                 ],
               ),
             ),
+            const SizedBox(height: ntGapSmall),
           ],
-        ),
-      ],
-    ),
-  );
+          Row(
+            children: [
+              SizedBox.square(
+                dimension: 132,
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTapUp: (d) {
+                    final local = d.localPosition;
+                    final adj = Offset(local.dx - 66, local.dy - 66);
+                    if (adj.distance > 60) return;
+                    final totalRatio = segments.fold(
+                      0.0,
+                      (a, b) => a + b.ratio,
+                    );
+                    if (totalRatio <= 0) return;
+                    var angle = math.atan2(adj.dy, adj.dx) + math.pi / 2;
+                    if (angle < 0) angle += math.pi * 2;
+                    var acc = 0.0;
+                    for (final seg in segments) {
+                      acc += seg.ratio;
+                      if (angle <= (acc / totalRatio) * math.pi * 2) {
+                        explain(seg);
+                        return;
+                      }
+                    }
+                  },
+                  child: CustomPaint(
+                    painter: _StorageSegmentsPainter(segments: segments),
+                    child: Center(
+                      child: Text(
+                        '${(freeRatio * 100).round()}%',
+                        key: const Key('nx_storage_center'),
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
+                          color: critical ? nexoraRed : nexoraGoldLight,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: ntPad),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    for (final seg in segments) ...[
+                      ValueRow(
+                        icon: switch (seg.id) {
+                          'used' => Icons.folder_outlined,
+                          'cache' => Icons.cleaning_services_outlined,
+                          _ => Icons.check_circle_outline,
+                        },
+                        label: seg.label,
+                        value: switch (seg.id) {
+                          'used' => _gb(math.max(0, total - storage.freeBytes)),
+                          'cache' => _gb(storage.appCacheBytes),
+                          _ => _gb(storage.freeBytes),
+                        },
+                        color: seg.color,
+                        onTap: () => explain(seg),
+                      ),
+                      const SizedBox(height: 8),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: ntGapSmall),
+          Text(
+            s.storageTapHint,
+            style: TextStyle(
+              fontSize: 11.5,
+              color: Theme.of(context).disabledColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-  String _gb(int bytes) => '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(1)} GB';
+  String _gb(int bytes) =>
+      '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(1)} GB';
 }
 
 /// Análisis avanzado (FASE 7): elige una serie real y la ves como onda,
@@ -543,38 +725,50 @@ class _VizRow extends StatelessWidget {
   );
 }
 
-class _DonutPainter extends CustomPainter {
-  _DonutPainter({
-    required this.usedRatio,
-    required this.usedColor,
-    required this.freeColor,
-  });
+/// Pinta el anillo del almacenamiento con sus tres segmentos (libre, usado,
+/// caché) y huecos pequeños entre ellos.
+class _StorageSegmentsPainter extends CustomPainter {
+  _StorageSegmentsPainter({required this.segments});
 
-  final double usedRatio;
-  final Color usedColor;
-  final Color freeColor;
+  final List<_StorageSegment> segments;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final rect = Offset.zero & size;
-    final stroke = Paint()
+    final center = size.center(Offset.zero);
+    final outer = size.shortestSide / 2 - 4;
+    final stroke = outer * 0.30;
+    final rect = Rect.fromCircle(center: center, radius: outer - stroke / 2);
+
+    final track = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 12;
-    stroke.color = freeColor;
-    canvas.drawArc(rect.deflate(6), 0, 2 * 3.14159, false, stroke);
-    stroke.color = usedColor;
-    canvas.drawArc(
-      rect.deflate(6),
-      -3.14159 / 2,
-      2 * 3.14159 * usedRatio.clamp(0, 1),
-      false,
-      stroke,
-    );
+      ..strokeWidth = stroke
+      ..color = nexoraBorder.withValues(alpha: 0.6);
+    canvas.drawArc(rect, 0, math.pi * 2, false, track);
+
+    const gap = 0.04;
+    var start = -math.pi / 2;
+    for (final seg in segments) {
+      final sweep = math.max(0.0, seg.ratio * math.pi * 2 - gap);
+      if (sweep > 0) {
+        canvas.drawArc(
+          rect,
+          start + gap / 2,
+          sweep,
+          false,
+          Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = stroke
+            ..strokeCap = StrokeCap.butt
+            ..color = seg.color,
+        );
+      }
+      start += seg.ratio * math.pi * 2;
+    }
   }
 
   @override
-  bool shouldRepaint(_DonutPainter old) =>
-      old.usedRatio != usedRatio || old.usedColor != usedColor;
+  bool shouldRepaint(covariant _StorageSegmentsPainter oldDelegate) =>
+      oldDelegate.segments != segments;
 }
 
 /// Consumo por app: datos reales de las últimas 24 h (bytes o tiempo en

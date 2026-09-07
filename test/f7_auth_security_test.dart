@@ -25,59 +25,59 @@ void main() {
 
   test('changePassword exige la actual y rechaza la débil', () {
     final store = freshStore();
-    store.register('cuenta@nexora.dev', 'secreta1');
+    store.register('cuenta@nexora.dev', 'Secret1@2026');
 
     expect(
-      store.changePassword('mal-pasada', 'nueva-123'),
+      store.changePassword('mal-pasada', 'Nueva123Zeta'),
       PasswordChangeResult.wrongCurrent,
     );
     expect(
-      store.changePassword('secreta1', 'corta'),
+      store.changePassword('Secret1@2026', 'corta'),
       PasswordChangeResult.weakPassword,
     );
     expect(
-      store.changePassword('secreta1', 'nueva-123'),
+      store.changePassword('Secret1@2026', 'Nueva123Zeta'),
       PasswordChangeResult.ok,
     );
 
     // La contraseña vieja ya no abre sesión; la nueva sí.
     store.logout();
-    expect(store.login('cuenta@nexora.dev', 'secreta1'), AuthResult.wrongCredentials);
-    expect(store.login('cuenta@nexora.dev', 'nueva-123'), AuthResult.ok);
+    expect(store.login('cuenta@nexora.dev', 'Secret1@2026'), AuthResult.wrongCredentials);
+    expect(store.login('cuenta@nexora.dev', 'Nueva123Zeta'), AuthResult.ok);
   });
 
   test('changePassword regenera el salt: el hash en disco cambia', () {
     final store = freshStore();
-    store.register('cuenta@nexora.dev', 'secreta1');
+    store.register('cuenta@nexora.dev', 'Secret1@2026');
     final hashBefore = store.account!.hashHex;
     final saltBefore = store.account!.saltHex;
 
-    store.changePassword('secreta1', 'nueva-123');
+    store.changePassword('Secret1@2026', 'Nueva123Zeta');
     expect(store.account!.hashHex, isNot(hashBefore));
     expect(store.account!.saltHex, isNot(saltBefore));
   });
 
   test('resetPassword del recupero no exige la actual y persiste', () {
     final store = freshStore();
-    store.register('cuenta@nexora.dev', 'secreta1');
+    store.register('cuenta@nexora.dev', 'Secret1@2026');
     store.logout();
 
-    expect(store.resetPassword('recuperada-1'), AuthResult.ok);
-    expect(store.login('cuenta@nexora.dev', 'secreta1'), AuthResult.wrongCredentials);
-    expect(store.login('cuenta@nexora.dev', 'recuperada-1'), AuthResult.ok);
+    expect(store.resetPassword('Recuperada22b'), AuthResult.ok);
+    expect(store.login('cuenta@nexora.dev', 'Secret1@2026'), AuthResult.wrongCredentials);
+    expect(store.login('cuenta@nexora.dev', 'Recuperada22b'), AuthResult.ok);
   });
 
   test('resetPassword valida fuerza y ningún caso sin cuenta', () {
     final store = freshStore();
     expect(store.resetPassword('corta'), AuthResult.storage);
 
-    store.register('cuenta@nexora.dev', 'secreta1');
+    store.register('cuenta@nexora.dev', 'Secret1@2026');
     expect(store.resetPassword('corta'), AuthResult.weakPassword);
   });
 
   test('updateProfile persiste nombre, usuario y avatar entre instancias', () {
     final store = freshStore();
-    store.register('cuenta@nexora.dev', 'secreta1', name: 'Antes', username: 'antes');
+    store.register('cuenta@nexora.dev', 'Secret1@2026', name: 'Antes', username: 'antes');
 
     expect(
       store.updateProfile(name: 'Después', username: 'despues_g', avatarBase64: 'AAAA'),

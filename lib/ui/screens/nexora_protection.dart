@@ -7,10 +7,13 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../core/app_risk_level.dart';
 import '../../core/models.dart';
+import '../components.dart';
 import '../strings.dart';
 import '../theme.dart';
 import '../widgets.dart';
+import 'nexora_apps.dart';
 
 class NexoraProtectionScreen extends StatelessWidget {
   const NexoraProtectionScreen({
@@ -18,11 +21,17 @@ class NexoraProtectionScreen extends StatelessWidget {
     required this.snapshot,
     required this.verdict,
     required this.strings,
+    required this.apps,
+    required this.onOpenApp,
   });
 
   final Snapshot? snapshot;
   final Verdict? verdict;
   final AppStrings strings;
+  final List<AppRisk> apps;
+
+  /// Abre la ficha REAL de una app en los Ajustes del sistema.
+  final void Function(String packageName) onOpenApp;
 
   @override
   Widget build(BuildContext context) {
@@ -157,8 +166,105 @@ class NexoraProtectionScreen extends StatelessWidget {
             )
           else
             for (final f in networkFindings)
-              FindingCard(finding: f, strings: strings),
+              FindingCard(
+                finding: f,
+                strings: strings,
+                onTap: () => showFindingDetail(context, strings, f),
+              ),
+          const SizedBox(height: 24),
+
+          // ── Aplicaciones: permisos y riesgo reales de cada app (FASE 8) ──
+          SectionHeaderRow(
+            icon: Icons.apps,
+            title: strings.protectionAppsTitle,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            strings.protectionAppsHint,
+            style: const TextStyle(color: Colors.white54, fontSize: 12),
+          ),
+          const SizedBox(height: 10),
+          if (apps.isEmpty)
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: nexoraSurface,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: nexoraBorder),
+              ),
+              child: Text(
+                strings.protectionAppsNone,
+                style: const TextStyle(color: Colors.white54, fontSize: 13),
+              ),
+            )
+          else
+            for (final app in _sortedApps()) ...[
+              NexoraCard(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: ntPadSmall,
+                  vertical: 8,
+                ),
+                onTap: () => _openAppDetail(context, app),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            app.label.isEmpty ? app.packageName : app.label,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          Text(
+                            '${app.grantedPermissions.length} ${strings.appPermGranted} '
+                            '· ${app.dangerousPermissions.length} ${strings.appPermRequestedOnly}',
+                            style: const TextStyle(
+                              fontSize: 11.5,
+                              color: Colors.white38,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: ntGapSmall),
+                    LevelBadge(
+                      level: classifyAppRisk(app),
+                      label: _riskLabel(app),
+                      compact: true,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 6),
+            ],
         ],
+      ),
+    );
+  }
+
+  List<AppRisk> _sortedApps() {
+    final list = [...apps];
+    list.sort((a, b) => b.riskScore.compareTo(a.riskScore));
+    return list;
+  }
+
+  String _riskLabel(AppRisk app) => switch (classifyAppRisk(app)) {
+    AppRiskLevel.safe => strings.riskSafe,
+    AppRiskLevel.attention => strings.riskAttention,
+    AppRiskLevel.suspicious => strings.riskSuspicious,
+    AppRiskLevel.critical => strings.riskCritical,
+  };
+
+  void _openAppDetail(BuildContext ctx, AppRisk app) {
+    Navigator.of(ctx).push(
+      MaterialPageRoute(
+        builder: (_) =>
+            NexoraAppDetailScreen(app: app, strings: strings, onOpenApp: onOpenApp),
       ),
     );
   }

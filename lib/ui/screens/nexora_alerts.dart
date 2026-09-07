@@ -135,6 +135,8 @@ class _NexoraAlertsScreenState extends State<NexoraAlertsScreen> {
                     itemBuilder: (context, i) => FindingCard(
                       finding: filtered[i],
                       strings: widget.strings,
+                      onTap: () =>
+                          showFindingDetail(context, widget.strings, filtered[i]),
                     ),
                   ),
           ),
