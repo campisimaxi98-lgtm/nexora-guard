@@ -753,6 +753,77 @@ class AppStrings {
     'SALVA',
     'ENREGISTRER',
   );
+  String get profileSaveError => _pick(
+    'No se pudo guardar el perfil.',
+    'Could not save the profile.',
+    'Não foi possível salvar o perfil.',
+    'Impossibile salvare il profilo.',
+    'Impossible d’enregistrer le profil.',
+  );
+  // ── FASE 7: cambiar contraseña desde el perfil ──
+  String get pwdChangeTitle => _pick(
+    'Cambiar contraseña',
+    'Change password',
+    'Alterar senha',
+    'Cambia password',
+    'Changer le mot de passe',
+  );
+  String get pwdChangeBody => _pick(
+    'Ingresá tu contraseña actual y elegí una nueva de al menos 6 caracteres.',
+    'Enter your current password and choose a new one of at least 6 characters.',
+    'Informe sua senha atual e escolha uma nova de pelo menos 6 caracteres.',
+    'Inserisci la password attuale e scegline una nuova di almeno 6 caratteri.',
+    'Saisissez votre mot de passe actuel et choisissez-en un nouveau d’au moins 6 caractères.',
+  );
+  String get pwdChangeCurrent => _pick(
+    'Contraseña actual',
+    'Current password',
+    'Senha atual',
+    'Password attuale',
+    'Mot de passe actuel',
+  );
+  String get pwdChangeCurrentError => _pick(
+    'Ingresá tu contraseña actual.',
+    'Enter your current password.',
+    'Informe sua senha atual.',
+    'Inserisci la password attuale.',
+    'Saisissez votre mot de passe actuel.',
+  );
+  String get pwdChangeNew => _pick(
+    'Nueva contraseña',
+    'New password',
+    'Nova senha',
+    'Nuova password',
+    'Nouveau mot de passe',
+  );
+  String get pwdChangeConfirm => _pick(
+    'Confirmar nueva contraseña',
+    'Confirm new password',
+    'Confirmar nova senha',
+    'Conferma nuova password',
+    'Confirmer le nouveau mot de passe',
+  );
+  String get pwdChangeButton => _pick(
+    'Guardar contraseña',
+    'Save password',
+    'Salvar senha',
+    'Salva password',
+    'Enregistrer le mot de passe',
+  );
+  String get pwdChangeWrongCurrent => _pick(
+    'La contraseña actual no es correcta.',
+    'The current password is not correct.',
+    'A senha atual não está correta.',
+    'La password attuale non è corretta.',
+    'Le mot de passe actuel n’est pas correct.',
+  );
+  String get pwdChangeOk => _pick(
+    'Contraseña actualizada.',
+    'Password updated.',
+    'Senha atualizada.',
+    'Password aggiornata.',
+    'Mot de passe mis à jour.',
+  );
   String get profilePlanLabel => _pick(
     'Plan',
     'Plan',
@@ -1937,6 +2008,20 @@ class AppStrings {
     'Hai dimenticato la password?',
     'Mot de passe oublié ?',
   );
+  String get authSwitchSignUp => _pick(
+    '¿No tienes cuenta? Crear cuenta',
+    'No account? Create account',
+    'Não tem conta? Criar conta',
+    'Non hai un account? Crea account',
+    'Pas de compte ? Créer un compte',
+  );
+  String get authSwitchSignIn => _pick(
+    'Ya tengo cuenta',
+    'I already have an account',
+    'Já tenho conta',
+    'Ho già un account',
+    'J''ai déjà un compte',
+  );
   String get authRecoverTitle => _pick(
     'Recuperar contraseña',
     'Recover password',
@@ -2026,6 +2111,157 @@ class AppStrings {
     'Se o e-mail existir, o link já está a caminho (serviço remoto).',
     'Se l''e-mail esiste, il link è già in viaggio (servizio remoto).',
     'Si l''e-mail existe, le lien est déjà en route (service distant).',
+  );
+  // ── FASE 7: recuperación por código local ──
+  String get authRecoverStepEmailTitle => _pick(
+    '¿Cuál es tu email?',
+    'What is your email?',
+    'Qual é o seu e-mail?',
+    'Qual è la tua e-mail?',
+    'Quel est votre e-mail ?',
+  );
+  String get authRecoverStepEmailBody => _pick(
+    'Ingresá el email de tu cuenta local para generar el código de verificación.',
+    'Enter your local account email to generate the verification code.',
+    'Informe o e-mail da sua conta local para gerar o código de verificação.',
+    'Inserisci l''e-mail del tuo account locale per generare il codice di verifica.',
+    'Saisissez l''e-mail de votre compte local pour générer le code de vérification.',
+  );
+  String get authRecoverContinue => _pick(
+    'Continuar',
+    'Continue',
+    'Continuar',
+    'Continua',
+    'Continuer',
+  );
+  String get authRecoverErrorNoAccount => _pick(
+    'No hay una cuenta local con ese email.',
+    'There is no local account with that email.',
+    'Não há conta local com esse e-mail.',
+    'Non esiste un account locale con questa e-mail.',
+    'Aucun compte local avec cet e-mail.',
+  );
+  String get authRecoverCodeTitle => _pick(
+    'Escribe el código',
+    'Type the code',
+    'Digite o código',
+    'Inserisci il codice',
+    'Saisissez le code',
+  );
+  String get authRecoverCodeBody => _pick(
+    'Verificamos el código antes de darte la nueva contraseña.',
+    'We verify the code before letting you set a new password.',
+    'Verificamos o código antes de definir a nova senha.',
+    'Verifichiamo il codice prima di impostare la nuova password.',
+    'Nous vérifions le code avant de définir le nouveau mot de passe.',
+  );
+  String get authRecoverCodeWelcome => _pick(
+    'TU CÓDIGO',
+    'YOUR CODE',
+    'SEU CÓDIGO',
+    'IL TUO CODICE',
+    'VOTRE CODE',
+  );
+  String get authRecoverCodeShown => _pick(
+    'En esta versión sin red el código no se envía por correo: se genera y '
+      'se muestra aquí para completar el flujo. Con el servicio remoto, '
+      'este mismo código viajaría por email.',
+    'In this offline version the code is not emailed: it is generated and '
+      'shown here to complete the flow. With the remote service, this same '
+      'code would be emailed.',
+    'Nesta versão sem rede o código não é enviado por e-mail: ele é gerado e '
+      'mostrado aqui para completar o fluxo. Com o serviço remoto, este mesmo '
+      'código iria por e-mail.',
+    'In questa versione senza rete il codice non viene inviato via e-mail: '
+      'viene generato e mostrato qui per completare il flusso. Con il servizio '
+      'remoto, lo stesso codice arriverebbe via e-mail.',
+    'Dans cette version hors ligne le code n’est pas envoyé par e-mail : il '
+      'est généré et affiché ici pour terminer le parcours. Avec le service '
+      'distant, ce même code serait envoyé par e-mail.',
+  );
+  String get authRecoverCodeField => _pick(
+    'Código de 6 dígitos',
+    '6-digit code',
+    'Código de 6 dígitos',
+    'Codice a 6 cifre',
+    'Code à 6 chiffres',
+  );
+  String get authRecoverCodeInvalid => _pick(
+    'El código no coincide. Revisalo e intentá de nuevo.',
+    'The code does not match. Check it and try again.',
+    'O código não confere. Verifique e tente novamente.',
+    'Il codice non corrisponde. Controlla e riprova.',
+    'Le code ne correspond pas. Vérifiez et réessayez.',
+  );
+  String get authRecoverCodeResend => _pick(
+    'Regenerar código',
+    'Regenerate code',
+    'Gerar novo código',
+    'Rigenera codice',
+    'Régénérer le code',
+  );
+  String get authRecoverVerify => _pick(
+    'Verificar y continuar',
+    'Verify and continue',
+    'Verificar e continuar',
+    'Verifica e continua',
+    'Vérifier et continuer',
+  );
+  String get authRecoverNewTitle => _pick(
+    'Nueva contraseña',
+    'New password',
+    'Nova senha',
+    'Nuova password',
+    'Nouveau mot de passe',
+  );
+  String get authRecoverNewBody => _pick(
+    'Elegí una contraseña de al menos 6 caracteres.',
+    'Choose a password of at least 6 characters.',
+    'Escolha uma senha de pelo menos 6 caracteres.',
+    'Scegli una password di almeno 6 caratteri.',
+    'Choisissez un mot de passe d’au moins 6 caractères.',
+  );
+  String get authRecoverNewField => _pick(
+    'Nueva contraseña',
+    'New password',
+    'Nova senha',
+    'Nuova password',
+    'Nouveau mot de passe',
+  );
+  String get authRecoverNewConfirmField => _pick(
+    'Confirmar nueva contraseña',
+    'Confirm new password',
+    'Confirmar nova senha',
+    'Conferma nuova password',
+    'Confirmer le nouveau mot de passe',
+  );
+  String get authRecoverNewButton => _pick(
+    'Guardar nueva contraseña',
+    'Save new password',
+    'Salvar nova senha',
+    'Salva nuova password',
+    'Enregistrer le nouveau mot de passe',
+  );
+  String get authRecoverDoneTitle => _pick(
+    '¡Listo!',
+    'Done!',
+    'Pronto!',
+    'Fatto!',
+    'Terminé !',
+  );
+  String get authRecoverDoneBody => _pick(
+    'Tu contraseña fue actualizada. Ya podés iniciar sesión con la nueva.',
+    'Your password was updated. You can now sign in with the new one.',
+    'Sua senha foi atualizada. Agora você pode entrar com a nova.',
+    'La password è stata aggiornata. Ora puoi accedere con quella nuova.',
+    'Votre mot de passe a été mis à jour. Vous pouvez vous connecter avec le nouveau.',
+  );
+  String get authRecoverDoneButton => _pick(
+    'Ir a iniciar sesión',
+    'Go to sign in',
+    'Ir para entrar',
+    'Vai ad accedere',
+    'Aller à la connexion',
   );
   String get authErrUsername => _pick(
     'El usuario necesita al menos 3 caracteres, sin espacios',
@@ -2878,11 +3114,52 @@ class AppStrings {
     'Aucune capture dans cette plage.',
   );
   String get chartTapHint => _pick(
-    'Tocá un punto para el detalle',
-    'Tap a point for details',
-    'Toque um ponto para detalhes',
-    'Tocca un punto per i dettagli',
-    'Touchez un point pour les détails',
+    'Tocá o arrastrá un punto para el detalle',
+    'Tap or drag a point for details',
+    'Toque ou arraste um ponto para detalhes',
+    'Tocca o trascina un punto per i dettagli',
+    'Touchez ou faites glisser un point pour les détails',
+  );
+  String get chartStatMax => _pick('MÁX', 'MAX', 'MÁX', 'MAX', 'MAX');
+  String get chartStatMin => _pick('MÍN', 'MIN', 'MÍN', 'MIN', 'MIN');
+  String get chartStatAvg => _pick('PROM', 'AVG', 'MÉD', 'MEDIA', 'MOY');
+  String get chartVariationLabel => _pick(
+    'vs inicial',
+    'vs initial',
+    'vs inicial',
+    'vs iniziale',
+    'vs initial',
+  );
+  String get chartAdvTitle => _pick(
+    'Análisis avanzado',
+    'Advanced analysis',
+    'Análise avançada',
+    'Analisi avanzata',
+    'Analyse avancée',
+  );
+  String get chartAdvNeedsHistory => _pick(
+    'Hacé al menos 2 capturas para ver el análisis avanzado.',
+    'Take at least 2 captures to see the advanced analysis.',
+    'Faça pelo menos 2 capturas para ver a análise avançada.',
+    'Esegui almeno 2 catture per vedere l’analisi avanzata.',
+    'Prenez au moins 2 captures pour voir l’analyse avancée.',
+  );
+  String get chartAdvScore => _pick(
+    'Puntaje de seguridad',
+    'Security score',
+    'Pontuação de segurança',
+    'Punteggio di sicurezza',
+    'Score de sécurité',
+  );
+  String get chartAdvWave => _pick('Onda', 'Wave', 'Onda', 'Onda', 'Onde');
+  String get chartAdvArea => _pick('Área', 'Area', 'Área', 'Area', 'Zone');
+  String get chartAdvBars => _pick('Barras', 'Bars', 'Barras', 'Barre', 'Barres');
+  String get chartAdvScatter => _pick(
+    'Dispersión',
+    'Scatter',
+    'Dispersão',
+    'Dispersione',
+    'Nuage de points',
   );
   String get chartUnitPct => _pick('%', '%', '%', '%', '%');
   String get chartUnitApps => _pick(
@@ -2908,6 +3185,13 @@ class AppStrings {
     'EQUIPAMENTO',
     'DISPOSITIVO',
     'APPAREIL',
+  );
+  String donutCenterHealth(int active) => _pick(
+    'SALUD $active/5 sensores',
+    'HEALTH $active/5 sensors',
+    'SAÚDE $active/5 sensores',
+    'SALUTE $active/5 sensori',
+    'SANTÉ $active/5 capteurs',
   );
   String donutNareas(int n) => _pick(
     '$n áreas',

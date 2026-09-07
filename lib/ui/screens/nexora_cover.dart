@@ -1,9 +1,10 @@
 /// Portada de NEXORA GUARD — primer contacto visual del ecosistema.
 ///
-/// Planeta digital animado de fondo (componente [NexoraPlanet]), la marca
-/// en grande, el eslogan y dos accesos: `INICIAR SESIÓN` y `CREAR CUENTA`.
-/// No hace nada por su cuenta: las acciones las decide el llamador
-/// ([AuthGate] en `main.dart`) según el flujo de sesión.
+/// Fondo animado de constelación (estrellas + líneas + partículas con
+/// parallax, componente [NexoraConstellation]), la marca en grande, el
+/// eslogan y dos accesos: `INICIAR SESIÓN` y `CREAR CUENTA`. No tiene
+/// demo/demo botón: son los únicos dos accesos. Las acciones las decide el
+/// llamador ([AuthGate] en `main.dart`) según el flujo de sesión.
 library;
 
 import 'package:flutter/material.dart';
@@ -16,14 +17,12 @@ class NexoraCoverScreen extends StatelessWidget {
   const NexoraCoverScreen({
     super.key,
     required this.strings,
-    this.fixedSize = 640,
     this.onSignIn,
     this.onSignUp,
     this.busy = false,
   });
 
   final AppStrings strings;
-  final double fixedSize;
   final VoidCallback? onSignIn;
   final VoidCallback? onSignUp;
 
@@ -37,16 +36,9 @@ class NexoraCoverScreen extends StatelessWidget {
       backgroundColor: nexoraBackground,
       body: Stack(
         children: [
-          // Planeta cubriendo el fondo (se reescala sin deformarse).
+          // Constelación animada cubriendo el fondo (FASE 7).
           Positioned.fill(
-            child: FittedBox(
-              fit: BoxFit.cover,
-              child: SizedBox(
-                width: fixedSize,
-                height: fixedSize,
-                child: NexoraPlanet(size: fixedSize, slow: !busy),
-              ),
-            ),
+            child: NexoraConstellation(slow: !busy),
           ),
           SafeArea(
             child: Padding(

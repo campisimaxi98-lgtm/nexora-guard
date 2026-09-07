@@ -29,6 +29,17 @@ import 'sha256.dart';
 /// núcleo para que no haya codificadores duplicados en la UI.
 String avatarToBase64(Uint8List bytes) => base64Encode(bytes);
 
+/// Decodifica el Base64 sin prefijo de la UI de vuelta a bytes (perfil).
+/// Nunca debe lanzar: devuelve `null` ante entrada no decodificable.
+Uint8List? avatarFromBase64(String b64) {
+  if (b64.isEmpty) return null;
+  try {
+    return base64Decode(b64.replaceAll('\n', '').replaceAll('\r', ''));
+  } on FormatException {
+    return null;
+  }
+}
+
 /// Resultado de una operación de autenticación. Los ids son neutrales al
 /// idioma: la UI los traduce vía [AppStrings].
 enum AuthResult {
@@ -37,6 +48,14 @@ enum AuthResult {
   weakPassword,
   emailTaken,
   wrongCredentials,
+  storage,
+}
+
+/// Resultado del cambio de contraseña con verificación de la actual.
+enum PasswordChangeResult {
+  ok,
+  weakPassword,
+  wrongCurrent,
   storage,
 }
 
@@ -209,8 +228,65 @@ class AuthStore {
         : AuthResult.storage;
   }
 
+  /// Cambia la contraseña verificando la ACTUAL (se usa desde el perfil).
+  /// Regenera el salt: ningún resto de la contraseña vieja queda en disco.
+  PasswordChangeResult changePassword(
+    String currentPassword,
+    String newPassword,
+  ) {
+    final account = _account;
+    if (account == null) return PasswordChangeResult.storage;
+    if (_stretch(currentPassword, account.saltHex) != account.hashHex) {
+      return PasswordChangeResult.wrongCurrent;
+    }
+    if (newPassword.length < 6) return PasswordChangeResult.weakPassword;
+    final (newSalt, newHash) = _newSaltAndHash(newPassword.trim());
+    final updated = AuthAccount(
+      email: account.email,
+      saltHex: newSalt,
+      hashHex: newHash,
+      createdAtMillis: account.createdAtMillis,
+      name: account.name,
+      username: account.username,
+      avatarBase64: account.avatarBase64,
+    );
+    return _persist(updated, loggedIn: _loggedIn, rememberMe: _rememberMe)
+        ? PasswordChangeResult.ok
+        : PasswordChangeResult.storage;
+  }
+
+  /// Restablece la contraseña del flujo de recuperación (verificado por el
+  /// código local, sin exigir la contraseña actual). Regenera el salt.
+  AuthResult resetPassword(String newPassword) {
+    final account = _account;
+    if (account == null) return AuthResult.storage;
+    if (newPassword.length < 6) return AuthResult.weakPassword;
+    final (newSalt, newHash) = _newSaltAndHash(newPassword.trim());
+    final updated = AuthAccount(
+      email: account.email,
+      saltHex: newSalt,
+      hashHex: newHash,
+      createdAtMillis: account.createdAtMillis,
+      name: account.name,
+      username: account.username,
+      avatarBase64: account.avatarBase64,
+    );
+    return _persist(updated, loggedIn: _loggedIn, rememberMe: _rememberMe)
+        ? AuthResult.ok
+        : AuthResult.storage;
+  }
+
+  (String, String) _newSaltAndHash(String password) {
+    final random = Random.secure();
+    final saltHex = List<int>.generate(
+      16,
+      (_) => random.nextInt(256),
+    ).map((b) => b.toRadixString(16).padLeft(2, '0')).join();
+    return (saltHex, _stretch(password, saltHex));
+  }
+
   /// Actualiza el perfil (nombre, usuario, avatar) sin tocar credenciales.
-  /// Para de la sesión abierta. Devuelve `false` si el disco falló.
+  /// Mantiene la sesión abierta. Devuelve `false` si el disco falló.
   bool updateProfile({
     String? name,
     String? username,

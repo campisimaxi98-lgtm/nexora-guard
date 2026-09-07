@@ -140,7 +140,8 @@ void main() {
       _host(buildSnapshot(apps: apps), verdictOk(), _history(), tabs),
     );
 
-    final center = tester.getCenter(find.text('EQUIPO'));
+    // El centro de la dona ahora muestra % real + sensores activos (FASE 7).
+    final center = tester.getCenter(find.textContaining('SALUD'));
     // Arco de 12 horas (segmento apps, primero) y arco de las 3 (red).
     await tester.tapAt(Offset(center.dx, center.dy - 56));
     await tester.pump();

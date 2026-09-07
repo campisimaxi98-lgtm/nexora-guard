@@ -138,6 +138,8 @@ class NexoraChartsScreen extends StatelessWidget {
         ],
 
         const SizedBox(height: ntPadSmall),
+        _AdvancedAnalysisCard(rows: reversed, strings: strings),
+        const SizedBox(height: ntPadSmall),
         _StorageDonutCard(
           storage: snapshot.storage,
           strings: strings,
@@ -395,6 +397,150 @@ class _StorageDonutCard extends StatelessWidget {
   );
 
   String _gb(int bytes) => '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(1)} GB';
+}
+
+/// Análisis avanzado (FASE 7): elige una serie real y la ves como onda,
+/// área, barras o dispersión — todas animadas y con los datos del historial.
+class _AdvancedAnalysisCard extends StatefulWidget {
+  const _AdvancedAnalysisCard({required this.rows, required this.strings});
+
+  final List<HistoryRow> rows;
+  final AppStrings strings;
+
+  @override
+  State<_AdvancedAnalysisCard> createState() => _AdvancedAnalysisCardState();
+}
+
+class _AdvancedAnalysisCardState extends State<_AdvancedAnalysisCard> {
+  // Series seleccionables según la disponibilidad real en el historial.
+  late final List<_SeriesDef> _options = _buildOptions();
+
+  String _selected = '_default';
+
+  List<_SeriesDef> _buildOptions() {
+    final s = widget.strings;
+    final defs = <_SeriesDef>[
+      _SeriesDef('_default', s.chartAdvScore, nexoraGoldLight, (r) => r.score.toDouble()),
+    ];
+    final hasCpu = widget.rows.any((r) => r.cpuPercentAvailable);
+    if (hasCpu) {
+      defs.add(_SeriesDef('cpu', s.chartSeriesCpu, nexoraWine, (r) => r.cpuUsedPercent.toDouble()));
+    }
+    defs.add(_SeriesDef('mem', s.chartSeriesMemory, nexoraBlue, (r) => r.memAvailablePct.toDouble()));
+    defs.add(_SeriesDef('storage', s.chartSeriesStorage, severityGreen, (r) => r.storageFreePct.toDouble()));
+    defs.add(_SeriesDef('apps', s.chartSeriesApps, nexoraOrange, (r) => r.riskyApps.toDouble()));
+    final hasTemp = widget.rows.any((r) => r.batteryTempC >= 0);
+    if (hasTemp) {
+      defs.add(_SeriesDef('temp', s.chartSeriesTemp, nexoraRed, (r) => r.batteryTempC.toDouble()));
+    }
+    return defs;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.rows.length < 2) {
+      return NexoraCard(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: ntPadSmall),
+          child: Row(
+            children: [
+              const Icon(Icons.info_outline, color: nexoraBlue, size: 18),
+              const SizedBox(width: ntGapSmall),
+              Expanded(child: Text(widget.strings.chartAdvNeedsHistory)),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final active = _options.firstWhere(
+      (o) => o.id == _selected,
+      orElse: () => _options.first,
+    );
+    final values = widget.rows.map(active.extract).toList();
+
+    return NexoraCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SectionHeaderRow(icon: Icons.blur_linear, title: widget.strings.chartAdvTitle),
+          const SizedBox(height: ntGapSmall),
+          // Selector de serie (datos reales disponibles).
+          DropdownButtonFormField<String>(
+            initialValue: _selected,
+            isExpanded: true,
+            decoration: const InputDecoration(
+              isDense: true,
+              prefixIcon: Icon(Icons.tune, size: 18),
+            ),
+            items: [
+              for (final o in _options)
+                DropdownMenuItem(
+                  value: o.id,
+                  child: Text(o.label, style: const TextStyle(fontSize: 13)),
+                ),
+            ],
+            onChanged: (v) {
+              if (v == null) return;
+              setState(() => _selected = v);
+            },
+          ),
+          const SizedBox(height: ntGapSmall),
+          for (final viz in NexoraViz.values) ...[
+            _VizRow(
+              kind: viz,
+              strings: widget.strings,
+              widget: NexoraAdvancedChart(
+                rows: widget.rows,
+                values: values,
+                color: active.color,
+                viz: viz,
+              ),
+            ),
+            const SizedBox(height: ntGapSmall),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _SeriesDef {
+  const _SeriesDef(this.id, this.label, this.color, this.extract);
+  final String id;
+  final String label;
+  final Color color;
+  final double? Function(HistoryRow) extract;
+}
+
+class _VizRow extends StatelessWidget {
+  const _VizRow({
+    required this.kind,
+    required this.strings,
+    required this.widget,
+  });
+  final NexoraViz kind;
+  final AppStrings strings;
+  final Widget widget;
+
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Row(
+        children: [
+          Icon(kind.icon(), size: 14, color: nexoraGoldLight),
+          const SizedBox(width: 6),
+          Text(
+            kind.label(strings),
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+          ),
+        ],
+      ),
+      const SizedBox(height: 6),
+      widget,
+    ],
+  );
 }
 
 class _DonutPainter extends CustomPainter {

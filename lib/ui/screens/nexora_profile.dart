@@ -13,6 +13,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
+import '../../core/auth_store.dart';
 import '../../core/models.dart';
 import '../../core/subscription.dart';
 import '../components.dart';
@@ -24,6 +25,7 @@ class NexoraProfileScreen extends StatefulWidget {
     super.key,
     required this.strings,
     required this.subscription,
+    this.authStore,
     required this.onOpenLegacy,
     required this.onRestart,
     this.snapshot,
@@ -36,6 +38,11 @@ class NexoraProfileScreen extends StatefulWidget {
 
   /// Estado de suscripción de la sesión (no persistido a nivel UI).
   final NexoraSubscriptionService subscription;
+
+  /// Cuenta local activa: la edición del perfil y el cambio de contraseña
+  /// se persisten de verdad vía [AuthStore] (FASE 7). Null en pruebas sin
+  /// almacén: la pantalla valida pero no persiste.
+  final AuthStore? authStore;
 
   /// Empuja una pantalla técnica por id ('settings' | 'about' | 'device' |
   /// 'storage' | 'nearby').
@@ -72,8 +79,10 @@ class _NexoraProfileScreenState extends State<NexoraProfileScreen> {
   @override
   void initState() {
     super.initState();
-    _name = TextEditingController(text: 'Maximiliano');
-    _username = TextEditingController(text: 'maxi_g');
+    final account = widget.authStore?.account;
+    _name = TextEditingController(text: account?.name ?? '');
+    _username = TextEditingController(text: account?.username ?? '');
+    _photoBytes = avatarFromBase64(account?.avatarBase64 ?? '');
   }
 
   @override
@@ -107,8 +116,41 @@ class _NexoraProfileScreenState extends State<NexoraProfileScreen> {
           _usernameRe.hasMatch(username) ? null : widget.strings.profileUsernameValidation;
     });
     if (_nameError != null || _usernameError != null) return;
+    // FASE 7: la edición se persiste de verdad en la cuenta local.
+    final store = widget.authStore;
+    if (store == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(widget.strings.profileSaveError)),
+      );
+      return;
+    }
+    final bytes = _photoBytes;
+    final saved = store.updateProfile(
+      name: name,
+      username: username,
+      avatarBase64: bytes == null ? null : avatarToBase64(bytes),
+    );
+    if (!saved) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(widget.strings.profileSaveError)),
+      );
+      return;
+    }
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(widget.strings.profileSave)),
+    );
+  }
+
+  void _openChangePassword() {
+    final store = widget.authStore;
+    if (store == null) return;
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ChangePasswordScreen(
+          strings: widget.strings,
+          store: store,
+        ),
+      ),
     );
   }
 
@@ -273,6 +315,26 @@ class _NexoraProfileScreenState extends State<NexoraProfileScreen> {
             strings: strings,
           ),
           const SizedBox(height: ntGapSmall),
+
+          // ── Seguridad: cambiar contraseña (FASE 7) ────────────────────
+          if (widget.authStore != null)
+            NexoraCard(
+              child: ListTile(
+                dense: true,
+                leading: Icon(Icons.password, color: nexoraGoldLight, size: 20),
+                title: Text(
+                  widget.strings.pwdChangeTitle,
+                  style: const TextStyle(fontSize: 14),
+                ),
+                trailing: const Icon(
+                  Icons.chevron_right,
+                  size: 18,
+                  color: nexoraBorder,
+                ),
+                onTap: _openChangePassword,
+              ),
+            ),
+          if (widget.authStore != null) const SizedBox(height: ntGapSmall),
 
           // ── Accesos técnicos (pantallas ya existentes) ───────────────
           NexoraCard(
@@ -496,4 +558,159 @@ class _LegacyItem {
   final IconData icon;
   final String label;
   final VoidCallback onTap;
+}
+
+/// Cambio de contraseña desde el Perfil (FASE 7): exige la actual, valida
+/// la nueva y persiste vía [AuthStore.changePassword] (salt regenerado).
+class ChangePasswordScreen extends StatefulWidget {
+  const ChangePasswordScreen({
+    super.key,
+    required this.strings,
+    required this.store,
+  });
+
+  final AppStrings strings;
+  final AuthStore store;
+
+  @override
+  State<ChangePasswordScreen> createState() => _ChangePasswordScreenState();
+}
+
+class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _current = TextEditingController();
+  final _next = TextEditingController();
+  final _confirm = TextEditingController();
+  bool _obscure = true;
+  String? _error;
+
+  @override
+  void dispose() {
+    _current.dispose();
+    _next.dispose();
+    _confirm.dispose();
+    super.dispose();
+  }
+
+  void _save() {
+    if (!_formKey.currentState!.validate()) return;
+    if (_confirm.text != _next.text) {
+      setState(() => _error = widget.strings.authErrMismatch);
+      return;
+    }
+    final result = widget.store.changePassword(_current.text, _next.text.trim());
+    switch (result) {
+      case PasswordChangeResult.ok:
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(widget.strings.pwdChangeOk)),
+        );
+        Navigator.of(context).pop();
+      case PasswordChangeResult.weakPassword:
+        setState(() => _error = widget.strings.authErrWeakPassword);
+      case PasswordChangeResult.wrongCurrent:
+        setState(() => _error = widget.strings.pwdChangeWrongCurrent);
+      case PasswordChangeResult.storage:
+        setState(() => _error = widget.strings.restoreFail);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final s = widget.strings;
+    return Scaffold(
+      backgroundColor: nexoraBackground,
+      appBar: AppBar(
+        backgroundColor: nexoraBackground,
+        foregroundColor: nexoraGoldLight,
+        title: Text(s.pwdChangeTitle),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(ntPad),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Icon(Icons.password, color: nexoraGold, size: 44),
+              const SizedBox(height: 14),
+              Text(
+                s.pwdChangeBody,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13,
+                  height: 1.4,
+                  color: Theme.of(context).disabledColor,
+                ),
+              ),
+              const SizedBox(height: 18),
+              TextFormField(
+                controller: _current,
+                obscureText: _obscure,
+                validator: (v) =>
+                    (v ?? '').isEmpty ? s.pwdChangeCurrentError : null,
+                decoration: InputDecoration(
+                  labelText: s.pwdChangeCurrent,
+                  prefixIcon: const Icon(Icons.lock_outline),
+                  border: const OutlineInputBorder(),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscure
+                          ? Icons.visibility_outlined
+                          : Icons.visibility_off_outlined,
+                    ),
+                    onPressed: () => setState(() => _obscure = !_obscure),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              TextFormField(
+                controller: _next,
+                obscureText: _obscure,
+                validator: (v) =>
+                    (v ?? '').length < 6 ? s.authErrWeakPassword : null,
+                decoration: InputDecoration(
+                  labelText: s.pwdChangeNew,
+                  prefixIcon: const Icon(Icons.password),
+                  border: const OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 14),
+              TextFormField(
+                controller: _confirm,
+                obscureText: _obscure,
+                validator: (v) =>
+                    v != _next.text ? s.authErrMismatch : null,
+                decoration: InputDecoration(
+                  labelText: s.pwdChangeConfirm,
+                  prefixIcon: const Icon(Icons.repeat_rounded),
+                  border: const OutlineInputBorder(),
+                ),
+              ),
+              if (_error != null) ...[
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    const Icon(Icons.error_outline, color: nexoraRed, size: 18),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        _error!,
+                        style: const TextStyle(color: nexoraRed, fontSize: 13),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+              const SizedBox(height: 18),
+              FilledButton.icon(
+                onPressed: _save,
+                icon: const Icon(Icons.check, size: 18),
+                label: Text(s.pwdChangeButton),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }

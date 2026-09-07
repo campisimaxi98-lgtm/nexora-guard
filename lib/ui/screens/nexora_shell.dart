@@ -14,6 +14,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
 import '../../core/history_store.dart';
+import '../../core/auth_store.dart';
 import '../../core/models.dart';
 import '../../core/subscription.dart';
 import '../components.dart';
@@ -40,6 +41,7 @@ class NexoraShell extends StatefulWidget {
     required this.onOpenApp,
     required this.legacyTab,
     required this.subscription,
+    this.authStore,
     this.pickImage,
     this.onExport,
   });
@@ -57,6 +59,9 @@ class NexoraShell extends StatefulWidget {
   final Widget Function(String id) legacyTab;
 
   final NexoraSubscriptionService subscription;
+
+  /// Cuenta local activa (perfil persistente y cambio de contraseña).
+  final AuthStore? authStore;
 
   /// Selector de imagen nativo para el perfil (bytes en memoria).
   final Future<Uint8List?> Function()? pickImage;
@@ -189,6 +194,7 @@ class _NexoraShellState extends State<NexoraShell> {
       NexoraProfileScreen(
         strings: strings,
         subscription: widget.subscription,
+        authStore: widget.authStore,
         onOpenLegacy: _openLegacy,
         onRestart: () => setState(() => _showSplash = true),
         snapshot: snapshot,

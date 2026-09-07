@@ -40,17 +40,28 @@ class NexoraDonut extends StatelessWidget {
     required this.segments,
     required this.strings,
     this.title,
+    this.centerPercent,
+    this.centerSubtitle,
   });
 
   final List<NxDonutSegment> segments;
   final AppStrings strings;
   final String? title;
 
+  /// Valor central personalizado (0..100). Si se omite, se usa la suma de
+  /// las proporciones de los segmentos (FASE 4).
+  final double? centerPercent;
+
+  /// Texto central opcional (FASE 7): "sensores activos/totales" u honesto.
+  final String? centerSubtitle;
+
   @override
   Widget build(BuildContext context) {
     final ratio = segments.fold(0.0, (a, b) => a + b.ratio);
     final dv = Theme.of(context).textTheme.bodySmall?.color;
     final textColor = dv?.withValues(alpha: 0.8) ?? nexoraBlue;
+    final centerValue = centerPercent ??
+        (ratio.clamp(0.0, 1.0) * 100).round().toDouble();
 
     return NexoraCard(
       glow: true,
@@ -103,27 +114,33 @@ class NexoraDonut extends StatelessWidget {
                             painter: _DonutPainter(segments: segments),
                           ),
                         ),
-                        Center(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                '${(ratio.clamp(0.0, 1.0) * 100).round()}%',
-                                style: const TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w900,
-                                  color: nexoraGoldLight,
+                        // El texto del centro no roba los toques sobre los arcos.
+                        IgnorePointer(
+                          child: Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  '${centerValue.round()}%',
+                                  style: const TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w900,
+                                    color: nexoraGoldLight,
+                                  ),
                                 ),
-                              ),
-                              Text(
-                                strings.donutCenterTitle,
-                                style: TextStyle(
-                                  fontSize: 9.5,
-                                  letterSpacing: 1.4,
-                                  color: textColor,
+                                Text(
+                                  centerSubtitle ?? strings.donutCenterTitle,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 8.6,
+                                    letterSpacing: 1.1,
+                                    color: textColor,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ],

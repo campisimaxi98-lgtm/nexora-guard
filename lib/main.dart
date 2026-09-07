@@ -253,18 +253,30 @@ class _AuthGateState extends State<AuthGate> {
         onAuthenticated: _onAuthenticated,
       );
     }
-    return InspectorHome(onLogout: _logout, accountEmail: store.account?.email);
+    return InspectorHome(
+      onLogout: _logout,
+      accountEmail: store.account?.email,
+      authStore: store,
+    );
   }
 }
 
 class InspectorHome extends StatefulWidget {
-  const InspectorHome({super.key, this.onLogout, this.accountEmail});
+  const InspectorHome({
+    super.key,
+    this.onLogout,
+    this.accountEmail,
+    this.authStore,
+  });
 
   /// Lo invoca Configuración al pedir cerrar la sesión local.
   final VoidCallback? onLogout;
 
   /// Correo de la cuenta activa, para mostrarlo en Configuración.
   final String? accountEmail;
+
+  /// Cuenta local activa (perfil y contraseña se persisten de verdad).
+  final AuthStore? authStore;
 
   @override
   State<InspectorHome> createState() => _InspectorHomeState();
@@ -735,6 +747,7 @@ class _InspectorHomeState extends State<InspectorHome> {
       subscription: _subscription,
       pickImage: () => _collectors.pickImageBytes(),
       onExport: () => _export(strings),
+      authStore: widget.authStore,
     );
   }
 }

@@ -159,6 +159,10 @@ class _NexoraInteractiveChartState extends State<NexoraInteractiveChart> {
                   ),
                 ),
         ),
+        if (rows.length >= 2) ...[
+          const SizedBox(height: ntGapSmall),
+          _StatsRow(rows: rows, series: series, activeId: _seriesId, strings: s),
+        ],
         const SizedBox(height: ntGapSmall),
         Align(
           alignment: Alignment.center,
@@ -261,6 +265,181 @@ List<NxChartSeries> _buildSeries(AppStrings s, {bool cpuAvailable = false}) => [
   ),
 ];
 
+/// Estadísticas honestas de la ventana actual para la serie activa (o la
+/// más representativa): máx, mín, promedio y variación del último dato.
+class _StatsRow extends StatelessWidget {
+  const _StatsRow({
+    required this.rows,
+    required this.series,
+    required this.activeId,
+    required this.strings,
+  });
+
+  final List<HistoryRow> rows;
+  final List<NxChartSeries> series;
+  final String? activeId;
+  final AppStrings strings;
+
+  @override
+  Widget build(BuildContext context) {
+    final subColor = Theme.of(
+      context,
+    ).textTheme.bodySmall?.color?.withValues(alpha: 0.8);
+
+    // Serie activa si hay una; si no, la variación del puntaje de seguridad.
+    NxChartSeries? target;
+    if (activeId != null) {
+      for (final s in series) {
+        if (s.id == activeId) {
+          target = s;
+          break;
+        }
+      }
+    }
+
+    final items = <Widget>[];
+
+    if (target != null) {
+      final vals = <double>[];
+      for (final r in rows) {
+        final raw = target.extract(r);
+        if (raw != null) vals.add(raw);
+      }
+      if (vals.length >= 2) {
+        final minV = vals.reduce((a, b) => a < b ? a : b);
+        final maxV = vals.reduce((a, b) => a > b ? a : b);
+        final avg = vals.reduce((a, b) => a + b) / vals.length;
+        items.add(_StatChip(
+          label: strings.chartStatMax,
+          value: target.format(maxV),
+          color: target.color,
+        ));
+        items.add(_StatChip(
+          label: strings.chartStatMin,
+          value: target.format(minV),
+          color: target.color,
+        ));
+        items.add(_StatChip(
+          label: strings.chartStatAvg,
+          value: target.format(avg),
+          color: target.color,
+        ));
+      }
+    } else {
+      // Sin serie activa: variación del puntaje de seguridad (última vs 1.a).
+      final firstScore = rows.first.score;
+      final lastScore = rows.last.score;
+      final delta = lastScore - firstScore;
+      items.add(_VariationChip(
+        delta: delta,
+        tip: subColor,
+        label: strings.chartVariationLabel,
+      ));
+    }
+
+    return Wrap(
+      spacing: ntGapSmall,
+      runSpacing: ntGapSmall,
+      children: items,
+    );
+  }
+}
+
+class _StatChip extends StatelessWidget {
+  const _StatChip({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  final String label;
+  final String value;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final subColor = Theme.of(
+      context,
+    ).textTheme.bodySmall?.color?.withValues(alpha: 0.85);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(ntRadiusPill),
+        border: Border.all(color: color.withValues(alpha: 0.5)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(label, style: TextStyle(fontSize: 10.5, color: subColor)),
+          const SizedBox(width: 5),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+              color: nexoraGoldLight,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Chip "última vs primera captura" con flecha y color honesto del cambio.
+class _VariationChip extends StatelessWidget {
+  const _VariationChip({
+    required this.delta,
+    required this.tip,
+    required this.label,
+  });
+
+  final int delta;
+  final Color? tip;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final up = delta > 0;
+    final down = delta < 0;
+    final color = down
+        ? nexoraRed
+        : (up ? severityGreen : nexoraBlue);
+    final arrow = up
+        ? Icons.arrow_upward_rounded
+        : (down ? Icons.arrow_downward_rounded : Icons.remove_rounded);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(ntRadiusPill),
+        border: Border.all(color: color.withValues(alpha: 0.5)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(arrow, size: 15, color: color),
+          const SizedBox(width: 4),
+          Text(
+            '${up ? '+' : ''}$delta',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
+              color: color,
+            ),
+          ),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(fontSize: 10.5, color: tip),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _WindowChip extends StatelessWidget {
   const _WindowChip({
     required this.label,
@@ -337,6 +516,13 @@ class _ChartCanvasState extends State<_ChartCanvas> {
           }),
           onTapUp: (_) => setState(() => _hover = null),
           onTapCancel: () => setState(() => _hover = null),
+          onPanStart: (d) => setState(() {
+            _hover = painter.pointAt(d.localPosition.dx);
+          }),
+          onPanUpdate: (d) => setState(() {
+            _hover = painter.pointAt(d.localPosition.dx);
+          }),
+          onPanEnd: (_) => setState(() => _hover = null),
           child: CustomPaint(
             size: Size.infinite,
             painter: painter,

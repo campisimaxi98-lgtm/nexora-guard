@@ -19,7 +19,6 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
 import '../../core/auth_store.dart';
-import '../../core/password_recovery.dart';
 import '../components.dart';
 import '../nexora_logo.dart';
 import '../strings.dart';
@@ -37,7 +36,6 @@ class AuthScreen extends StatefulWidget {
     required this.store,
     required this.onAuthenticated,
     this.initialMode,
-    this.recovery = const LocalOfflineRecoveryService(),
     this.pickImage,
   });
 
@@ -47,9 +45,6 @@ class AuthScreen extends StatefulWidget {
 
   /// Si es null, el modo se deduce solo (cuenta existente → iniciar sesión).
   final AuthMode? initialMode;
-
-  /// Proveedor de recupero; por defecto el local honesto (offline).
-  final PasswordRecoveryService recovery;
 
   /// Selector de imagen nativa opcional (avatar del registro).
   final Future<Uint8List?> Function()? pickImage;
@@ -114,7 +109,11 @@ class _AuthScreenState extends State<AuthScreen>
   void _openRecovery() {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => RecoveryScreen(strings: widget.strings, email: _email.text),
+        builder: (_) => RecoveryScreen(
+          strings: widget.strings,
+          store: widget.store,
+          email: _email.text,
+        ),
       ),
     );
   }
@@ -525,6 +524,21 @@ class _AuthScreenState extends State<AuthScreen>
                 ),
               ),
             ],
+            const SizedBox(height: 2),
+            TextButton(
+              onPressed: () => setState(() {
+                _mode = isSignUp ? _AuthMode.signIn : _AuthMode.signUp;
+                _error = null;
+              }),
+              child: Text(
+                isSignUp ? s.authSwitchSignIn : s.authSwitchSignUp,
+                style: const TextStyle(
+                  color: nexoraGoldLight,
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -564,48 +578,129 @@ class _AuthScreenState extends State<AuthScreen>
   }
 }
 
-/// Pantalla de REcuperación de contraseña — honesta por diseño.
+/// Pantalla de recuperación de contraseña (FASE 7) — flujo completo offline.
 ///
-/// Sin backend (offline) NO se envía nada: la pantalla explica que el
-/// servicio de envío aún no existe y que la arquitectura ya lo contempla,
-/// según [PasswordRecoveryService]. Nunca simula un enlace, un correo ni
-/// una operación exitosa que no ocurrió.
+/// Pasos: email → código → nueva contraseña → listo. Sin red de verdad NO
+/// existe el envío por correo: el código se genera localmente y se muestra
+/// EN PANTALLA, con una nota que lo dice con honestidad (cuando NEXORA
+/// GUARD tenga el servicio remoto, el mismo código viajará por email). El
+/// restablecimiento escribe en [AuthStore.resetPassword] con salt nuevo.
 class RecoveryScreen extends StatefulWidget {
-  const RecoveryScreen({super.key, required this.strings, this.email});
+  const RecoveryScreen({
+    super.key,
+    required this.strings,
+    required this.store,
+    this.email = '',
+    this.codeGenerator,
+  });
 
   final AppStrings strings;
-  final String? email;
+  final AuthStore store;
+
+  /// Email precargado (viene del campo de login).
+  final String email;
+
+  /// Generador de código inyectable (en pruebas se fija uno conocido).
+  final String Function()? codeGenerator;
 
   @override
   State<RecoveryScreen> createState() => _RecoveryScreenState();
 }
 
+enum _RecoveryStep { email, code, newPassword, done }
+
 class _RecoveryScreenState extends State<RecoveryScreen> {
-  static const _service = LocalOfflineRecoveryService();
+  late _RecoveryStep _step = _RecoveryStep.email;
+  final _formKey = GlobalKey<FormState>();
   late final TextEditingController _email = TextEditingController(
-    text: widget.email ?? '',
+    text: widget.email,
   );
+  final _code = TextEditingController();
+  final _newPassword = TextEditingController();
+  final _confirm = TextEditingController();
+
+  late String _generatedCode;
+  String? _error;
+
+  String _generateCode() =>
+      widget.codeGenerator?.call() ??
+      _sixDigits(
+        DateTime.now().millisecondsSinceEpoch,
+        math.Random().nextInt(0xFFFFFF),
+      );
+
+  static String _sixDigits(int a, int b) {
+    final seed = (a ^ b).abs() | 0x1000000;
+    return '$seed'.substring(1, 7);
+  }
+
+  void _nextFromEmail() {
+    if (!_formKey.currentState!.validate()) return;
+    final account = widget.store.account;
+    final email = _email.text.trim().toLowerCase();
+    if (account == null || account.email != email) {
+      setState(() => _error = widget.strings.authRecoverErrorNoAccount);
+      return;
+    }
+    setState(() {
+      _error = null;
+      _generatedCode = _generateCode();
+      _step = _RecoveryStep.code;
+    });
+  }
+
+  void _verifyCode() {
+    if (_code.text.trim() != _generatedCode) {
+      setState(() => _error = widget.strings.authRecoverCodeInvalid);
+      return;
+    }
+    setState(() {
+      _error = null;
+      _code.clear();
+      _step = _RecoveryStep.newPassword;
+    });
+  }
+
+  void _regenerate() {
+    setState(() {
+      _generatedCode = _generateCode();
+      _error = null;
+    });
+  }
+
+  void _saveNewPassword() {
+    if (!_formKey.currentState!.validate()) return;
+    if (_confirm.text != _newPassword.text) {
+      setState(() => _error = widget.strings.authErrMismatch);
+      return;
+    }
+    final result = widget.store.resetPassword(_newPassword.text.trim());
+    switch (result) {
+      case AuthResult.ok:
+        setState(() {
+          _error = null;
+          _step = _RecoveryStep.done;
+        });
+      case AuthResult.weakPassword:
+        setState(() => _error = widget.strings.authErrWeakPassword);
+      case AuthResult.storage:
+        setState(() => _error = widget.strings.restoreFail);
+      case AuthResult.invalidEmail:
+      case AuthResult.emailTaken:
+      case AuthResult.wrongCredentials:
+        setState(() => _error = widget.strings.restoreFail);
+    }
+  }
+
+  void _finish() => Navigator.of(context).pop();
 
   @override
   void dispose() {
     _email.dispose();
+    _code.dispose();
+    _newPassword.dispose();
+    _confirm.dispose();
     super.dispose();
-  }
-
-  void _send() {
-    // Operación honesta: el servicio local responde "no configurado".
-    _service.requestReset(_email.text.trim()).then((result) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            result == PasswordRecoveryResult.ok
-                ? widget.strings.authRecoverSent
-                : widget.strings.authRecoverNote,
-          ),
-        ),
-      );
-    });
   }
 
   @override
@@ -620,80 +715,245 @@ class _RecoveryScreenState extends State<RecoveryScreen> {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            const SizedBox(height: 12),
-            const Icon(Icons.key_off_outlined, color: nexoraGold, size: 46),
-            const SizedBox(height: 16),
-            Text(
-              s.authRecoverTitle,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              s.authRecoverBody,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 13,
-                color: Theme.of(context).disabledColor,
-              ),
-            ),
-            const SizedBox(height: 18),
-            TextField(
-              controller: _email,
-              keyboardType: TextInputType.emailAddress,
-              decoration: const InputDecoration(
-                labelText: 'Email',
-                prefixIcon: Icon(Icons.mail_outline),
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 16),
-            FilledButton.icon(
-              onPressed: _send,
-              icon: const Icon(Icons.send_rounded, size: 18),
-              label: Text(s.authRecoverSend),
-            ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: nexoraSurface,
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: nexoraBorder),
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(
-                    Icons.info_outline,
-                    color: nexoraOrange,
-                    size: 18,
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      s.authRecoverNote,
-                      style: const TextStyle(fontSize: 12.5, height: 1.45),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-            TextButton.icon(
-              onPressed: () => Navigator.of(context).pop(),
-              icon: const Icon(Icons.arrow_back, size: 18),
-              label: Text(s.authRecoverBack),
-            ),
-          ],
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SizedBox(height: 8),
+              switch (_step) {
+                _RecoveryStep.email => _emailStep(s),
+                _RecoveryStep.code => _codeStep(s),
+                _RecoveryStep.newPassword => _newPasswordStep(s),
+                _RecoveryStep.done => _doneStep(s),
+              },
+            ],
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _header(AppStrings s, IconData icon, String title, String body) {
+    return Column(
+      children: [
+        Icon(icon, color: nexoraGold, size: 44),
+        const SizedBox(height: 14),
+        Text(
+          title,
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          body,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: 13,
+            height: 1.4,
+            color: Theme.of(context).disabledColor,
+          ),
+        ),
+        const SizedBox(height: 18),
+      ],
+    );
+  }
+
+  Widget _errorRow() {
+    final error = _error;
+    if (error == null) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          const Icon(Icons.error_outline, color: nexoraRed, size: 18),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(error, style: const TextStyle(color: nexoraRed, fontSize: 13)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _emailStep(AppStrings s) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _header(s, Icons.mail_outline, s.authRecoverStepEmailTitle, s.authRecoverStepEmailBody),
+        TextFormField(
+          controller: _email,
+          keyboardType: TextInputType.emailAddress,
+          autofillHints: const [AutofillHints.email],
+          validator: (v) =>
+              (v ?? '').trim().isEmpty ? s.authErrInvalidEmail : null,
+          decoration: const InputDecoration(
+            labelText: 'Email',
+            prefixIcon: Icon(Icons.mail_outline),
+            border: OutlineInputBorder(),
+          ),
+        ),
+        const SizedBox(height: 16),
+        _errorRow(),
+        FilledButton.icon(
+          onPressed: _nextFromEmail,
+          icon: const Icon(Icons.arrow_forward, size: 18),
+          label: Text(s.authRecoverContinue),
+        ),
+        const SizedBox(height: 16),
+        TextButton.icon(
+          onPressed: Navigator.of(context).pop,
+          icon: const Icon(Icons.arrow_back, size: 18),
+          label: Text(s.authRecoverBack),
+        ),
+      ],
+    );
+  }
+
+  Widget _codeStep(AppStrings s) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _header(s, Icons.password, s.authRecoverCodeTitle, s.authRecoverCodeBody),
+        // El código GENERADO, a la vista: honestidad sobre el medio offline.
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: nexoraSurface,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: nexoraGold.withValues(alpha: 0.45)),
+          ),
+          child: Column(
+            children: [
+              Text(
+                s.authRecoverCodeWelcome,
+                style: TextStyle(
+                  fontSize: 11,
+                  letterSpacing: 1.4,
+                  color: Theme.of(context).disabledColor,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                _generatedCode,
+                style: const TextStyle(
+                  fontSize: 30,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 10,
+                  color: nexoraGoldLight,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                s.authRecoverCodeShown,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 11.5,
+                  height: 1.4,
+                  color: Theme.of(context).disabledColor,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        TextFormField(
+          controller: _code,
+          keyboardType: TextInputType.number,
+          maxLength: 6,
+          validator: (v) => (v ?? '').trim().length != 6 ? s.authRecoverCodeInvalid : null,
+          decoration: InputDecoration(
+            labelText: s.authRecoverCodeField,
+            prefixIcon: const Icon(Icons.pin_outlined),
+            border: const OutlineInputBorder(),
+          ),
+        ),
+        const SizedBox(height: 16),
+        _errorRow(),
+        FilledButton.icon(
+          onPressed: _verifyCode,
+          icon: const Icon(Icons.verified_outlined, size: 18),
+          label: Text(s.authRecoverVerify),
+        ),
+        const SizedBox(height: 6),
+        TextButton(
+          onPressed: _regenerate,
+          child: Text(
+            s.authRecoverCodeResend,
+            style: const TextStyle(color: nexoraGoldLight, fontSize: 12.5),
+          ),
+        ),
+        const SizedBox(height: 10),
+        TextButton.icon(
+          onPressed: () => setState(() {
+            _step = _RecoveryStep.email;
+            _error = null;
+          }),
+          icon: const Icon(Icons.arrow_back, size: 18),
+          label: Text(s.authRecoverBack),
+        ),
+      ],
+    );
+  }
+
+  Widget _newPasswordStep(AppStrings s) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _header(s, Icons.key_outlined, s.authRecoverNewTitle, s.authRecoverNewBody),
+        TextFormField(
+          controller: _newPassword,
+          obscureText: true,
+          validator: (v) => (v ?? '').length < 6 ? s.authErrWeakPassword : null,
+          decoration: InputDecoration(
+            labelText: s.authRecoverNewField,
+            prefixIcon: const Icon(Icons.lock_outline),
+            border: const OutlineInputBorder(),
+          ),
+        ),
+        const SizedBox(height: 14),
+        TextFormField(
+          controller: _confirm,
+          obscureText: true,
+          validator: (v) =>
+              v != _newPassword.text ? s.authErrMismatch : null,
+          decoration: InputDecoration(
+            labelText: s.authRecoverNewConfirmField,
+            prefixIcon: const Icon(Icons.repeat_rounded),
+            border: const OutlineInputBorder(),
+          ),
+        ),
+        const SizedBox(height: 16),
+        _errorRow(),
+        FilledButton.icon(
+          onPressed: _saveNewPassword,
+          icon: const Icon(Icons.check, size: 18),
+          label: Text(s.authRecoverNewButton),
+        ),
+        const SizedBox(height: 10),
+        TextButton.icon(
+          onPressed: () => setState(() {
+            _step = _RecoveryStep.code;
+            _error = null;
+          }),
+          icon: const Icon(Icons.arrow_back, size: 18),
+          label: Text(s.authRecoverBack),
+        ),
+      ],
+    );
+  }
+
+  Widget _doneStep(AppStrings s) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _header(s, Icons.check_circle_outline, s.authRecoverDoneTitle, s.authRecoverDoneBody),
+        FilledButton.icon(
+          onPressed: _finish,
+          icon: const Icon(Icons.login_rounded, size: 18),
+          label: Text(s.authRecoverDoneButton),
+        ),
+      ],
     );
   }
 }

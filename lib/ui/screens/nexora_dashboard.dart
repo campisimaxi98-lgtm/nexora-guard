@@ -26,6 +26,66 @@ import '../widgets.dart';
   Severity.critical => (26, AppRiskLevel.critical),
 };
 
+/// Salud compuesta REAL (0..100) del equipo y cuántos de los 5 sensores
+/// reportaron un dato real en esta captura. Cada componente usa solo los
+/// valores que la plataforma entregó de verdad; los no disponibles no
+/// penalizan ni se inventan.
+///
+/// Peso: memoria 25 %, almacenamiento 25 %, batería 20 %, CPU 15 %,
+/// seguridad (red) 15 %.
+(int, int) deviceHealth(Snapshot s, Verdict verdict) {
+  var numerator = 0.0;
+  var weight = 0.0;
+  var active = 0;
+
+  // Memoria: mis libres como salud (1 - uso).
+  if (s.memory.totalBytes > 0) {
+    weight += 0.25;
+    numerator += 0.25 * s.memory.availableRatio;
+    active++;
+  }
+
+  // Almacenamiento: % libre.
+  if (s.storage.totalBytes > 0) {
+    weight += 0.25;
+    numerator += 0.25 * s.storage.freeRatio.clamp(0.0, 1.0);
+    active++;
+  }
+
+  // Batería: nivel real + penalización honesta por calor excesivo.
+  if (s.battery.levelPercent >= 0) {
+    weight += 0.20;
+    var b = s.battery.levelPercent / 100.0;
+    if (s.battery.temperatureAvailable && s.battery.temperatureCelsius >= 45) {
+      b = (b * 0.6).clamp(0.0, 1.0);
+    }
+    numerator += 0.20 * b;
+    active++;
+  }
+
+  // CPU: solo si la plataforma la entrega (si no, no suma sentido de peso).
+  if (s.device.cpuLoadAvailable) {
+    weight += 0.15;
+    numerator += 0.15 * (1.0 - (s.device.cpuLoadPercent / 100.0).clamp(0.0, 1.0));
+    active++;
+  }
+
+  // Reporte de seguridad de la red (veredicto del motor de reglas).
+  weight += 0.15;
+  numerator += switch (verdict.severity) {
+    Severity.normal => 0.15,
+    Severity.warning => 0.09,
+    Severity.critical => 0.04,
+  };
+  active++;
+
+  if (weight <= 0) return (0, active);
+  var pct = ((numerator / weight) * 100).round();
+  if (pct < 0) pct = 0;
+  if (pct > 100) pct = 100;
+  return (pct, active);
+}
+
 class NexoraDashboardScreen extends StatelessWidget {
   const NexoraDashboardScreen({
     super.key,
@@ -77,6 +137,7 @@ class NexoraDashboardScreen extends StatelessWidget {
     final theme = Theme.of(context);
     final (percent, shieldLevel) = protectionGauge(verdict.severity);
     final shieldColor = riskLevelColor(shieldLevel);
+    final (healthPercent, activeSensors) = deviceHealth(snapshot, verdict);
 
     // Apps con mayor señales de riesgo, para el resumen del Inicio.
     final risky = snapshot.apps
@@ -251,6 +312,8 @@ class NexoraDashboardScreen extends StatelessWidget {
           NexoraDonut(
             segments: donutSegments,
             strings: strings,
+            centerPercent: healthPercent.toDouble(),
+            centerSubtitle: strings.donutCenterHealth(activeSensors),
           ),
           const SizedBox(height: ntGap),
 

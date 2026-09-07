@@ -74,6 +74,20 @@
 - Pestaña PLAY añadida a la barra inferior (se preservan los índices 0–4).
 - Tarjetas y métricas del Inicio TOQUEABLES → pantallas reales.
 
+### FASE 7b — Modificación 2026-09 (spec del cliente)
+- Fondo de constelación animada (`NexoraConstellation`) en Home/cover.
+- Recuperación offline real: 4 pasos email → código local visible (honesto,
+  sin red) → nueva contraseña → login. `AuthStore.resetPassword`.
+- Perfil real: edición persistida (`updateProfile`) y "Cambiar contraseña"
+  desde el Perfil (`changePassword` con salt regenerado).
+- Dona del Inicio: % de salud compuesta REAL en el centro (memoria,
+  almacenamiento, batería, CPU y red ponderados) + "sensores activos/totales".
+- Gráfica interactiva: arrastre para seguir el punto, estadísticas
+  máx/mín/prom y variación "última vs inicial".
+- Análisis avanzado: 4 vistas animadas (onda/área/barras/dispersión) con
+  datos reales del historial.
+- Tests nuevos: f7_auth_security, f7_analysis, f7_profile_ui. Suite ~270 verde.
+
 ### FASE 8 — Perfil, IA contextual y premium (brief: perfil, IA, premium)
 - Perfil: nombre/usuario/email/avatar editables, sesión actual, logout,
   resumen de logros y puntajes.
@@ -97,7 +111,9 @@
 - [x] FASE 4 — gráfica interactiva + dona
 - [x] FASE 5 — CPU real
 - [x] FASE 6 — PLAY + score + logros
-- [ ] FASE 7 — navegación conectada
+- [x] FASE 7 — navegación conectada
+- [x] FASE 7b — modificación 2026-09 (fondo constelación, recuperación,
+  perfil real + contraseña, dona con salud real, gráficas avanzadas)
 - [ ] FASE 8 — perfil/IA/premium
 - [ ] FASE 9 — i18n/responsive/rendimiento
 - [ ] FASE 10 — QA/versión/entrega
