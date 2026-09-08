@@ -19,6 +19,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
 import '../../core/auth_store.dart';
+import '../../core/password_recovery.dart';
 import '../components.dart';
 import '../nexora_logo.dart';
 import '../strings.dart';
@@ -172,6 +173,8 @@ class _AuthScreenState extends State<AuthScreen>
         setState(() => _error = s.authErrInvalidEmail);
       case AuthResult.storage:
         setState(() => _error = s.restoreFail);
+      case AuthResult.locked:
+        setState(() => _error = s.authErrLocked);
     }
   }
 
@@ -724,12 +727,28 @@ class _RecoveryScreenState extends State<RecoveryScreen> {
   late String _generatedCode;
   String? _error;
 
+  /// Cuánto vive cada código antes de vencer (requisito del spec).
+  static const _codeExpiry = Duration(minutes: 10);
+
+  /// Desafío del código vigente: expiración, intentos e invalidación.
+  RecoveryChallenge? _challenge;
+
   String _generateCode() =>
       widget.codeGenerator?.call() ??
       _sixDigits(
         DateTime.now().millisecondsSinceEpoch,
         math.Random().nextInt(0xFFFFFF),
       );
+
+  void _newChallenge() {
+    final code = _generateCode();
+    _generatedCode = code;
+    _challenge = RecoveryChallenge(
+      code: code,
+      expiresAtMillis:
+          DateTime.now().add(_codeExpiry).millisecondsSinceEpoch,
+    );
+  }
 
   static String _sixDigits(int a, int b) {
     final seed = (a ^ b).abs() | 0x1000000;
@@ -746,26 +765,34 @@ class _RecoveryScreenState extends State<RecoveryScreen> {
     }
     setState(() {
       _error = null;
-      _generatedCode = _generateCode();
+      _newChallenge();
       _step = _RecoveryStep.code;
     });
   }
 
   void _verifyCode() {
-    if (_code.text.trim() != _generatedCode) {
-      setState(() => _error = widget.strings.authRecoverCodeInvalid);
-      return;
+    final challenge = _challenge;
+    if (challenge == null) return;
+    switch (challenge.verify(_code.text)) {
+      case RecoveryCodeResult.ok:
+        setState(() {
+          _error = null;
+          _code.clear();
+          _step = _RecoveryStep.newPassword;
+        });
+      case RecoveryCodeResult.wrong:
+        setState(() => _error = widget.strings.authRecoverCodeInvalid);
+      case RecoveryCodeResult.expired:
+        setState(() => _error = widget.strings.authRecoverCodeExpired);
+      case RecoveryCodeResult.exhausted:
+        setState(() => _error = widget.strings.authRecoverCodeExhausted);
     }
-    setState(() {
-      _error = null;
-      _code.clear();
-      _step = _RecoveryStep.newPassword;
-    });
   }
 
   void _regenerate() {
     setState(() {
-      _generatedCode = _generateCode();
+      _newChallenge();
+      _code.clear();
       _error = null;
     });
   }
@@ -790,6 +817,7 @@ class _RecoveryScreenState extends State<RecoveryScreen> {
       case AuthResult.invalidEmail:
       case AuthResult.emailTaken:
       case AuthResult.wrongCredentials:
+      case AuthResult.locked:
         setState(() => _error = widget.strings.restoreFail);
     }
   }

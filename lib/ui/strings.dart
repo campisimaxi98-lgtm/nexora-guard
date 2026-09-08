@@ -1966,6 +1966,13 @@ class AppStrings {
     'E-mail o password non corretti',
     'E-mail ou mot de passe incorrects',
   );
+  String get authErrLocked => _pick(
+    'Demasiados intentos fallidos. Esperá unos segundos y probá de nuevo.',
+    'Too many failed attempts. Wait a few seconds and try again.',
+    'Muitas tentativas falhas. Espere alguns segundos e tente novamente.',
+    'Troppi tentativi falliti. Aspetta qualche secondo e riprova.',
+    'Trop de tentatives échouées. Attendez quelques secondes et réessayez.',
+  );
   String get authLocalNote => _pick(
     'Tu cuenta vive solo en este teléfono. Sin internet: nada sale de él.',
     'Your account lives only on this phone. No internet: nothing leaves it.',
@@ -2192,6 +2199,20 @@ class AppStrings {
     'O código não confere. Verifique e tente novamente.',
     'Il codice non corrisponde. Controlla e riprova.',
     'Le code ne correspond pas. Vérifiez et réessayez.',
+  );
+  String get authRecoverCodeExpired => _pick(
+    'El código venció. Pedí uno nuevo.',
+    'The code has expired. Request a new one.',
+    'O código expirou. Peça um novo.',
+    'Il codice è scaduto. Richiedine uno nuovo.',
+    'Le code a expiré. Demandez-en un nouveau.',
+  );
+  String get authRecoverCodeExhausted => _pick(
+    'Demasiados intentos con este código. Pedí uno nuevo.',
+    'Too many attempts with this code. Request a new one.',
+    'Muitas tentativas com este código. Peça um novo.',
+    'Troppi tentativi con questo codice. Richiedine uno nuovo.',
+    'Trop de tentatives avec ce code. Demandez-en un nouveau.',
   );
   String get authRecoverCodeResend => _pick(
     'Regenerar código',

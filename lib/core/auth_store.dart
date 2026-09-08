@@ -48,6 +48,9 @@ enum AuthResult {
   weakPassword,
   emailTaken,
   wrongCredentials,
+
+  /// Demasiados intentos fallidos seguidos: el login quedó bloqueado un rato.
+  locked,
   storage,
 }
 
@@ -95,6 +98,7 @@ class AuthAccount {
     required this.saltHex,
     required this.hashHex,
     required this.createdAtMillis,
+    this.lastAccessAtMillis = 0,
     this.name = '',
     this.username = '',
     this.avatarBase64 = '',
@@ -105,6 +109,7 @@ class AuthAccount {
     saltHex: map['saltHex'] as String? ?? '',
     hashHex: map['hashHex'] as String? ?? '',
     createdAtMillis: (map['createdAtMillis'] as num?)?.toInt() ?? 0,
+    lastAccessAtMillis: (map['lastAccessAtMillis'] as num?)?.toInt() ?? 0,
     name: map['name'] as String? ?? '',
     username: map['username'] as String? ?? '',
     avatarBase64: map['avatarBase64'] as String? ?? '',
@@ -114,6 +119,9 @@ class AuthAccount {
   final String saltHex;
   final String hashHex;
   final int createdAtMillis;
+
+  /// Momento del último acceso con credenciales válidas (0 = nunca).
+  final int lastAccessAtMillis;
 
   /// Perfil opcional del registro: nombre visible y usuario corto.
   final String name;
@@ -127,6 +135,7 @@ class AuthAccount {
     'saltHex': saltHex,
     'hashHex': hashHex,
     'createdAtMillis': createdAtMillis,
+    'lastAccessAtMillis': lastAccessAtMillis,
     'name': name,
     'username': username,
     if (avatarBase64.isNotEmpty) 'avatarBase64': avatarBase64,
@@ -141,6 +150,7 @@ class AuthAccount {
     saltHex: saltHex,
     hashHex: hashHex,
     createdAtMillis: createdAtMillis,
+    lastAccessAtMillis: lastAccessAtMillis,
     name: name ?? this.name,
     username: username ?? this.username,
     avatarBase64: avatarBase64 ?? this.avatarBase64,
@@ -148,11 +158,21 @@ class AuthAccount {
 }
 
 class AuthStore {
-  AuthStore(this.directory);
+  AuthStore(
+    this.directory, {
+    this.maxFailedAttempts = 5,
+    this.lockoutDuration = const Duration(seconds: 60),
+  });
 
   /// Carpeta de datos donde vive `nexora-auth.json`.
   final Directory directory;
   static const _fileName = 'nexora-auth.json';
+
+  /// Cantidad de fallos de login consecutivos que disparan el bloqueo.
+  final int maxFailedAttempts;
+
+  /// Duración del bloqueo tras alcanzar el límite (anti fuerza bruta).
+  final Duration lockoutDuration;
 
   /// Estiramiento de clave: iteraciones de SHA-256. Es deliberadamente
   /// modesto: corre en teléfonos viejos y la amenaza objetivo es el uso
@@ -166,6 +186,12 @@ class AuthStore {
   /// `load()` no tiene sentido; se deduce del archivo (sesión persistida).
   bool _rememberMe = true;
 
+  /// Fallos de login consecutivos (se resetean al acertar o tras el bloqueo).
+  int _failedAttempts = 0;
+
+  /// Epoch millis hasta el cual el login queda bloqueado (0 = no bloqueado).
+  int _lockedUntilMillis = 0;
+
   /// Cuenta registrada, si existe. Solo válida después de [load].
   AuthAccount? get account => _account;
 
@@ -178,6 +204,8 @@ class AuthStore {
     _account = null;
     _loggedIn = false;
     _rememberMe = false;
+    _failedAttempts = 0;
+    _lockedUntilMillis = 0;
     try {
       final file = File('${directory.path}/$_fileName');
       if (!file.existsSync()) return;
@@ -188,6 +216,11 @@ class AuthStore {
       _account = AuthAccount.fromMap(raw);
       _loggedIn = decoded['loggedIn'] == true;
       _rememberMe = _loggedIn;
+      final lock = decoded['lockout'];
+      if (lock is Map<String, dynamic>) {
+        _failedAttempts = (lock['failed'] as num?)?.toInt() ?? 0;
+        _lockedUntilMillis = (lock['until'] as num?)?.toInt() ?? 0;
+      }
     } on FileSystemException {
       // Sin acceso al archivo se opera sin cuenta (igual que la config).
     } on FormatException {
@@ -225,6 +258,7 @@ class AuthStore {
       saltHex: saltHex,
       hashHex: _stretch(password, saltHex),
       createdAtMillis: DateTime.now().millisecondsSinceEpoch,
+      lastAccessAtMillis: DateTime.now().millisecondsSinceEpoch,
       name: name.trim(),
       username: username.trim(),
       avatarBase64: avatarBase64,
@@ -236,25 +270,88 @@ class AuthStore {
 
   /// Verifica credenciales contra la cuenta existente y abre sesión.
   /// `rememberMe` controla si la sesión sobrevive al cierre de la app.
+  ///
+  /// Anti fuerza bruta: tras [maxFailedAttempts] fallos consecutivos el
+  /// login queda bloqueado [lockoutDuration] (se persiste, sobrevive al
+  /// reinicio). El contador se resetea al acertar o cuando expira el
+  /// bloqueo. El error es genérico: nunca revela si el correo existe.
   AuthResult login(
     String email,
     String password, {
     bool rememberMe = true,
   }) {
+    final now = DateTime.now().millisecondsSinceEpoch;
+    if (now < _lockedUntilMillis) return AuthResult.locked;
+    // Bloqueo vencido: abre una ventana nueva de intentos.
+    if (_lockedUntilMillis > 0) {
+      _failedAttempts = 0;
+      _lockedUntilMillis = 0;
+    }
+
     final account = _account;
     if (account == null || email.trim().toLowerCase() != account.email) {
-      return AuthResult.wrongCredentials;
+      return _registerFailedAttempt(now);
     }
     if (_stretch(password, account.saltHex) != account.hashHex) {
-      return AuthResult.wrongCredentials;
+      return _registerFailedAttempt(now);
     }
+
+    // Credenciales correctas: se registra el último acceso y se libera el
+    // contador de fallos (el archivo se reescribe con todo al día).
+    _failedAttempts = 0;
+    _lockedUntilMillis = 0;
+    final updated = AuthAccount(
+      email: account.email,
+      saltHex: account.saltHex,
+      hashHex: account.hashHex,
+      createdAtMillis: account.createdAtMillis,
+      lastAccessAtMillis: now,
+      name: account.name,
+      username: account.username,
+      avatarBase64: account.avatarBase64,
+    );
     return _persist(
-      account,
+      updated,
       loggedIn: true,
       rememberMe: rememberMe,
     )
         ? AuthResult.ok
         : AuthResult.storage;
+  }
+
+  /// Cuenta un fallo de login y bloquea si se llega al límite. Devuelve el
+  /// resultado honesto de esta operación (bloqueado o credenciales malas).
+  AuthResult _registerFailedAttempt(int now) {
+    _failedAttempts++;
+    if (_failedAttempts >= maxFailedAttempts) {
+      _failedAttempts = 0;
+      _lockedUntilMillis = now + lockoutDuration.inMilliseconds;
+    }
+    _persistLockout();
+    return AuthResult.wrongCredentials;
+  }
+
+  /// Re-escribe el estado a disco con el contador de intentos al día. El
+  /// bloqueo sobrevive al reinicio; la sesión en curso no cambia.
+  void _persistLockout() {
+    try {
+      final file = File('${directory.path}/$_fileName');
+      if (_account == null || !file.existsSync()) return;
+      file.writeAsStringSync(
+        jsonEncode({
+          'account': _account!.toMap(),
+          'loggedIn': _loggedIn && _rememberMe,
+          'lockout': {
+            'failed': _failedAttempts,
+            'until': _lockedUntilMillis,
+          },
+        }),
+        flush: true,
+      );
+    } on FileSystemException {
+      // Si el disco falla, el contador queda solo en memoria: se reintenta
+      // en el próximo intento; nada crítico se pierde.
+    }
   }
 
   /// Cambia la contraseña verificando la ACTUAL (se usa desde el perfil).
@@ -277,6 +374,7 @@ class AuthStore {
       saltHex: newSalt,
       hashHex: newHash,
       createdAtMillis: account.createdAtMillis,
+      lastAccessAtMillis: account.lastAccessAtMillis,
       name: account.name,
       username: account.username,
       avatarBase64: account.avatarBase64,
@@ -300,6 +398,7 @@ class AuthStore {
       saltHex: newSalt,
       hashHex: newHash,
       createdAtMillis: account.createdAtMillis,
+      lastAccessAtMillis: account.lastAccessAtMillis,
       name: account.name,
       username: account.username,
       avatarBase64: account.avatarBase64,
@@ -384,6 +483,10 @@ class AuthStore {
           jsonEncode({
             'account': account.toMap(),
             'loggedIn': persistedLoggedIn,
+            'lockout': {
+              'failed': _failedAttempts,
+              'until': _lockedUntilMillis,
+            },
           }),
           flush: true,
         );

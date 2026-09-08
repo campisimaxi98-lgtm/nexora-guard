@@ -99,6 +99,17 @@
 - Traducciones completas de lo nuevo; `NexoraMaxWidth` en pantallas nuevas;
   animaciones con `RepaintBoundary` y sin alocaciones por frame.
 
+### Seguridad de autenticación (spec Nextword 2026-09)
+- Bloqueo anti fuerza bruta del login: persiste el contador de fallos y
+  bloquea por 60 s tras 5 intentos con credenciales inválidas (configurable
+  en tests); error genérico, nunca revela si el correo existe.
+- Código de recuperación con ciclo de vida completo (`RecoveryChallenge`):
+  expira a los 10 min, se invalida al usarse (uso único) y se agota tras 5
+  intentos fallidos; en modo offline se muestra en pantalla con honestidad.
+- Fecha del último acceso persistida en la cuenta (se actualiza en cada
+  login con éxito).
+- QA: suite 275 tests verdes, `flutter analyze` limpio (1 info preexistente).
+
 ### FASE 8 spec 2.2.0 (modificación 2026-09)
 - Splash → puerta de cuentas: el botón COMENZAR lleva a AuthScreen cuando
   no hay sesión (el AuthGate primario queda como respaldo).
